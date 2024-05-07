@@ -5,7 +5,6 @@ const Footer: React.FC = () => {
   return (
     <footer className="footer">
         <section className="footer-content">
-            <p className="text-xs">Enrico Mattia Salonia</p>
             <p className="text-xs">contacts:&nbsp;
                 <a className="text-xs" href="mailto:mattia.salonia@tse.fr">mattia.salonia@tse.fr</a>,&nbsp;
                 <a className="text-xs" href="mailto:mattia.salonia1@gmail.com">mattia.salonia1@gmail.com</a>

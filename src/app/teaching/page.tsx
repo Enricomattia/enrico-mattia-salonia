@@ -22,52 +22,52 @@ export default function Teaching() {
           <Class
             title="TD1"
             linkToDoc="/teaching/TD1.html"
-            linkToPdf="https://drive.google.com/file/d/1QLD9sNkWYlZ_4cOVKcgUfBUNnKC1qVNu/view"
+            linkToPdf="/teaching/tds/TD1.pdf"
           />
           <Class
             title="TD2"
             linkToDoc="/teaching/TD2.html"
-            linkToPdf="https://drive.google.com/file/d/1NbH1gSlIQbrla6fgK4gZFgQ-KWvkyPkM/view"
+            linkToPdf="/teaching/tds/TD2.pdf"
           />
           <Class
             title="TD3"
             linkToDoc="/teaching/TD3.html"
-            linkToPdf="https://drive.google.com/file/d/19DfRzbY7gLqQ86UuwygGf5pFoqtU22ta/view"
+            linkToPdf="/teaching/tds/TD3.pdf"
           />
           <Class
             title="TD4"
             linkToDoc="/teaching/TD4.html"
-            linkToPdf="https://drive.google.com/file/d/19bfcxd4-VgBrLCkcOHTZgpXwYQ1rsOuq/view?usp=sharing"
+            linkToPdf="/teaching/tds/TD4.pdf"
           />
           <Class
             title="TD5"
             linkToDoc="/teaching/TD5.html"
-            linkToPdf="https://drive.google.com/file/d/1f-C6Qw-6zvCzkF5J-AuICqOngknbLv-t/view?usp=sharing"
+            linkToPdf="/teaching/tds/TD5.pdf"
           />
           <Class
             title="TD6"
             linkToDoc="/teaching/TD6.html"
-            linkToPdf="https://drive.google.com/file/d/1aSapf1hQ8jAMNdxUj2YGtVAOH2v75qVp/view?usp=sharing"
+            linkToPdf="/teaching/tds/TD6.pdf"
           />
           <Class
             title="TD7"
             linkToDoc="/teaching/TD7.html"
-            linkToPdf="https://drive.google.com/file/d/1wd0I0VdWbiYpgOMlZwbnzUi1RUWl_jqh/view?usp=sharing"
+            linkToPdf="/teaching/tds/TD7.pdf"
           />
           <Class
             title="TD8"
             linkToDoc="/teaching/TD8.html"
-            linkToPdf="https://drive.google.com/file/d/1ePqEfj63zhQ-oS-WEcD5lCPw_ZTGvfWh/view?usp=drive_link"
+            linkToPdf="/teaching/tds/TD8.pdf"
           />
           <Class
             title="TD9"
             linkToDoc="/teaching/TD9.html"
-            linkToPdf="https://drive.google.com/file/d/1xAyKQgJHwSKFePWyJtyCEfkeXByjrmBo/view?usp=sharing"
+            linkToPdf="/teaching/tds/TD9.pdf"
           />
           <Class
             title="A Solarian Maltus Model"
             linkToDoc="/teaching/SolariaSOL.html"
-            linkToPdf="https://drive.google.com/file/d/1I2DMulWABztOxHOKLuas-n96Ov5NTngb/view?usp=share_link"
+            linkToPdf="/teaching/tds/A_Solarian_Malthus_Model_Solution.pdf"
           />
         </CardExtended>
         <CardExtended title="Extras">
@@ -80,10 +80,10 @@ export default function Teaching() {
           <TextSimple content="Here you can find the solutions to the 2020 and 2019 midterms. However, I strongly suggest you focus on the class and TD material before attempting it!" />
           <Class 
             title="Midterm 2020" 
-            linkToPdf="https://drive.google.com/file/d/1VppGSs9ZSFqEMvSc339n2Ogz0L8Dc9bz/view" />
+            linkToPdf="/teaching/tds/Midterm_2020.pdf" />
           <Class 
             title="Baby Boom" 
-            linkToPdf="https://drive.google.com/file/d/1rHf8e_8WRqNfS-1QuBd-d1_GCsmbRszR/view" />
+            linkToPdf="/teaching/tds/Baby_boom.pdf" />
         </CardExtended>
       </PageSection>
     </main>
