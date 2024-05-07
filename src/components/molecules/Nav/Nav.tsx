@@ -17,7 +17,7 @@ const Nav: React.FC<NavProps> = ({ dir }) => {
             <NavItem text="Home" href="/" active={pathname === "/"} />
             <NavItem text="Research" href="/research" active={pathname === "/research"} />
             <NavItem text="Teaching" href="/teaching" active={pathname === "/teaching"} />
-            <NavItem text="Quotes" href="/quotes" active={pathname === "/quotes"} />
+           {/* <NavItem text="Quotes" href="/quotes" active={pathname === "/quotes"} /> */}
         </nav>
     );
 }
