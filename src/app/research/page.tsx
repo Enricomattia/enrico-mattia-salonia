@@ -12,7 +12,7 @@ export default function Research() {
         <SectionTitle text="Work in Progress"/>
         <CardExtended title="A Foundation for Universalisation in Games">
           <Abstract 
-            content="In revealed preference theory, observed choice is interpreted as revealing tastes over the outcomes of the decision. Nevertheless, if a moral principle prescribes an act for reasons unrelated to its consequences, the inference drawn regarding preferences is misleading. In this paper, I study the behaviour of deontological decision makers who follow the moral principle of universalisation. I develop a decision theory for agents who value the impact of their choice in determining a counterfactual outcome they envision. Hence, the choice of action reveals a preference for counterfactual outcomes. I propose a unifying model based on my theory, inspired by the equal sacrifice principle. It can be specified to obtain the most prominent models of universalisation, compare them, highlight and arguably overcome their limitations."
+            content="Revealed preference theory equates choices to tastes. Nevertheless, if a moral principle prescribes an act for reasons unrelated to its consequences, the inference drawn regarding tastes is misleading. In this paper, I study the behaviour of deontological individuals who follow the moral principle of universalisation. They choose the action that, if chosen by everyone else as well, leads to their preferred outcome. I develop a decision theory for individuals who value the impact of their choice in determining a counterfactual outcome they envision. Choice is interpreted as revealing a preference for counterfactual outcomes. The theory can be specified to obtain the most prominent models of universalisation, compare them, highlight, and arguably overcome their limitations. I propose a unifying model of universalisation inspired by the equal sacrifice principle.  "
             availability="Draft [New version coming soon!]"
             link="/docs/draft_universalisation.pdf"
           />
@@ -28,7 +28,7 @@ export default function Research() {
         <SectionTitle text="Other Work"/>
         <TextSimple content="I have some work in areas in the neighborhood of economics, but not quite there. You can find it here."/>
         <CardExtended title="The Chaining Argument Unchained" authors="Annalisa Costella" links="https://www.annalisacostella.com/home">
-          <Abstract content="We show that formalising Chang's chaining argument against the Trichotomy Thesis demonstrates that the intuitive pull of the argument relies on exploiting the features of a notion of closeness that is, however, a trichotomous relation itself. As such, the premises of the argument are inconsistent with each other, and the argument is unsound. Our results illuminate that the chaining argument does not provide insights into axiology."/>
+          <Abstract content="We argue that Chang's chaining argument against the Trichotomy Thesis relies on a notion of distance that is a trichotomous relation itself. Building from this insight, we show that the premises of the argument are inconsistent with each other and the argument is therefore unsound. Our result illuminates that the chaining argument does not provide insights into axiology."/>
         </CardExtended>
       </PageSection>
       <PageSection>
