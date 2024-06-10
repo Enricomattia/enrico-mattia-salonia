@@ -19,8 +19,6 @@ export default function Home() {
       <p>
         I am a fourth-year PhD student in Economics <br/> at <Link href="https://www.tse-fr.eu/" text="Toulouse School of Economics"/>.
         <br/><br/>
-        I was also a 2023 Fellow at the <br/><Link href="https://globalprioritiesinstitute.org/" text="Global Priorities Institute"/>.
-        <br/><br/>
         I am mainly interested in behavioral theory <br/> and experimental economics.
         <br/><br/>
         My CV is <Link href="/docs/cv.pdf" text="here"/>.
