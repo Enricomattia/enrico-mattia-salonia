@@ -19,8 +19,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="google-site-verification" content="Xas-5CcSHsnPC-JTqH3gWpFvchX2fUAvvmw1hDpIk6c" />
-        <link rel="icon" href="/img/jackie.png"/>
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-J54HJ5FRD8"
+        ></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-J54HJ5FRD8');
+            `,
+          }}
+        />
+        <link rel="icon" href="/img/jackie.png" />
       </head>
       <body className={montserrat.className}>
         <Header />
