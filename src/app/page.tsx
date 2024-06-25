@@ -17,11 +17,11 @@ export default function Home() {
         caption="A kangaroo escaping from me talking about game theory"
       />
       <p>
-        I am a fourth-year PhD student in Economics <br/> at <Link href="https://www.tse-fr.eu/" text="Toulouse School of Economics"/>.
+        I am a fourth-year PhD student at <br/> <Link href="https://www.tse-fr.eu/" text="Toulouse School of Economics"/>.
         <br/><br/>
-        I am mainly interested in behavioral theory <br/> and experimental economics.
+        I am mainly interested in behavioral theory.
         <br/><br/>
-        My CV is <Link href="/docs/cv.pdf" text="here"/>.
+        Here is my <Link href="/docs/cv.pdf" text="CV"/>.
         <br/><br/>
         Feel free to contact me at <br/>
         <Link href="mailto:mattia.salonia@tse.fr" text="mattia.salonia@tse.fr"/> or <br/>
