@@ -17,8 +17,8 @@ export default function Research() {
             link="/docs/draft_universalisation.pdf"
           />
         </CardExtended>
-        <CardExtended title="Belief-dependent Motivations and Belief Updating">
-          <Abstract content="I develop a theory of motivated belief updating. An individual who exhibits preferences for her beliefs faces a dynamic decision problem. Ex-ante behavior reveals that she anticipates she will distort her beliefs to satisfy her belief-dependent preferences. I provide assumptions that allow identifying preferences, prior beliefs, and departures from Bayesian updating. The theory rationalises excessive trading, the ostrich effect, and moral wiggle room." />
+        <CardExtended title="Belief-dependent Preferences and Updating">
+          <Abstract content="	This paper studies individuals whose well-being is directly affected by their beliefs. Belief-dependent preferences have been modelled by including beliefs as an argument of utility functions over outcomes. The lack of distinction between beliefs and outcomes complicates the identification and testing of these models. Moreover, such interaction between preferences and beliefs casts doubts on whether assuming individuals update according to Bayes rule is appropriate. Assumptions on belief updating vary from individuals using Bayes rule, choosing to forget past observations or even directly choosing beliefs. The main result of this paper is an axiomatic characterisation of a class of preferences for beliefs and belief updating rules deviating from Bayes rule. Preferences, beliefs and updating rules are identified from choices over contingent menus, sets of actions available at a later time contingent on an uncertain state of the world. Two applications illustrate the model: it rationalises investors' information avoidance and excessive trading due to overconfidence; a theory-driven experimental design allows identifying information avoidance to justify transferring less in a dictator game." />
         </CardExtended>
         <CardExtended
           title="Can Pessimistic Beliefs Threaten Redistribution?"
@@ -43,7 +43,7 @@ export default function Research() {
           links="https://www.annalisacostella.com/home"
         >
           <Abstract
-            content="We argue that Chang's chaining argument against the Trichotomy Thesis relies on a notion of distance that is a trichotomous relation itself. Building from this insight, we show that the premises of the argument are inconsistent with each other and the argument is therefore unsound. Our result illuminates that the chaining argument does not provide insights into axiology."
+            content="We argue that the chaining argument is stuck between two horns of a dilemma. It is either a logical triviality or it is unsound. Formalising the argument so that it captures its intended meaning makes it unsound. Indeed, specifying the properties of the value relation in the chaining argument in the weakest way to capture the meaning of the argument makes the premises of the argument inconsistent with each other. Under this formalisation, the argument is unsound. To avoid inconsistency, the value relation should be formalised without imposing properties on it. This formalisation reduces the chaining argument to a logical triviality that does not reach its intended conclusion. Besides demonstrating that the chaining argument does not provide insights into axiology, our result helps illuminate what assumptions need to hold to show the existence of parity."
             availability="Draft available upon request"
           />
         </CardExtended>
