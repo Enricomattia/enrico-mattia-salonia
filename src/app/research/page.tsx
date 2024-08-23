@@ -36,14 +36,14 @@ export default function Research() {
       </PageSection>
       <PageSection>
         <SectionTitle text="Other Work" />
-        <TextSimple content="I have some work in areas in the neighborhood of economics, but not quite there. You can find it here." />
+        <TextSimple content="I have some work in areas in the neighbourhood of economics, but not quite there. You can find it here." />
         <CardExtended
-          title="The Chaining Argument Unchained"
+          title="[Title redacted]"
           authors="Annalisa Costella"
           links="https://www.annalisacostella.com/home"
         >
           <Abstract
-            content="We argue that the chaining argument is stuck between two horns of a dilemma. It is either a logical triviality or it is unsound. Formalising the argument so that it captures its intended meaning makes it unsound. Indeed, specifying the properties of the value relation in the chaining argument in the weakest way to capture the meaning of the argument makes the premises of the argument inconsistent with each other. Under this formalisation, the argument is unsound. To avoid inconsistency, the value relation should be formalised without imposing properties on it. This formalisation reduces the chaining argument to a logical triviality that does not reach its intended conclusion. Besides demonstrating that the chaining argument does not provide insights into axiology, our result helps illuminate what assumptions need to hold to show the existence of parity."
+            content="This paper aims to show that the chaining argument offered by Ruth Chang to support the existence of parity is of no help in adjudicating the truth or falsity of the Trichotomy Thesis."
             availability="Draft available upon request"
           />
         </CardExtended>
