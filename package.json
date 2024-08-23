@@ -13,7 +13,7 @@
     "@emotion/styled": "^11.11.5",
     "@mui/material": "^5.15.15",
     "gh-pages": "^6.1.1",
-    "next": "14.2.1",
+    "next": "^14.2.6",
     "react": "^18",
     "react-dom": "^18"
   },
@@ -21,10 +21,15 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "eslint": "^8",
+    "eslint": "^9.9.0",
     "eslint-config-next": "^0.2.4",
-    "postcss": "^8",
+    "postcss": "^8.4.41",
     "tailwindcss": "^2.0.4",
-    "typescript": "^5"
-  }
+    "typescript": "^5.5.4"
+  },
+  "resolutions": {
+  "micromatch": "^4.0.5"
 }
+}
+
+
