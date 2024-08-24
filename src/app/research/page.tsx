@@ -38,7 +38,7 @@ export default function Research() {
         <SectionTitle text="Other Work" />
         <TextSimple content="I have some work in areas in the neighbourhood of economics, but not quite there. You can find it here." />
         <CardExtended
-          title="[Title redacted]"
+          title="[Title redacted ciao]"
           authors="Annalisa Costella"
           links="https://www.annalisacostella.com/home"
         >
