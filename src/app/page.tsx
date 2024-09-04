@@ -17,7 +17,7 @@ export default function Home() {
         caption="A kangaroo escaping from me talking about game theory"
       />
       <p>
-        I am a fourth-year PhD student at <br/> <Link href="https://www.tse-fr.eu/" text="Toulouse School of Economics"/>.
+        I am a fifth-year PhD student at <br/> <Link href="https://www.tse-fr.eu/" text="Toulouse School of Economics"/>.
         <br/><br/>
         I am mainly interested in behavioral theory.
         <br/><br/>
