@@ -13,7 +13,7 @@ export default function Research() {
         <CardExtended title="A Foundation for Universalisation in Games">
           <Abstract
             content="Revealed preference theory equates choices to tastes. Nevertheless, if a moral principle prescribes an act for reasons unrelated to its consequences, the inference drawn regarding tastes is misleading. In this paper, I study the behaviour of deontological individuals who follow the moral principle of universalisation. They choose the action that, if chosen by everyone else as well, leads to their preferred outcome. I develop a decision theory for individuals who value the impact of their choice in determining a counterfactual outcome they envision. Choice is interpreted as revealing a preference for counterfactual outcomes. The theory can be specified to obtain the most prominent models of universalisation, compare them, highlight, and arguably overcome their limitations. I propose a unifying model of universalisation inspired by the equal sacrifice principle.  "
-            availability="Draft [New version coming soon!]"
+            availability="Draft"
             link="/docs/draft_universalisation.pdf"
           />
         </CardExtended>
