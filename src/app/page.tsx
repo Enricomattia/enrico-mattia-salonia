@@ -14,10 +14,12 @@ export default function Home() {
         src="/img/kangaroo.webp"
         alt="Enrico Mattia Salonia in Australia with a Kangaroo"
         width={imgWidth}
-        caption="A kangaroo escaping from me talking about game theory"
+        caption=""
       />
       <p>
         I am a fifth-year PhD student at <br/> <Link href="https://www.tse-fr.eu/" text="Toulouse School of Economics"/>.
+        <br/><br/>
+        I will be on the 2024-25 academic job market.
         <br/><br/>
         I am mainly interested in behavioral theory.
         <br/><br/>
