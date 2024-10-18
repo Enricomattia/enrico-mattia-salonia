@@ -61,6 +61,8 @@ a:hover {
   flex: 1;
   gap: 10%;
   font-size: clamp(14px, 2.5vw, 18px);
+  flex-direction: row; /* or column, based on mainClass */
+  flex-wrap: wrap; /* Allow items to wrap to the next line */
 }
 
 .row {
@@ -71,6 +73,12 @@ a:hover {
 .col {
   flex-direction: column;
   justify-content: center;
+}
+
+.additional-text {
+  flex-basis: 100%; /* Take full width */
+  text-align: center; /* Center the text */
+  margin-top: 20px; /* Adjust spacing as needed */
 }
 
 .closed {

@@ -10,15 +10,21 @@ export default function Teaching() {
   return (
     <main className="main col">
       <PageSection>
-        <SectionTitle text="Topics in Macro I" />
+        <SectionTitle text="Topics in Macro I (Website for students)" />
         <TextSimple content="Welcome to the class website! Here I will post the material I produce for the course, namely solutions to exercises and maybe some extras that could be useful. Contact me if you have any questions!" />
+        {/*
         <WarningPanel
           title="Attention!"
           content="There could be mistakes, use the official solutions as a reference! Feel free to point out any typos, mistakes, or answers that are not clear. If you want you can check the plan (NEW 15/11/2023!) for the lectures. Solutions will come out lecture by lecture. If you obtained solutions from other sources, don’t consult them! You will do way better on the exam if you attempt to do the exercises yourself before the lecture."
           linktext="Check the plan!"
           link="/teaching/Plan_20232024.html"
         />
+        */}
         <CardExtended title="Lectures">
+        <Class
+            title="Plan"
+            linkToDoc="/teaching/Plan_20232024.html"
+          />
           <Class
             title="TD1"
             linkToDoc="/teaching/TD1.html"

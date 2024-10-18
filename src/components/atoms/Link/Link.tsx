@@ -6,7 +6,7 @@ interface LinkProps {
     size?: string;
 }
 
-const Link: React.FC<LinkProps> = ({ href = "link", text = "click here", size = "text-l" }) => {
+const Link: React.FC<LinkProps> = ({ href = "link", text, size = "text-l" }) => {
     return (
         <a className={"link "+ size} href={href} target="_blank">{text}</a>
     );
