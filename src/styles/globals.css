@@ -77,7 +77,7 @@ a:hover {
 
 .additional-text {
   flex-basis: 100%; /* Take full width */
-  text-align: center; /* Center the text */
+  text-align: left; /* Center the text */
   margin-top: 20px; /* Adjust spacing as needed */
 }
 

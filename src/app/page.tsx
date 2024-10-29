@@ -6,13 +6,13 @@ import useWindowDimensions from "@/hooks/useWindowDimensions";
 export default function Home() {
   const { width } = useWindowDimensions();
   const mainClass = width && width < 800 ? "main col" : "main row";
-  const imgWidth = width && width < 700 ? 300 : 500;
+  const imgWidth = width && width < 500 ? 200 : 300;
   const afterClass = useWindowDimensions();
 
   return (
     <main className={mainClass}>
       <Img
-        src="/img/kangaroo.webp"
+        src="/img/profile.webp"
         alt="Enrico Mattia Salonia in Australia with a Kangaroo"
         width={imgWidth}
         caption=""
@@ -26,7 +26,7 @@ export default function Home() {
         .
         <br />
         <br />
-        I will be on the 2024-25 academic job market.
+        I am on the 2024-25 academic job market.
         <br />
         <br />
         I am mainly interested in microeconomic theory, <br /> behavioral and
@@ -49,7 +49,8 @@ export default function Home() {
       </p>
       {/*
       <div className="additional-text">
-        <p>Ciao</p>
+        <p> I study how the design of information and incentives <br /> can soften inefficiencies in financial markets. I am working on bank stress tests, risk management, <br /> and algorithmic opacity in credit markets.
+        </p>
       </div>
     */}
     </main>
