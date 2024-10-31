@@ -11,7 +11,7 @@ export default function Research() {
     <main className="main col">
       <PageSection>
         <SectionTitle text="Job Market Paper" />
-        <CardExtended title="Belief-dependent Preferences and Updating (JMP)">
+        <CardExtended title="Belief-dependent Preferences and Updating">
           <Abstract content="Why do investors avoid information or trade excessively due to overconfidence? Why do subjects in dictator games deliberately remain uninformed about the efficiency of their transfer? Possibly because their well-being is directly influenced by their beliefs, i.e., they have belief-dependent preferences. However, existing theories of belief-dependent preferences fail to generate testable predictions; in particular, identification of beliefs and preferences is not possible. This paper addresses this issue by providing an axiomatic characterization of a class of preferences and belief-updating rules that deviate from Bayesian updating. Preferences, beliefs and updating rules are identified from choices over contingent menus, each of which entails a set of menus of acts available at a later time contingent on an uncertain state of the world. The result provide a theory-based approach to experimental designs aiming at testing information avoidance and other behaviors consistent with belief-dependent preferences." 
           availability="Draft coming soon, available upon request."
           />
