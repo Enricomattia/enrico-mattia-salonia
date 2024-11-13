@@ -11,7 +11,10 @@ export default function Research() {
     <main className="main col">
       <PageSection>
         <SectionTitle text="Job Market Paper" />
-        <CardExtended title="Identifying Belief-dependent Preferences">
+        <CardExtended 
+        title="Identifying Belief-dependent Preferences"
+        titleHref="https://enricomattiasalonia.com/docs/jmp.pdf"
+        >
           <Abstract content="Why are investors overconfident and trade excessively? Why do patients at health risk avoid testing? Why do voters choose different information sources? Possibly because their beliefs directly influence their well-being, i.e., they have belief-dependent preferences. However, existing theories of belief-dependent preferences struggle to generate testable predictions or to identify simultaneously beliefs and preferences. This paper addresses this issue by providing an axiomatic characterization of a class of preferences and belief-updating rules that deviate from Bayesian updating. Preferences, beliefs, and updating rules are identified from choices over contingent menus, each entailing a menu of acts available at a later time contingent on an uncertain state of the world. The results provide a theory-based approach to experimental designs to test information avoidance, distortion, and other behaviours consistent with belief-dependent preferences." 
           availability="Draft coming soon, available upon request."
           />
