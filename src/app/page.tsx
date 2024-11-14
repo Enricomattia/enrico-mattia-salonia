@@ -33,7 +33,7 @@ export default function Home() {
         experimental economics.
         <br />
         <br />
-        Here is my <Link href="/docs/cv.pdf" text="CV" />.
+        Here you can find my <Link href="/docs/cv.pdf" text="CV" /> and <Link href="/docs/jmp.pdf" text="Job Market Paper" />.
         <br />
         <br />
         Contact me at <br />

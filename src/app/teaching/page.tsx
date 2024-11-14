@@ -71,7 +71,7 @@ export default function Teaching() {
             linkToPdf="/teaching/tds/TD9.pdf"
           />
           <Class
-            title="A Solarian Maltus Model"
+            title="A Solarian Malthus Model"
             linkToDoc="/teaching/SolariaSOL.html"
             linkToPdf="/teaching/tds/A_Solarian_Malthus_Model_Solution.pdf"
           />
