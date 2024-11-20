@@ -1,9 +1,11 @@
 import Image from "next/image";
 import "./Footer.style.css";
+import Credits from "@/components/molecules/Credits/Credits";
 
 const Footer: React.FC = () => {
   return (
     <footer className="footer">
+        <section><Credits/></section>
         <section className="footer-content">
             <p className="text-xs">contacts:&nbsp;
                 <a className="text-xs" href="mailto:mattia.salonia@tse.fr">mattia.salonia@tse.fr</a>,&nbsp;
