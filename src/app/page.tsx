@@ -6,19 +6,19 @@ import useWindowDimensions from "@/hooks/useWindowDimensions";
 export default function Home() {
   const { width } = useWindowDimensions();
   const mainClass = width && width < 800 ? "main col" : "main row";
-  const imgWidth = width && width < 500 ? 200 : 300;
+  const imgWidth = width && width < 500 ? 500 : 400;
   const afterClass = useWindowDimensions();
 
   return (
     <main className={mainClass}>
       <Img
-        src="/img/profile.webp"
+        src="/img/kangaroo.webp"
         alt="Enrico Mattia Salonia in Australia with a Kangaroo"
         width={imgWidth}
-        caption=""
+        caption="A kangaroo escaping from me talking about game theory"
       />
       <p>
-        I am a fifth-year PhD student at <br />{" "}
+        I am a PhD candidate at <br />{" "}
         <Link
           href="https://www.tse-fr.eu/"
           text="Toulouse School of Economics"
@@ -26,14 +26,11 @@ export default function Home() {
         .
         <br />
         <br />
-        I am on the 2024-25 academic job market.
-        <br />
-        <br />
         I am mainly interested in microeconomic theory, <br /> behavioral and
         experimental economics.
         <br />
         <br />
-        Here you can find my <Link href="/docs/cv.pdf" text="CV" /> and <Link href="/docs/jmp.pdf" text="Job Market Paper" />.
+        Here you can find my <Link href="/docs/cv.pdf" text="CV" />.
         <br />
         <br />
         Contact me at <br />
