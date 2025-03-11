@@ -26,7 +26,7 @@ export default function Home() {
         .
         <br />
         <br />
-        I am mainly interested in microeconomic theory, <br /> behavioral and
+        I mainly work in microeconomic theory, <br /> behavioral and
         experimental economics.
         <br />
         <br />
