@@ -24,6 +24,7 @@ export default function Research() {
         >
           <Abstract
             content="Revealed preference theory equates choices with preferences over the consequences the choice induces. Nevertheless, if a decision criterion prescribes an act for reasons unrelated to its consequences, the inference drawn regarding preferences is misleading. I study the behaviour of non-consequentialist individuals who have preferences for universalisation. They choose the action that, in a counterfactual scenario in which it is chosen by everyone else as well, leads to their preferred consequences. I develop a model for individuals who value their choices in light of a counterfactual consequence these induce. Choice is interpreted as revealing a preference for counterfactual consequences. I impose axioms to single out the most prominent models of universalisation, compare them, highlight and arguably overcome their limitations. I propose a unifying model of universalisation inspired by the equal sacrifice principle."
+            availability="New version coming soon!"
           />
         </CardExtended>
         <SectionTitle text="Work in Progress" />
