@@ -45,18 +45,13 @@ export default function Research() {
             availability="Draft coming soon, available upon request!"
           />
         </CardExtended>
-      </PageSection>
-      {/*
-      <PageSection>
-        <SectionTitle text="Other Work" />
-        <TextSimple content="I have some work in areas in the neighbourhood of economics, but not quite there. You can find it here." />
         <CardExtended
-          title="[Title redacted]"
+          title="The Chaining Argument Unchained"
           authors="Annalisa Costella"
           links="https://www.annalisacostella.com/home"
         >
           <Abstract
-            content="This paper aims to show that the chaining argument offered by Ruth Chang to support the existence of parity is of no help in adjudicating the truth or falsity of the Trichotomy Thesis."
+            content="We argue that the chaining argument against the Trichotomy Thesis is on the horns of a dilemma. Either it is vacuous or it is unsound. Contrary to what it has been commonly assumed, it cannot be used as a reliable basis to adjudicate whether parity does or does not obtain. Stating the premises in a formal syntax that makes them consistent with each other deprives them of their intended meaning and makes the argument vacuous. The reason is that the argument, so stated, establishes a conclusion that is compatible with a variety of natural-language understandings of it that are unrelated to the initial intention of the argument or to the nature of value relations. If, instead, the premises of the argument are expressed in the weakest formal syntax to capture their meaning, the argument is unsound since its premises are inconsistent with each other. Besides demonstrating that the chaining argument does not provide insights into axiology, our result helps orient those interested in proving the existence of parity as a value relation towards alternative arguments."
             availability="Draft available upon request"
           />
         </CardExtended>
@@ -72,6 +67,21 @@ export default function Research() {
             text="Link"
             href="https://ejpe.org/journal/article/view/469/337"
             size="text-m"
+          />
+        </CardExtended>
+      </PageSection>
+      {/*
+      <PageSection>
+        <SectionTitle text="Other Work" />
+        <TextSimple content="I have some work in areas in the neighbourhood of economics, but not quite there. You can find it here." />
+        <CardExtended
+          title="[Title redacted]"
+          authors="Annalisa Costella"
+          links="https://www.annalisacostella.com/home"
+        >
+          <Abstract
+            content="This paper aims to show that the chaining argument offered by Ruth Chang to support the existence of parity is of no help in adjudicating the truth or falsity of the Trichotomy Thesis."
+            availability="Draft available upon request"
           />
         </CardExtended>
       </PageSection>
