@@ -12,3 +12,7 @@
 .quote-section hr {
     width: 50%;
 }
+
+.quote-text {
+    white-space: pre-line;
+  }
