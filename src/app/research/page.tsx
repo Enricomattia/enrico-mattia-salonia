@@ -11,12 +11,11 @@ export default function Research() {
     <main className="main col">
       <PageSection>
         <SectionTitle text="Working Papers" />
-        <CardExtended 
-        title="Identifying Belief-dependent Preferences"
-        titleHref="https://enricomattiasalonia.com/docs/jmp.pdf"
+        <CardExtended
+          title="Identifying Belief-dependent Preferences"
+          titleHref="https://enricomattiasalonia.com/docs/jmp.pdf"
         >
-          <Abstract content="Why are investors overconfident and trade excessively? Why do patients at health risk avoid testing? Why are voters polarised? Possibly because their beliefs directly influence their well-being, i.e., they have belief-dependent preferences. However, existing theories of belief-dependent preferences struggle to generate testable predictions or to identify simultaneously beliefs and preferences. This paper addresses these issues by providing an axiomatic characterization of a class of preferences and belief-updating rules that deviate from Bayesian updating. Preferences, beliefs, and updating rules are identified from choices over contingent menus, each entailing a menu of acts available at a later time contingent on an uncertain state of the world. The results provide a theory-based approach to experimental designs to test information avoidance, distortion, and other behaviours consistent with belief-dependent preferences." 
-          />
+          <Abstract content="Why are investors overconfident and trade excessively? Why do patients at health risk avoid testing? Why are voters polarised? Possibly because their beliefs directly influence their well-being, i.e., they have belief-dependent preferences. However, existing theories of belief-dependent preferences struggle to generate testable predictions or to identify simultaneously beliefs and preferences. This paper addresses these issues by providing an axiomatic characterization of a class of preferences and belief-updating rules that deviate from Bayesian updating. Preferences, beliefs, and updating rules are identified from choices over contingent menus, each entailing a menu of acts available at a later time contingent on an uncertain state of the world. The results provide a theory-based approach to experimental designs to test information avoidance, distortion, and other behaviours consistent with belief-dependent preferences." />
         </CardExtended>
         <CardExtended
           title="A Foundation for Universalisation in Games"
@@ -28,21 +27,22 @@ export default function Research() {
           />
         </CardExtended>
         <SectionTitle text="Work in Progress" />
+        <CardExtended title="Meritocracy as an End and as a Means">
+          <Abstract
+            content="I introduce a framework for studying different interpretations of meritocracy and testing whether individuals adhere to them. Each meritocracy has two components: a merit criterion, determining when one individual is more meritorious than another, and a reward criterion for each individual, determining when one outcome is more rewarding than another for that individual. An allocation is meritocratic if more meritorious individuals are more rewarded. I distinguish between two conceptions of meritocracy. Meritocracy as an end holds it intrinsically valuable that individuals are rewarded according to their merit. Meritocracy as a means views rewarding merit as instrumental in achieving desirable outcomes according to other standards, such as efficiency. I show that these two conceptions are equivalent: each instance of meritocracy as a means can be associated with a corresponding meritocracy as an end. Finally, I examine two specific meritocracies present in the literature. Pareto meritocracy defines an action as more meritorious if it leads to a Pareto improvement in welfare, whereas proportional meritocracy requires that an individual’s consumption be proportional to the amount of labour he provides. By observing whether allocation choices of impartial spectators align with specific merit criteria, one can test whether spectators adhere to these meritocracies."
+            availability="Draft coming soon, available upon request!"
+          />
+        </CardExtended>
         <CardExtended
-          title="Can Pessimistic Beliefs Threaten Redistribution?"
+          title="Prosocial Preferences, Beliefs, and Demand for Redistribution"
           authors="Michele Bisceglia"
           links="https://www.tse-fr.eu/fr/people/michele-bisceglia"
         >
-          <Abstract content="We develop and test a theory of how beliefs about other people's responsiveness to incentives shape preferences for redistribution. In a linear income taxation model where agents have heterogeneous prosocial preferences, more altruistic agents distort their labour supply to a lesser extent when the tax rate is higher. If agents have imperfect information on (the distribution of) preferences in the society, overly pessimistic beliefs imply a relatively low Condorcet-winner tax, even though most agents are poor and/or altruist. We develop an experimental design to test this prediction."
-          availability="Experiment will be run in the spring of 2025. Draft with theory and experimental design available upon request!"
-          other = "Pre-registration"
-          linkother = "https://osf.io/w3ep4"
-           />
-        </CardExtended>
-        <CardExtended title="Welfarist Meritocracy">
           <Abstract
-            content="I develop a framework to conceptualise different understandings of meritocracy. A meritocracy is characterised by a metric of merit and a related reward system. Individuals obtain a higher reward when they score higher on the metric of merit. I focus on a strictly welfarist understanding of these two elements. An individual's action scores higher in the metric of merit than another if it leads to a pareto improvement in welfare. The reward for merit is individual welfare. I show that, under these two assumptions, for any collective action profile, there is a meritocratic reward system implementing it. I thus argue that meritocracy is a vacuous allocation rule when conceptualised through a purely welfarist lens. As a result, I propose that meritocracy should be viewed as a fundamentally non welfarist criterion."
-            availability="Draft coming soon, available upon request!"
+            content="We develop and test a theory of how beliefs about other people's responsiveness to incentives shape preferences for redistribution. In a linear income taxation model where agents have heterogeneous prosocial preferences, more altruistic agents distort their labour supply to a lesser extent when the tax rate is higher. If agents have imperfect information on (the distribution of) preferences in the society, overly pessimistic beliefs imply a relatively low Condorcet-winner tax, even though most agents are poor and/or altruist. We develop an experimental design to test this prediction."
+            availability="We are processing the data of the experiment. Draft with theory and experimental design available upon request!"
+            other="Pre-registration"
+            linkother="https://osf.io/w3ep4"
           />
         </CardExtended>
         <CardExtended
