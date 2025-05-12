@@ -39,7 +39,7 @@ export default function Research() {
           links="https://www.tse-fr.eu/fr/people/michele-bisceglia"
         >
           <Abstract
-            content="We develop and test a theory of how beliefs about other people's responsiveness to incentives shape preferences for redistribution. In a linear income taxation model where agents have heterogeneous prosocial preferences, more altruistic agents distort their labour supply to a lesser extent when the tax rate is higher. If agents have imperfect information on (the distribution of) preferences in the society, overly pessimistic beliefs imply a relatively low Condorcet-winner tax, even though most agents are poor and/or altruist. We develop an experimental design to test this prediction."
+            content="We develop and test a theory of how beliefs about others' responsiveness to incentives shape preferences for redistribution. In an income taxation model with heterogeneous prosocial preferences, effort distortions from higher tax rates are less pronounced among more prosocial agents. Overly pessimistic beliefs about others' prosociality lead to a relatively low Condorcet-winner tax—even though most agents are poor and/or altruistic. Consistent with our theory, a laboratory experiment shows that informing subjects about others' prosocial preferences significantly increases the demand for redistribution."
             availability="We are processing the data of the experiment. Draft with theory and experimental design available upon request!"
             other="Pre-registration"
             linkother="https://osf.io/w3ep4"
