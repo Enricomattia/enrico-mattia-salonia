@@ -13,13 +13,13 @@ export default function Research() {
         <SectionTitle text="Working Papers" />
         <CardExtended
           title="Identifying Belief-dependent Preferences"
-          titleHref="https://enricomattiasalonia.com/docs/jmp.pdf"
+          titleHref="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5273829"
         >
           <Abstract content="Why are investors overconfident and trade excessively? Why do patients at health risk avoid testing? Why are voters polarised? Possibly because their beliefs directly influence their well-being, i.e., they have belief-dependent preferences. However, existing theories of belief-dependent preferences struggle to generate testable predictions or to identify simultaneously beliefs and preferences. This paper addresses these issues by providing an axiomatic characterization of a class of preferences and belief-updating rules that deviate from Bayesian updating. Preferences, beliefs, and updating rules are identified from choices over contingent menus, each entailing a menu of acts available at a later time contingent on an uncertain state of the world. The results provide a theory-based approach to experimental designs to test information avoidance, distortion, and other behaviours consistent with belief-dependent preferences." />
         </CardExtended>
         <CardExtended
           title="A Foundation for Universalisation in Games"
-          titleHref="https://www.tse-fr.eu/sites/default/files/TSE/documents/doc/wp/2024/wp_tse_1586.pdf"
+          titleHref="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5284245"
         >
           <Abstract
             content="I study the behaviour of individuals who have preferences for universalisation. When considering a course of action, they evaluate the consequence that would occur if everyone else acted equivalently, according to some criterion of equivalence. That is, they universalise their behaviour. I develop and axiomatise a model for individuals who value their choices in light of the consequences they induce when their action is universalised. The key behavioural prediction is that the independence axiom is satisfied only among actions that are universalised equivalently. I impose conditions to single out the most prominent models of universalisation, compare them, highlight and arguably overcome their limitations. I propose a unifying model of universalisation inspired by the equal sacrifice principle."
