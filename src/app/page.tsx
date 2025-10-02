@@ -12,33 +12,29 @@ export default function Home() {
   return (
     <main className={mainClass}>
       <Img
-        src="/img/kangaroo.webp"
-        alt="Enrico Mattia Salonia in Australia with a Kangaroo"
+        src="/img/parrott.webp"
+        alt="Enrico Mattia Salonia in Australia with a Parrott"
         width={imgWidth}
-        caption="A kangaroo escaping from me talking about game theory"
+        caption=""
       />
       <p>
-        I am a PhD candidate at <br />{" "}
+        I am an assistant professor in the <br />
+        Department of Economics at the <br />{" "}
         <Link
-          href="https://www.tse-fr.eu/"
-          text="Toulouse School of Economics"
-        />
-        .
+          href="https://economia.uniroma2.it/def"
+          text="University of Tor Vergata"
+        />{" "}
+        in Rome.
         <br />
         <br />
-        I mainly work in microeconomic theory, <br /> behavioral and
-        experimental economics.
+        I am a microeconomic theorist with<br />
+        various interests.
         <br />
         <br />
         Here you can find my <Link href="/docs/cv.pdf" text="CV" />.
         <br />
         <br />
         Contact me at <br />
-        <Link
-          href="mailto:mattia.salonia@tse.fr"
-          text="mattia.salonia@tse.fr"
-        />{" "}
-        or <br />
         <Link
           href="mailto:mattia.salonia1@gmail.com"
           text="mattia.salonia1@gmail.com"

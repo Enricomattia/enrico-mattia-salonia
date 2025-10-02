@@ -56,7 +56,7 @@ export default function Research() {
           />
         </CardExtended>
       </PageSection>
-      <PageSection>
+  {/*    <PageSection>
         <SectionTitle text="Book Review" />
         <CardExtended
           title="Review of Ivan Moscati’s Measuring Utility: From the Marginal Revolution to Behavioral Economics"
@@ -70,7 +70,6 @@ export default function Research() {
           />
         </CardExtended>
       </PageSection>
-      {/*
       <PageSection>
         <SectionTitle text="Other Work" />
         <TextSimple content="I have some work in areas in the neighbourhood of economics, but not quite there. You can find it here." />
