@@ -1,22 +1,34 @@
-import asyncio
-from playwright.async_api import async_playwright
+import time
+from playwright.sync_api import sync_playwright, expect
 
-async def main():
-    async with async_playwright() as p:
-        browser = await p.chromium.launch()
-        page = await browser.new_page()
-        await page.goto("http://localhost:3000/research")
+def run(playwright):
+    browser = playwright.chromium.launch(headless=False)
+    # Use a mobile viewport to trigger the media query
+    context = browser.new_context(viewport={'width': 375, 'height': 812}, is_mobile=True)
+    page = context.new_page()
 
-        # Click the caret to open the first card
-        await page.click('button[aria-label="caret-down"]')
+    # Go to the research page
+    page.goto("http://localhost:3000/research")
 
-        # Wait for the card to open and the content to be visible
-        await page.wait_for_selector(".card-content-grid")
+    # Pause the script to allow for manual inspection
+    page.pause()
 
-        # Take a screenshot of the opened card
-        await page.screenshot(path="jules-scratch/verification/verification.png")
+    # Locate the specific card we want to interact with
+    card = page.locator('div.card:has(h3:has-text("Identifying Belief-dependent Preferences"))')
 
-        await browser.close()
+    # Find the button within that card and click it to expand the card
+    card.get_by_role('button', name='caret-down').click()
 
-if __name__ == "__main__":
-    asyncio.run(main())
+    # Locate the content area within that specific card
+    card_content = card.locator('.card-content')
+
+    # Wait for the 'closed' class to be removed, which indicates the content is visible
+    expect(card_content).not_to_have_class("closed", timeout=10000)
+
+    # Take a screenshot
+    page.screenshot(path="jules-scratch/verification/verification.png")
+
+    browser.close()
+
+with sync_playwright() as playwright:
+    run(playwright)
