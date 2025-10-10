@@ -14,6 +14,7 @@ export default function Research() {
         <CardExtended
           title="Identifying Belief-dependent Preferences"
           titleHref="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5273829"
+          imageSrc="/images/equation.png"
         >
           <Abstract content="Why are investors overconfident and trade excessively? Why do patients at health risk avoid testing? Why are voters polarised? Possibly because their beliefs directly influence their well-being, i.e., they have belief-dependent preferences. However, existing theories of belief-dependent preferences struggle to generate testable predictions or to identify simultaneously beliefs and preferences. This paper addresses these issues by providing an axiomatic characterization of a class of preferences and belief-updating rules that deviate from Bayesian updating. Preferences, beliefs, and updating rules are identified from choices over contingent menus, each entailing a menu of acts available at a later time contingent on an uncertain state of the world. The results provide a theory-based approach to experimental designs to test information avoidance, distortion, and other behaviours consistent with belief-dependent preferences." />
         </CardExtended>
