@@ -7,11 +7,14 @@ import CardHeading from "@/components/molecules/CardHeading/CardHeading";
 import CardContent from "@/components/molecules/CardContent/CardContent";
 import "./CardExtended.style.css";
 
+import Image from "next/image";
+
 interface CardExtendedProps {
   title: string;
   authors?: string;
   links?: string;
   titleHref?: string; // Add this line
+  imageSrc?: string;
   children?: React.ReactNode;
 }
 
@@ -20,6 +23,7 @@ const CardExtended: React.FC<CardExtendedProps> = ({
   authors,
   links,
   titleHref, // Add this line
+  imageSrc,
   children,
 }) => {
   // State to track whether the card is open or closed
@@ -42,7 +46,16 @@ const CardExtended: React.FC<CardExtendedProps> = ({
         />
       </CardHeading>
       <CardContent state={isOpen ? "" : "closed"}>
-        {children}
+        {imageSrc ? (
+          <div className="card-content-grid">
+            <div>{children}</div>
+            <div className="image-container">
+              <Image src={imageSrc} alt={title} width={500} height={300} />
+            </div>
+          </div>
+        ) : (
+          children
+        )}
       </CardContent>
     </Card>
   );
