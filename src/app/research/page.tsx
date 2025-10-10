@@ -54,7 +54,7 @@ export default function Research() {
           title="Prosocial Preferences, Beliefs, and Demand for Redistribution"
           authors="Michele Bisceglia"
           links="https://sites.google.com/view/michele-bisceglia/home-page"
-          imageSrc="/img/eq_ato.png"
+          imageSrc="/img/eq_red.png"
         >
           <Abstract
             content="We develop and test a theory of how beliefs about others' responsiveness to incentives shape preferences for redistribution. In an income taxation model with heterogeneous prosocial preferences, effort distortions from higher tax rates are less pronounced among more prosocial agents. Overly pessimistic beliefs about others' prosociality lead to a relatively low Condorcet-winner tax—even though most agents are poor and/or altruistic. Consistent with our theory, a laboratory experiment shows that informing subjects about others' prosocial preferences significantly increases the demand for redistribution."
