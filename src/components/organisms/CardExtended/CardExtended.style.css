@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  width: 120%;
+  width: 100%;
 }
 
 .image-container {
