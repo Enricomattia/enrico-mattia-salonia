@@ -4,11 +4,12 @@ interface LinkProps {
     href?: string;
     text?: string;
     size?: string;
+    target?: string;
 }
 
-const Link: React.FC<LinkProps> = ({ href = "link", text, size = "text-l" }) => {
+const Link: React.FC<LinkProps> = ({ href = "link", text, size = "text-l", target = "_blank" }) => {
     return (
-        <a className={"link "+ size} href={href} target="_blank">{text}</a>
+        <a className={"link "+ size} href={href} target={target}>{text}</a>
     );
 }
 
