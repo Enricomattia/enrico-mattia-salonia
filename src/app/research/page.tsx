@@ -64,7 +64,7 @@ export default function Research() {
           />
         </CardExtended>
         <CardExtended
-          title="A theory of Acting against the Odds"
+          title="A Theory of Acting against the Odds"
           authors="Annalisa Costella"
           links="https://www.annalisacostella.com/home"
           imageSrc="/img/eq_ato.png"
