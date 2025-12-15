@@ -26,7 +26,6 @@ export default function Teaching() {
             />
           </li>
         </ul>
-        
       </PageSection>
     </main>
   );
