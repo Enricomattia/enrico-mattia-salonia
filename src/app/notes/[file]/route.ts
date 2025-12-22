@@ -6,6 +6,11 @@ const REPO = "micro_notes";
 const BRANCH = "main";
 const PDF_DIR = ""; // folder inside the notes repo where the PDFs live
 
+// Tell Next this route is always dynamic (no static optimization)
+export const dynamic = "force-dynamic";
+// Extra safety: no ISR revalidation, always run on request
+export const revalidate = 0;
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: { file: string } }
@@ -22,7 +27,10 @@ export async function GET(
       ? `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${file}`
       : `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${PDF_DIR}/${file}`;
 
-  const res = await fetch(githubRawUrl);
+  // Critical: disable fetch caching on the server
+  const res = await fetch(githubRawUrl, {
+    cache: "no-store",
+  });
 
   if (!res.ok) {
     return new Response("Not found", { status: 404 });
@@ -35,7 +43,7 @@ export async function GET(
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `inline; filename="${file}"`,
-      // Strongly discourage any caching so you always see the latest PDF
+      // Tell browsers not to cache either
       "Cache-Control": "no-cache, no-store, must-revalidate",
       Pragma: "no-cache",
       Expires: "0",
