@@ -92,6 +92,7 @@ export default function Teaching() {
             linkToPdf="/teaching/tds/Baby_boom.pdf" />
         </CardExtended>
       </PageSection>
+      
     </main>
   );
 }
