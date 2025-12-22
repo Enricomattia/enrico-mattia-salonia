@@ -17,7 +17,10 @@ export async function GET(
     return new Response("Invalid file", { status: 400 });
   }
 
-  const githubRawUrl = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${file}`;
+  const githubRawUrl =
+    PDF_DIR === ""
+      ? `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${file}`
+      : `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${PDF_DIR}/${file}`;
 
   const res = await fetch(githubRawUrl);
 
@@ -32,8 +35,10 @@ export async function GET(
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `inline; filename="${file}"`,
-      // cache a bit to avoid hammering GitHub, adjust as you like
-      "Cache-Control": "public, max-age=300",
+      // Strongly discourage any caching so you always see the latest PDF
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
     },
   });
 }
