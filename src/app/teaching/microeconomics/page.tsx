@@ -23,6 +23,12 @@ export default function Teaching() {
         <a href="/notes/main.pdf" target="_blank" rel="noreferrer">
             Lecture Notes
         </a>
+        <span style={{ display: "inline-block", width: 14 }} />
+        <span className="opacity-60">•</span>
+        <span style={{ display: "inline-block", width: 14 }} />
+        <a href="/docs/solutions_micro.pdf" target="_blank" rel="noreferrer">
+            Solutions
+        </a>
       </PageSection>
     </main>
   );

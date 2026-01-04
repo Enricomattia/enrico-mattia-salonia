@@ -6,7 +6,8 @@ const classes = [
   {
     title: "Microeconomics I",
     meta: "(Fall 2025), First year PhD Tor Vergata",
-    notesHref: "/notes/main.pdf",
+    notesHref: "/docs/notes_micro.pdf",
+    solutionsHref: "/docs/solutions_micro.pdf",
     syllabusHref: "/teaching/microeconomics/syllabus",
   },
   {
@@ -28,6 +29,7 @@ export default function Teaching() {
           {classes.map((c) => {
             const resources = [
               { href: c.notesHref, text: "Notes" },
+              ...(c.solutionsHref ? [{ href: c.solutionsHref, text: "Solutions" }] : []),
               { href: c.syllabusHref, text: "Syllabus" },
               ...(c.solowSwanHref ? [{ href: c.solowSwanHref, text: "Solow-Swan" }] : []),
             ];
