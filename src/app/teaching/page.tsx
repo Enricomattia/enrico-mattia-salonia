@@ -8,7 +8,7 @@ const classes = [
     meta: "(Fall 2025), First year PhD Tor Vergata",
     notesHref: "/docs/notes_micro.pdf",
     solutionsHref: "/docs/solutions_micro.pdf",
-    syllabusHref: "/teaching/microeconomics/syllabus",
+    syllabusHref: "/docs/micro_syl.pdf",
   },
   {
     title: "Topics in Macro I",
