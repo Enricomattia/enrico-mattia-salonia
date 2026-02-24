@@ -8,6 +8,7 @@ const classes = [
     meta: "(Spring 2026), Second year bachelor, Tor Vergata",
     syllabusHref: "/docs/game_syl.pdf",
     ultimatumHref: "/docs/note-ultimatum.pdf",
+    trustHref: "/docs/note-trust.pdf",
   },
   {
     title: "Microeconomics I",
@@ -37,6 +38,7 @@ export default function Teaching() {
               ...(c.notesHref ? [{ href: c.notesHref, text: "Notes" }] : []),
               ...(c.solutionsHref ? [{ href: c.solutionsHref, text: "Solutions" }] : []),
               ...(c.ultimatumHref ? [{ href: c.ultimatumHref, text: "Ultimatum Game" }] : []),
+              ...(c.trustHref ? [{ href: c.trustHref, text: "Trust Game" }] : []),
               ...(c.syllabusHref ? [{ href: c.syllabusHref, text: "Syllabus" }] : []),
               ...(c.solowSwanHref ? [{ href: c.solowSwanHref, text: "Solow-Swan" }] : []),
             ];
