@@ -9,6 +9,8 @@ const classes = [
     syllabusHref: "/docs/game_syl.pdf",
     ultimatumHref: "/docs/note-ultimatum.pdf",
     trustHref: "/docs/note-trust.pdf",
+    publicGoodHref: "/docs/public-good.pdf",
+    guiltAversionHref: "/docs/guilt-aversion.pdf",
     mockExamHref: "/docs/mock_exam-game.pdf",
   },
   {
@@ -40,6 +42,8 @@ export default function Teaching() {
               ...(c.solutionsHref ? [{ href: c.solutionsHref, text: "Solutions" }] : []),
               ...(c.ultimatumHref ? [{ href: c.ultimatumHref, text: "Ultimatum Game" }] : []),
               ...(c.trustHref ? [{ href: c.trustHref, text: "Trust Game" }] : []),
+              ...(c.publicGoodHref ? [{ href: c.publicGoodHref, text: "Public good game" }] : []),
+              ...(c.guiltAversionHref ? [{ href: c.guiltAversionHref, text: "Guilt aversion" }] : []),
               ...(c.mockExamHref ? [{ href: c.mockExamHref, text: "Mock Exam" }] : []),
               ...(c.syllabusHref ? [{ href: c.syllabusHref, text: "Syllabus" }] : []),
               ...(c.solowSwanHref ? [{ href: c.solowSwanHref, text: "Solow-Swan" }] : []),
