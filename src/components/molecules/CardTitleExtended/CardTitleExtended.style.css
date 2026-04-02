@@ -4,5 +4,16 @@
     display: flex;
     align-items: center;
     flex-direction: row;
+    flex-wrap: wrap;
     gap: 5px;
+}
+
+.card-title-extended-main {
+    margin: 0;
+}
+
+.card-title-extended-status {
+    color: var(--neutral-700);
+    font-weight: 400;
+    line-height: 1.2;
 }

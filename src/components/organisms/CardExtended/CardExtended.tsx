@@ -14,6 +14,7 @@ interface CardExtendedProps {
   authors?: string;
   links?: string;
   titleHref?: string; // Add this line
+  status?: string;
   imageSrc?: string;
   children?: React.ReactNode;
 }
@@ -23,6 +24,7 @@ const CardExtended: React.FC<CardExtendedProps> = ({
   authors,
   links,
   titleHref, // Add this line
+  status,
   imageSrc,
   children,
 }) => {
@@ -39,6 +41,7 @@ const CardExtended: React.FC<CardExtendedProps> = ({
           authors={authors}
           links={links}
           titleHref={titleHref} // Pass the prop here
+          status={status}
         />
         <IconButton
           icon={isOpen ? "caret-up" : "caret-down"}
