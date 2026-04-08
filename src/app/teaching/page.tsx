@@ -6,6 +6,7 @@ const classes = [
   {
     title: "Game Theory",
     meta: "(Spring 2026), Second year bachelor, Tor Vergata",
+    studyGuideHref: "/docs/game_guide.pdf",
     syllabusHref: "/docs/game_syl.pdf",
     ultimatumHref: "/docs/note-ultimatum.pdf",
     trustHref: "/docs/note-trust.pdf",
@@ -45,6 +46,7 @@ export default function Teaching() {
               ...(c.trustHref ? [{ href: c.trustHref, text: "Trust Game" }] : []),
               ...(c.publicGoodHref ? [{ href: c.publicGoodHref, text: "Public good game" }] : []),
               ...(c.guiltAversionHref ? [{ href: c.guiltAversionHref, text: "Guilt aversion" }] : []),
+              ...(c.studyGuideHref ? [{ href: c.studyGuideHref, text: "Study guide" }] : []),
               ...(c.examAprilHref ? [{ href: c.examAprilHref, text: "Exam April" }] : []),
               ...(c.mockExamHref ? [{ href: c.mockExamHref, text: "Mock Exam" }] : []),
               ...(c.syllabusHref ? [{ href: c.syllabusHref, text: "Syllabus" }] : []),
