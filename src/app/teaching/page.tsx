@@ -13,6 +13,7 @@ const classes = [
     publicGoodHref: "/docs/public-good.pdf",
     guiltAversionHref: "/docs/guilt-aversion.pdf",
     examAprilHref: "/docs/solutions_April.pdf",
+    exam8JuneHref: "/docs/solutions-8-June.pdf",
     mockExamHref: "/docs/mock_exam-game.pdf",
   },
   {
@@ -48,6 +49,7 @@ export default function Teaching() {
               ...(c.guiltAversionHref ? [{ href: c.guiltAversionHref, text: "Guilt aversion" }] : []),
               ...(c.studyGuideHref ? [{ href: c.studyGuideHref, text: "Study guide" }] : []),
               ...(c.examAprilHref ? [{ href: c.examAprilHref, text: "Exam April" }] : []),
+              ...(c.exam8JuneHref ? [{ href: c.exam8JuneHref, text: "Exam 8 June" }] : []),
               ...(c.mockExamHref ? [{ href: c.mockExamHref, text: "Mock Exam" }] : []),
               ...(c.syllabusHref ? [{ href: c.syllabusHref, text: "Syllabus" }] : []),
               ...(c.solowSwanHref ? [{ href: c.solowSwanHref, text: "Solow-Swan" }] : []),
