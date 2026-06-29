@@ -8,12 +8,13 @@ interface ImgProps {
     width?: number;
     height?: number;
     caption?: string;
+    loading?: "eager" | "lazy";
 }
 
-const Img: React.FC<ImgProps> = ({ src = "image", alt = "image", width = 100, height = 100, caption = "Caption" }) => {
+const Img: React.FC<ImgProps> = ({ src = "image", alt = "image", width = 100, height = 100, caption = "Caption", loading = "lazy" }) => {
     return (
         <section className="img-container">
-            <Image className="img" src={src} alt={alt} width={width} height={height} />
+            <Image className="img" src={src} alt={alt} width={width} height={height} loading={loading} />
             <Caption text={caption} />
         </section>
     );

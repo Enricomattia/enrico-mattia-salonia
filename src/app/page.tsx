@@ -1,13 +1,19 @@
 "use client";
 import Img from "@/components/molecules/Img/Img";
 import Link from "@/components/atoms/Link/Link";
+import { useEffect, useState } from "react";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 
 export default function Home() {
   const { width } = useWindowDimensions();
-  const mainClass = width && width < 800 ? "main col" : "main row";
-  const imgWidth = width && width < 500 ? 500 : 400;
-  const afterClass = useWindowDimensions();
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  
+  const mainClass = isMounted && width && width < 800 ? "main col" : "main row";
+  const imgWidth = isMounted && width && width < 500 ? 500 : 400;
 
   return (
     <main className={mainClass}>
@@ -16,6 +22,7 @@ export default function Home() {
         alt="Enrico Mattia Salonia in Australia with a Parrott"
         width={imgWidth}
         caption=""
+        loading="eager"
       />
       <p>
         I am an assistant professor in the <br />

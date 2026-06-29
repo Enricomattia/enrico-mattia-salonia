@@ -2,7 +2,24 @@ import Link from "@/components/atoms/Link/Link";
 import PageSection from "@/components/atoms/PageSection/PageSection";
 import SectionTitle from "@/components/atoms/SectionTitle/SectionTitle";
 
-const classes = [
+interface Course {
+  title: string;
+  meta: string;
+  studyGuideHref?: string;
+  syllabusHref?: string;
+  notesHref?: string;
+  solutionsHref?: string;
+  ultimatumHref?: string;
+  trustHref?: string;
+  publicGoodHref?: string;
+  guiltAversionHref?: string;
+  examAprilHref?: string;
+  exam8JuneHref?: string;
+  mockExamHref?: string;
+  solowSwanHref?: string;
+}
+
+const classes: Course[] = [
   {
     title: "Game Theory",
     meta: "(Spring 2026), Second year bachelor, Tor Vergata",
