@@ -21,7 +21,14 @@
     font-weight: 100;
 }
 
+.abstract-others {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
 .abstract-other {
     color: var(--primary-900);
     font-weight: 100;
+    margin: 0;
 }

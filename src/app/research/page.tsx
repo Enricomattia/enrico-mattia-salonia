@@ -29,6 +29,22 @@ export default function Research() {
             content="I study the behaviour of individuals who have preferences for universalisation. When considering a course of action, they evaluate the consequence that would occur if everyone else acted equivalently, according to some criterion of equivalence. That is, they universalise their behaviour. I develop and axiomatise a model for individuals who value their choices in light of the consequences they induce when their action is universalised. The key behavioural prediction is that the independence axiom is satisfied only among actions that are universalised equivalently. I impose conditions to single out the most prominent models of universalisation, compare them, highlight and arguably overcome their limitations. I propose a unifying model of universalisation inspired by the equal sacrifice principle."
           />
         </CardExtended>
+        <CardExtended
+          title="Prosocial Preferences, Beliefs, and Demand for Redistribution"
+          titleHref="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7020898"
+          authors="Michele Bisceglia"
+          links="https://sites.google.com/view/michele-bisceglia/home-page"
+          status="Submitted"
+          imageSrc="/img/eq_red.png"
+        >
+          <Abstract
+            content="We develop and test a theory of how beliefs about others' responsiveness to incentives shape preferences for redistribution. In an income taxation model with heterogeneous prosocial preferences, effort distortions from higher taxes are smaller among more prosocial individuals. As a result, pessimistic beliefs about others' prosociality can reduce equilibrium redistribution even when most individuals are poor or altruistic. In a laboratory experiment, however, providing information about others' prosocial behavior does not increase support for redistribution among pessimists, whereas it reduces it among optimists. This asymmetric response is attributable to correlation between prosocial preferences and optimistic beliefs, suggesting that selfish individuals form self-serving beliefs that rationalize their choice of low redistribution."
+            other="Pre-registration"
+            linkother="https://osf.io/w3ep4"
+            other2="Replication Package"
+            linkother2="https://drive.google.com/drive/folders/1R5woAWLCNHdJJ4QScItmarcXJrWoHhWL?usp=drive_link"
+          />
+        </CardExtended>
         <CardExtended 
         title="Meritocracy as an End and as a Means"
         titleHref="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5281750"
@@ -62,19 +78,6 @@ export default function Research() {
           />
         </CardExtended>
         <SectionTitle text="Work in Progress" />
-        <CardExtended
-          title="Prosocial Preferences, Beliefs, and Demand for Redistribution"
-          authors="Michele Bisceglia"
-          links="https://sites.google.com/view/michele-bisceglia/home-page"
-          status="We are processing the data of the experiment. Draft with theory and experimental design available upon request!"
-          imageSrc="/img/eq_red.png"
-        >
-          <Abstract
-            content="We develop and test a theory of how beliefs about others' responsiveness to incentives shape preferences for redistribution. In an income taxation model with heterogeneous prosocial preferences, effort distortions from higher tax rates are less pronounced among more prosocial individuals. As a result, overly pessimistic beliefs about others' prosociality can lead to a relatively low Condorcet-winner tax, even though most individuals are poor or altruistic. However, a laboratory experiment shows that providing information about others' prosocial preferences does not increase demand for redistribution among pessimistic subjects, suggesting that selfish individuals form pessimistic self-serving beliefs to justify their policy preferences."
-            other="Pre-registration"
-            linkother="https://osf.io/w3ep4"
-          />
-        </CardExtended>
       </PageSection>
   {/*    <PageSection>
         <SectionTitle text="Book Review" />

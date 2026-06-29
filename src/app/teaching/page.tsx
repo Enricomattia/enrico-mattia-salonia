@@ -20,7 +20,6 @@ const classes = [
     title: "Microeconomics I",
     meta: "(Fall 2025), First year PhD, Tor Vergata",
     notesHref: "/docs/notes_micro.pdf",
-    solutionsHref: "/docs/solutions_micro.pdf",
     syllabusHref: "/docs/micro_syl.pdf",
   },
   {
