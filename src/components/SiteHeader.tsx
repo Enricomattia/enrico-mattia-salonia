@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { COLORS, SERIF, MONO } from "@/lib/tokens";
+import { clarityEvent, setClarityTag } from "@/lib/clarity";
 
 const NAV = [
   { href: "/", label: "Home" },
@@ -32,6 +33,10 @@ export default function SiteHeader() {
     >
       <Link
         href="/"
+        onClick={() => {
+          setClarityTag("nav_target", "Home");
+          clarityEvent("nav_click");
+        }}
         style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 500, color: COLORS.ink, letterSpacing: "0.01em" }}
       >
         Enrico Mattia Salonia
@@ -43,6 +48,10 @@ export default function SiteHeader() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => {
+                setClarityTag("nav_target", item.label);
+                clarityEvent("nav_click");
+              }}
               style={{
                 fontFamily: MONO,
                 fontSize: 12,

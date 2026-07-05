@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { papers, Paper } from "@/lib/papers";
 import { COLORS, SERIF, MONO } from "@/lib/tokens";
+import { clarityEvent, setClarityTag } from "@/lib/clarity";
 import TeX from "@/components/TeX";
 
 const stop = (e: React.MouseEvent) => e.stopPropagation();
@@ -51,7 +52,11 @@ function Card({ paper, open, onToggle }: { paper: Paper; open: boolean; onToggle
                 href={paper.ssrn}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={stop}
+                onClick={(e) => {
+                  stop(e);
+                  setClarityTag("paper_id", paper.id);
+                  clarityEvent("paper_ssrn_click");
+                }}
                 style={{ ...chipStyle, marginLeft: 12 }}
               >
                 [ SSRN ↗ ]
@@ -110,7 +115,16 @@ function Card({ paper, open, onToggle }: { paper: Paper; open: boolean; onToggle
               }}
             >
               {paper.extraLinks?.map((l) => (
-                <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer">
+                <a
+                  key={l.href}
+                  href={l.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => {
+                    setClarityTag("paper_id", paper.id);
+                    clarityEvent("paper_extra_link_click");
+                  }}
+                >
                   {l.label}
                 </a>
               ))}
@@ -127,11 +141,17 @@ export default function Research() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const allOpen = papers.every((p) => expanded[p.id]);
 
-  const toggle = (id: string) => setExpanded((s) => ({ ...s, [id]: !s[id] }));
+  const toggle = (paper: Paper) => {
+    const willOpen = !expanded[paper.id];
+    setExpanded((s) => ({ ...s, [paper.id]: !s[paper.id] }));
+    setClarityTag("paper_id", paper.id);
+    clarityEvent(willOpen ? "paper_expand" : "paper_collapse");
+  };
   const toggleAll = () => {
     const next: Record<string, boolean> = {};
     papers.forEach((p) => (next[p.id] = !allOpen));
     setExpanded(next);
+    clarityEvent(allOpen ? "papers_collapse_all" : "papers_expand_all");
   };
 
   return (
@@ -168,7 +188,7 @@ export default function Research() {
       </div>
 
       {papers.map((p) => (
-        <Card key={p.id} paper={p} open={!!expanded[p.id]} onToggle={() => toggle(p.id)} />
+        <Card key={p.id} paper={p} open={!!expanded[p.id]} onToggle={() => toggle(p)} />
       ))}
     </main>
   );

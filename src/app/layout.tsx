@@ -5,6 +5,7 @@ import "../styles/globals.css";
 import "./site.css";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import MicrosoftClarity from "@/components/MicrosoftClarity";
 
 const spectral = Spectral({
   subsets: ["latin"],
@@ -49,6 +50,7 @@ export default function RootLayout({
         <link rel="icon" href="/img/jackie.png" />
       </head>
       <body>
+        <MicrosoftClarity />
         <SiteHeader />
         {children}
         <SiteFooter />

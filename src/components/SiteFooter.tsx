@@ -1,4 +1,5 @@
 import { COLORS, MONO } from "@/lib/tokens";
+import TrackedLink from "@/components/TrackedLink";
 
 export default function SiteFooter() {
   return (
@@ -19,9 +20,14 @@ export default function SiteFooter() {
     >
       <span>Enrico Mattia Salonia</span>
       {/* NOTE: intentionally no link to /quotes — it is an unlinked page. */}
-      <a href="mailto:mattia.salonia1@gmail.com" style={{ color: COLORS.faint }}>
+      <TrackedLink
+        href="mailto:mattia.salonia1@gmail.com"
+        eventName="mailto_click"
+        tags={{ link_type: "footer_email" }}
+        style={{ color: COLORS.faint }}
+      >
         mattia.salonia1@gmail.com
-      </a>
+      </TrackedLink>
     </footer>
   );
 }

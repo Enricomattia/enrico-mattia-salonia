@@ -1,4 +1,5 @@
 import { COLORS, SERIF, MONO } from "@/lib/tokens";
+import TrackedLink from "@/components/TrackedLink";
 
 interface Course {
   title: string;
@@ -82,9 +83,15 @@ export default function Teaching() {
             {c.materials.map((m, idx) => (
               <span key={m.href} style={{ display: "flex", alignItems: "center", gap: 18 }}>
                 {idx > 0 && <span style={{ color: "#c9d0d5" }}>/</span>}
-                <a href={m.href} target="_blank" rel="noopener noreferrer">
+                <TrackedLink
+                  href={m.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  eventName="teaching_material_click"
+                  tags={{ course: c.title, material: m.label }}
+                >
                   {m.label}
-                </a>
+                </TrackedLink>
               </span>
             ))}
           </div>
