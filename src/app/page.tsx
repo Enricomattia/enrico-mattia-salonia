@@ -54,18 +54,6 @@ export default function Home() {
               >
                 curriculum vitae
               </TrackedLink>
-              {" "}
-              <TrackedLink
-                href="/docs/cv.pdf"
-                download
-                target="_blank"
-                rel="noopener noreferrer"
-                eventName="cv_pdf_download"
-                tags={{ link_type: "cv_pdf" }}
-                style={{ color: COLORS.accent }}
-              >
-                (download pdf)
-              </TrackedLink>
             </div>
           </div>
         </div>
