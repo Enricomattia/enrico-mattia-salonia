@@ -1,10 +1,23 @@
 import type { Metadata } from "next";
-import { Montserrat } from "next/font/google";
+import { Spectral, IBM_Plex_Mono } from "next/font/google";
+import "katex/dist/katex.min.css";
 import "../styles/globals.css";
-import Header from "@/components/organisms/Header/Header";
-import Footer from "@/components/organisms/Footer/Footer";
+import "./site.css";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 
-const montserrat = Montserrat({ subsets: ["latin"] });
+const spectral = Spectral({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-serif",
+});
+
+const mono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-mono",
+});
 
 export const metadata: Metadata = {
   title: "Enrico Mattia Salonia",
@@ -17,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${spectral.variable} ${mono.variable}`}>
       <head>
         <script
           async
@@ -35,10 +48,10 @@ export default function RootLayout({
         />
         <link rel="icon" href="/img/jackie.png" />
       </head>
-      <body className={montserrat.className}>
-        <Header />
+      <body>
+        <SiteHeader />
         {children}
-        <Footer />
+        <SiteFooter />
       </body>
     </html>
   );

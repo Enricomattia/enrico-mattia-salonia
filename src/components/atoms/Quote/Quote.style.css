@@ -1,9 +1,0 @@
-/* Quote component style */
-
-.quote-content {
-    color: var(--primary-700);
-    font-weight: 300;
-    margin-bottom: 10px;
-    font-style: italic;
-    white-space: pre-line;
-}

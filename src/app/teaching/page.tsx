@@ -1,105 +1,95 @@
-import Link from "@/components/atoms/Link/Link";
-import PageSection from "@/components/atoms/PageSection/PageSection";
-import SectionTitle from "@/components/atoms/SectionTitle/SectionTitle";
+import { COLORS, SERIF, MONO } from "@/lib/tokens";
 
 interface Course {
   title: string;
   meta: string;
-  studyGuideHref?: string;
-  syllabusHref?: string;
-  notesHref?: string;
-  solutionsHref?: string;
-  ultimatumHref?: string;
-  trustHref?: string;
-  publicGoodHref?: string;
-  guiltAversionHref?: string;
-  examAprilHref?: string;
-  exam8JuneHref?: string;
-  mockExamHref?: string;
-  solowSwanHref?: string;
+  materials: { label: string; href: string }[];
 }
 
-const classes: Course[] = [
+const courses: Course[] = [
   {
     title: "Game Theory",
-    meta: "(Spring 2026), Second year bachelor, Tor Vergata",
-    studyGuideHref: "/docs/game_guide.pdf",
-    syllabusHref: "/docs/game_syl.pdf",
-    ultimatumHref: "/docs/note-ultimatum.pdf",
-    trustHref: "/docs/note-trust.pdf",
-    publicGoodHref: "/docs/public-good.pdf",
-    guiltAversionHref: "/docs/guilt-aversion.pdf",
-    examAprilHref: "/docs/solutions_April.pdf",
-    exam8JuneHref: "/docs/solutions-8-June.pdf",
-    mockExamHref: "/docs/mock_exam-game.pdf",
+    meta: "Spring 2026 · Second-year bachelor · Tor Vergata",
+    materials: [
+      { label: "Study guide", href: "/docs/game_guide.pdf" },
+      { label: "Syllabus", href: "/docs/game_syl.pdf" },
+      { label: "Ultimatum game", href: "/docs/note-ultimatum.pdf" },
+      { label: "Trust game", href: "/docs/note-trust.pdf" },
+      { label: "Public good game", href: "/docs/public-good.pdf" },
+      { label: "Guilt aversion", href: "/docs/guilt-aversion.pdf" },
+      { label: "Exam April", href: "/docs/solutions_April.pdf" },
+      { label: "Exam 8 June", href: "/docs/solutions-8-June.pdf" },
+      { label: "Mock exam", href: "/docs/mock_exam-game.pdf" },
+    ],
   },
   {
     title: "Microeconomics I",
-    meta: "(Fall 2025), First year PhD, Tor Vergata",
-    notesHref: "/docs/notes_micro.pdf",
-    syllabusHref: "/docs/micro_syl.pdf",
+    meta: "Fall 2025 · First-year PhD · Tor Vergata",
+    materials: [
+      { label: "Notes", href: "/docs/notes_micro.pdf" },
+      { label: "Syllabus", href: "/docs/micro_syl.pdf" },
+    ],
   },
   {
     title: "Topics in Macro I",
-    meta: "(Fall 2020-2023), Third year bachelor, Toulouse",
-    notesHref: "/docs/notes_macro.pdf",
-    syllabusHref: "/docs/macro_syl.pdf",
-    solowSwanHref: "https://mybinder.org/v2/gh/Enricomattia/TopicsInMacro1TD/HEAD?filepath=solow-swan.ipynb",
+    meta: "Fall 2020–2023 · Third-year bachelor · Toulouse",
+    materials: [
+      { label: "Notes", href: "/docs/notes_macro.pdf" },
+      { label: "Syllabus", href: "/docs/macro_syl.pdf" },
+      {
+        label: "Solow–Swan notebook",
+        href: "https://mybinder.org/v2/gh/Enricomattia/TopicsInMacro1TD/HEAD?filepath=solow-swan.ipynb",
+      },
+    ],
   },
 ];
 
 export default function Teaching() {
   return (
-    <main className="main col">
-      <PageSection>
-        <SectionTitle text="Classes" />
+    <main className="site-main">
+      <h1
+        style={{
+          fontFamily: MONO,
+          fontSize: 12,
+          letterSpacing: "0.16em",
+          textTransform: "uppercase",
+          color: COLORS.accent,
+          fontWeight: 500,
+        }}
+      >
+        Classes
+      </h1>
 
-        <ul className="list-disc pl-8 flex flex-col gap-y-10">
-          {classes.map((c) => {
-            const resources = [
-              ...(c.notesHref ? [{ href: c.notesHref, text: "Notes" }] : []),
-              ...(c.solutionsHref ? [{ href: c.solutionsHref, text: "Solutions" }] : []),
-              ...(c.ultimatumHref ? [{ href: c.ultimatumHref, text: "Ultimatum Game" }] : []),
-              ...(c.trustHref ? [{ href: c.trustHref, text: "Trust Game" }] : []),
-              ...(c.publicGoodHref ? [{ href: c.publicGoodHref, text: "Public good game" }] : []),
-              ...(c.guiltAversionHref ? [{ href: c.guiltAversionHref, text: "Guilt aversion" }] : []),
-              ...(c.studyGuideHref ? [{ href: c.studyGuideHref, text: "Study guide" }] : []),
-              ...(c.examAprilHref ? [{ href: c.examAprilHref, text: "Exam April" }] : []),
-              ...(c.exam8JuneHref ? [{ href: c.exam8JuneHref, text: "Exam 8 June" }] : []),
-              ...(c.mockExamHref ? [{ href: c.mockExamHref, text: "Mock Exam" }] : []),
-              ...(c.syllabusHref ? [{ href: c.syllabusHref, text: "Syllabus" }] : []),
-              ...(c.solowSwanHref ? [{ href: c.solowSwanHref, text: "Solow-Swan" }] : []),
-            ];
-
-            return (
-              <li key={c.title} className="flex flex-col gap-y-4">
-                <div className="text-l">
-                  <strong>{c.title}</strong> <span>{c.meta}</span>
-                </div>
-
-                <br />
-
-                <div className="flex flex-wrap items-center pl-1">
-                  {resources.map((r, idx) => (
-                    <span key={r.href} className="flex items-center">
-                      {idx > 0 && (
-                        <>
-                          <span style={{ display: "inline-block", width: 14 }} />
-                          <span className="opacity-60">•</span>
-                          <span style={{ display: "inline-block", width: 14 }} />
-                        </>
-                      )}
-                      <Link href={r.href} text={r.text} size="text-m" target="_blank" />
-                    </span>
-                  ))}
-                </div>
-
-                <br />
-              </li>
-            );
-          })}
-        </ul>
-      </PageSection>
+      {courses.map((c, i) => (
+        <section
+          key={c.title}
+          style={{ padding: "34px 0", borderBottom: i < courses.length - 1 ? `1px solid ${COLORS.hairline}` : "none" }}
+        >
+          <h2 style={{ fontFamily: SERIF, fontWeight: 500, fontSize: 24, color: COLORS.ink }}>{c.title}</h2>
+          <div style={{ fontFamily: SERIF, fontSize: 15.5, color: COLORS.faint, marginTop: 4 }}>{c.meta}</div>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "8px 18px",
+              marginTop: 18,
+              fontFamily: MONO,
+              fontSize: 12,
+              color: COLORS.accent,
+              alignItems: "center",
+            }}
+          >
+            {c.materials.map((m, idx) => (
+              <span key={m.href} style={{ display: "flex", alignItems: "center", gap: 18 }}>
+                {idx > 0 && <span style={{ color: "#c9d0d5" }}>/</span>}
+                <a href={m.href} target="_blank" rel="noreferrer">
+                  {m.label}
+                </a>
+              </span>
+            ))}
+          </div>
+        </section>
+      ))}
     </main>
   );
 }

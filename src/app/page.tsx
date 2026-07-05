@@ -1,58 +1,54 @@
-"use client";
-import Img from "@/components/molecules/Img/Img";
-import Link from "@/components/atoms/Link/Link";
-import { useEffect, useState } from "react";
-import useWindowDimensions from "@/hooks/useWindowDimensions";
+import { COLORS, SERIF, MONO } from "@/lib/tokens";
 
 export default function Home() {
-  const { width } = useWindowDimensions();
-  const [isMounted, setIsMounted] = useState(false);
-  
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-  
-  const mainClass = isMounted && width && width < 800 ? "main col" : "main row";
-  const imgWidth = isMounted && width && width < 500 ? 500 : 400;
-
   return (
-    <main className={mainClass}>
-      <Img
-        src="/img/parrott.webp"
-        alt="Enrico Mattia Salonia in Australia with a Parrott"
-        width={imgWidth}
-        caption=""
-        loading="eager"
-      />
-      <p>
-        I am an assistant professor in the <br />
-        Department of Economics at the <br />{" "}
-        <Link
-          href="https://economia.uniroma2.it/def"
-          text="University of Tor Vergata"
-        />{" "}
-        in Rome.
-        <br />
-        <br />
-        I am a microeconomic theorist with<br />
-        various interests.
-        <br />
-        <br />
-        Here you can find my <Link href="/docs/cv.pdf" text="CV" />.
-        <br />
-        <br />
-        Contact me at <br />
-        <Link
-          href="mailto:mattia.salonia1@gmail.com"
-          text="mattia.salonia1@gmail.com"
-        />
-      </p>
-      {/*
-      <div className="additional-text">
-        <p> I study how the design of information and incentives <br /> can soften inefficiencies in financial markets. I am working on bank stress tests, risk management, <br /> and algorithmic opacity in credit markets.
-        </p>
+    <main className="site-main">
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 48, alignItems: "flex-start" }}>
+        <div style={{ flex: 1, minWidth: 300 }}>
+          <p style={{ fontFamily: SERIF, fontSize: 22, lineHeight: 1.7, color: "#3a4650", maxWidth: 480 }}>
+            I am an assistant professor in the Department of Economics at the{" "}
+            <a
+              href="https://economia.uniroma2.it/def"
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: COLORS.accent, borderBottom: `1px solid ${COLORS.linkUnderline}` }}
+            >
+              University of Tor Vergata
+            </a>
+            , in Rome.
+          </p>
+          <p
+            style={{
+              fontFamily: SERIF,
+              fontSize: 22,
+              lineHeight: 1.7,
+              color: "#3a4650",
+              maxWidth: 480,
+              marginTop: 22,
+            }}
+          >
+            I am a microeconomic theorist with various interests.
+          </p>
+          <div style={{ fontFamily: MONO, fontSize: 12.5, lineHeight: 2.1, color: COLORS.faint, marginTop: 30 }}>
+            <div>
+              <a href="mailto:mattia.salonia1@gmail.com" style={{ color: COLORS.accent }}>
+                mattia.salonia1@gmail.com
+              </a>
+            </div>
+            <div>
+              <a href="/docs/cv.pdf" target="_blank" rel="noreferrer" style={{ color: COLORS.accent }}>
+                curriculum vitae
+              </a>
+            </div>
+          </div>
+        </div>
+        <figure
+          style={{ border: `1px solid ${COLORS.photoFrame}`, background: "#fff", padding: 8, width: 270, maxWidth: "100%" }}
+        >
+          {/* Using a plain img keeps static-export simple; swap for next/image if desired. */}
+          <img src="/img/parrott.webp" alt="Enrico Mattia Salonia" style={{ width: "100%", display: "block" }} />
+        </figure>
       </div>
-    */}
     </main>
   );
 }

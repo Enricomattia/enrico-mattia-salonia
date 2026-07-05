@@ -1,9 +1,0 @@
-/* Logo component style */
-.logo {
-    color: var(--primary-Main);
-    font-weight: 600;
-}
-
-.logo:hover {
-    text-decoration: none;
-}
