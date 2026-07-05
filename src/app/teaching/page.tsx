@@ -82,7 +82,7 @@ export default function Teaching() {
             {c.materials.map((m, idx) => (
               <span key={m.href} style={{ display: "flex", alignItems: "center", gap: 18 }}>
                 {idx > 0 && <span style={{ color: "#c9d0d5" }}>/</span>}
-                <a href={m.href} target="_blank" rel="noreferrer">
+                <a href={m.href} target="_blank" rel="noopener noreferrer">
                   {m.label}
                 </a>
               </span>

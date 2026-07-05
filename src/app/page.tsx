@@ -10,7 +10,7 @@ export default function Home() {
             <a
               href="https://economia.uniroma2.it/def"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               style={{ color: COLORS.accent, borderBottom: `1px solid ${COLORS.linkUnderline}` }}
             >
               University of Tor Vergata
@@ -36,7 +36,7 @@ export default function Home() {
               </a>
             </div>
             <div>
-              <a href="/docs/cv.pdf" target="_blank" rel="noreferrer" style={{ color: COLORS.accent }}>
+              <a href="/cv/" target="_blank" rel="noopener noreferrer" style={{ color: COLORS.accent }}>
                 curriculum vitae
               </a>
             </div>

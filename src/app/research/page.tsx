@@ -50,7 +50,7 @@ function Card({ paper, open, onToggle }: { paper: Paper; open: boolean; onToggle
               <a
                 href={paper.ssrn}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 onClick={stop}
                 style={{ ...chipStyle, marginLeft: 12 }}
               >
@@ -75,7 +75,7 @@ function Card({ paper, open, onToggle }: { paper: Paper; open: boolean; onToggle
                 <a
                   href={paper.coauthor.href}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   onClick={stop}
                   style={{ color: COLORS.accent, borderBottom: `1px solid ${COLORS.linkUnderline}` }}
                 >
@@ -110,7 +110,7 @@ function Card({ paper, open, onToggle }: { paper: Paper; open: boolean; onToggle
               }}
             >
               {paper.extraLinks?.map((l) => (
-                <a key={l.href} href={l.href} target="_blank" rel="noreferrer">
+                <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer">
                   {l.label}
                 </a>
               ))}
