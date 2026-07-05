@@ -36,7 +36,7 @@ export default function Home() {
               </a>
             </div>
             <div>
-              <a href="/cv/" target="_blank" rel="noopener noreferrer" style={{ color: COLORS.accent }}>
+              <a href="/cv/index.html" target="_blank" rel="noopener noreferrer" style={{ color: COLORS.accent }}>
                 curriculum vitae
               </a>
             </div>
