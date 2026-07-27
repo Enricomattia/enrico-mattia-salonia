@@ -67,16 +67,6 @@ export const papers: Paper[] = [
     tex: String.raw`\succsim_i M \succsim'_i \implies f(\succsim_i,\succsim_{-i})\,R_i\,f(\succsim'_i,\succsim_{-i})`,
   },
   {
-    id: "chang",
-    title: "The Chaining Argument Unchained",
-    status: "Submitted",
-    coauthor: { name: "Annalisa Costella", href: "https://www.annalisacostella.com/home" },
-    draftOnRequest: true,
-    abstract:
-      "We argue that the chaining argument against the Trichotomy Thesis is on the horns of a dilemma. Either it is vacuous or it is unsound. Contrary to what it has been commonly assumed, it cannot be used as a reliable basis to adjudicate whether parity does or does not obtain. Stating the premises in a formal syntax that makes them consistent with each other deprives them of their intended meaning and makes the argument vacuous. If, instead, the premises of the argument are expressed in the weakest formal syntax to capture their meaning, the argument is unsound since its premises are inconsistent with each other. Besides demonstrating that the chaining argument does not provide insights into axiology, our result helps orient those interested in proving the existence of parity as a value relation towards alternative arguments.",
-    tex: String.raw`[(xR_v y \ \text{or}\ yR_v x)\ \&\ (yR_d z\ \text{or}\ zR_d y)] \implies (xR_v z\ \text{or}\ zR_v x)`,
-  },
-  {
     id: "ato",
     title: "A Theory of Acting against the Odds",
     status: "Submitted",
@@ -85,5 +75,14 @@ export const papers: Paper[] = [
     abstract:
       "Acting against the odds has been understood as acting despite evidence that one is unlikely to succeed. The existing literature reduces the rationality of this behaviour to the rationality of believing against the odds. We argue that the current definition of this behaviour is insufficiently precise and show that this reduction is neither necessary nor sufficient to explain the phenomenon. We develop a decision-theoretic framework separating tastes over outcomes, beliefs over uncertain states, and a taste for agency — the value of increasing one's likelihood of success through one's own choice relative to other available actions. We show that the taste for agency violates the independence axiom and is inconsistent with expected utility, rank-dependent utility, or other theories evaluating risky prospects in isolation. Because the taste for agency is independent of belief formation and updating, an individual who acts against the odds need not be an unconventional reasoner — she may be Bayesian.",
     tex: String.raw`U(M) = \max_{f\in M}\left\{\sum_s p_s\,u(f_s) + \alpha \sum_s\left(f_s(x_f) - \frac{1}{|M|}\sum_{f'\in M} f'_s(x_{f'})\right)\right\}`,
+  },
+  {
+    id: "chang",
+    title: "The Chaining Argument Unchained",
+    status: "Draft available upon request",
+    coauthor: { name: "Annalisa Costella", href: "https://www.annalisacostella.com/home" },
+    abstract:
+      "We argue that the chaining argument against the Trichotomy Thesis is on the horns of a dilemma. Either it is vacuous or it is unsound. Contrary to what it has been commonly assumed, it cannot be used as a reliable basis to adjudicate whether parity does or does not obtain. Stating the premises in a formal syntax that makes them consistent with each other deprives them of their intended meaning and makes the argument vacuous. If, instead, the premises of the argument are expressed in the weakest formal syntax to capture their meaning, the argument is unsound since its premises are inconsistent with each other. Besides demonstrating that the chaining argument does not provide insights into axiology, our result helps orient those interested in proving the existence of parity as a value relation towards alternative arguments.",
+    tex: String.raw`[(xR_v y \ \text{or}\ yR_v x)\ \&\ (yR_d z\ \text{or}\ zR_d y)] \implies (xR_v z\ \text{or}\ zR_v x)`,
   },
 ];
