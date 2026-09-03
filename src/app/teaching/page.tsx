@@ -18,9 +18,7 @@ const courses: Course[] = [
       { label: "Trust game", href: "/docs/note-trust.pdf" },
       { label: "Public good game", href: "/docs/public-good.pdf" },
       { label: "Guilt aversion", href: "/docs/guilt-aversion.pdf" },
-      { label: "Exam April", href: "/docs/solutions_April.pdf" },
-      { label: "Exam 8 June", href: "/docs/solutions-8-June.pdf" },
-      { label: "Mock exam", href: "/docs/mock_exam-game.pdf" },
+      { label: "Exams 2026", href: "/docs/game-theory-exams-2026.pdf" },
     ],
   },
   {
