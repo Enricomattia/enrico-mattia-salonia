@@ -18,7 +18,6 @@ export default function SiteFooter() {
         alignItems: "center",
       }}
     >
-      <span>Enrico Mattia Salonia</span>
       {/* NOTE: intentionally no link to /quotes — it is an unlinked page. */}
       <TrackedLink
         href="mailto:mattia.salonia1@gmail.com"
