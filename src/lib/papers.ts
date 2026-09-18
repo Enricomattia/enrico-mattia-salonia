@@ -79,7 +79,7 @@ export const papers: Paper[] = [
   {
     id: "chang",
     title: "The Chaining Argument Unchained",
-    status: "Draft available upon request",
+    status: "Submitted",
     coauthor: { name: "Annalisa Costella", href: "https://www.annalisacostella.com/home" },
     abstract:
       "We argue that the chaining argument against the Trichotomy Thesis is on the horns of a dilemma. Either it is vacuous or it is unsound. Contrary to what it has been commonly assumed, it cannot be used as a reliable basis to adjudicate whether parity does or does not obtain. Stating the premises in a formal syntax that makes them consistent with each other deprives them of their intended meaning and makes the argument vacuous. If, instead, the premises of the argument are expressed in the weakest formal syntax to capture their meaning, the argument is unsound since its premises are inconsistent with each other. Besides demonstrating that the chaining argument does not provide insights into axiology, our result helps orient those interested in proving the existence of parity as a value relation towards alternative arguments.",
