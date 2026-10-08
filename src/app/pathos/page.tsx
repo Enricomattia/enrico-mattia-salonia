@@ -1,20 +1,18 @@
 export const metadata = {
-  title: "Πathos — Enrico Mattia Salonia",
-  description: "A personal archive of experiences and reviews.",
+  title: 'Πathos — Enrico Mattia Salonia',
+  description: 'Books, films, theatre, games, reviews and saved passages.',
 };
 
-// Staging placeholder. The interactive archive is not published until
-// authentication, importing, and public/private permission tests pass.
+// Staging: a same-origin iframe preserves the existing Πathos interface.
+// This route contains no personal archive data or credentials.
 export default function PathosPage() {
   return (
-    <main className="site-main">
-      <h1>Πathos</h1>
-      <p style={{ marginTop: 22, maxWidth: 560, lineHeight: 1.7 }}>
-        A personal archive of films, books, theatre, and other experiences.
-      </p>
-      <p style={{ marginTop: 18, color: "#667" }}>
-        The archive is being prepared. No private entries are published.
-      </p>
+    <main style={{ width: '100%', flex: 1, minHeight: '85vh' }}>
+      <iframe
+        src="/pathos/app.html"
+        title="Πathos"
+        style={{ display: 'block', width: '100%', height: 'calc(100vh - 110px)', minHeight: 700, border: 'none' }}
+      />
     </main>
   );
 }
