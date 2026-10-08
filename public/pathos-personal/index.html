@@ -74,6 +74,8 @@ dialog{width:min(720px,calc(100vw - 24px));padding:26px 28px}.form-grid{row-gap:
 .home-rail-scroll:focus-visible {outline:2px solid var(--ink);outline-offset:2px;border-radius:8px}
 .home-rail-track {display:flex;position:relative;width:max-content;min-width:100%;gap:0;padding-top:3px}
 .home-rail-track:before {content:"";position:absolute;left:0;right:0;top:42px;height:2px;background:var(--line)}
+.home-rail-track.is-empty::before{display:none}
+.home-rail-track.is-empty{padding-top:0}
 .home-rail-item {flex:0 0 241px;min-width:0;padding:0 11px;position:relative}
 .home-rail-date {font-size:11px;color:var(--muted);font-weight:750;letter-spacing:.04em;height:31px;white-space:nowrap}
 .home-rail-dot {position:relative;width:14px;height:14px;border-radius:50%;border:3px solid var(--ink);background:var(--paper);margin:4px 0 18px 3px;z-index:1;box-shadow:0 0 0 4px var(--bg)}
@@ -1041,6 +1043,7 @@ function renderHomeTimeline(){
   if(!viewport||!track)return;
   const arr=db.experiences.filter(e=>experienceDate(e)&&e.status!=='planned'&&workFor(e.workId))
     .sort((a,b)=>experienceDate(b).localeCompare(experienceDate(a))||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+  track.classList.toggle('is-empty',!arr.length);
   if(!arr.length){track.innerHTML='<div class="home-timeline-empty">Your dated experiences will appear here as you add them.</div>';updateHomeTimelineArrows();return}
   track.innerHTML=arr.map(e=>{
     const w=workFor(e.workId),cover=editionCover(e)||w.cover||'';
@@ -1417,25 +1420,36 @@ $('letterboxdZipInput').onchange=async e=>{const f=e.target.files[0];if(!f)retur
 renderAll();
 // Do not allow edits until the local database has been loaded.
 startPersonalArchive();
-// Installation is initiated by the user; support Android/Chromium native prompt.
+// Installed PWAs open without browser tabs or an address bar.
 let pendingInstallEvent=null;
-window.addEventListener('beforeinstallprompt',event=>{
-  event.preventDefault();pendingInstallEvent=event;
-  $('installPersonalBtn').textContent='Install app';
-});
-window.addEventListener('appinstalled',()=>{
-  pendingInstallEvent=null;
-  $('installPersonalBtn').textContent='Installed';
-  toast('Πathos Personal installed');
-});
-$('installPersonalBtn').onclick=async()=>{
-  if(pendingInstallEvent){
-    const event=pendingInstallEvent;pendingInstallEvent=null;
-    await event.prompt();
-    await event.userChoice;
-  }else{
-    alert('To install Πathos Personal: in Chrome or Edge, open the browser menu and select Install app. On iPhone, use Safari → Share → Add to Home Screen. If your browser has no install option, you can still use this page normally.');
-  }
+const installButton=$('installPersonalBtn');
+const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+const installHelp=document.createElement('dialog');
+installHelp.id='pathosInstallHelp';
+installHelp.style.cssText='max-width:min(460px,calc(100vw - 32px));width:100%;border:1px solid var(--line);border-radius:8px;padding:24px;color:var(--ink);background:var(--paper);box-shadow:0 16px 46px #0002';
+installHelp.innerHTML=`<h2 style="font-size:22px;margin:0 0 14px">Install Πathos</h2><p id="pathosInstallInstructions" style="line-height:1.7;font-size:14px;margin:0 0 16px"></p><div style="display:flex;justify-content:end"><button type="button" class="btn" id="pathosInstallClose">Close</button></div>`;
+document.body.append(installHelp);
+installHelp.querySelector('#pathosInstallClose').onclick=()=>installHelp.close();
+function refreshInstallUI(){installButton.hidden=isStandalone();}
+refreshInstallUI();
+window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();pendingInstallEvent=event;refreshInstallUI();});
+window.addEventListener('appinstalled',()=>{pendingInstallEvent=null;installButton.hidden=true;toast('Πathos installed — open it from your applications');});
+window.matchMedia('(display-mode: standalone)').addEventListener?.('change',refreshInstallUI);
+installButton.onclick=async()=>{
+ if(isStandalone())return;
+ if(pendingInstallEvent){
+   const event=pendingInstallEvent;pendingInstallEvent=null;
+   try{await event.prompt();const choice=await event.userChoice;
+    if(choice?.outcome==='accepted'){installButton.textContent='Installing…';return;}
+   }catch(error){console.warn('Native installation prompt unavailable',error);}
+ }
+ const ua=navigator.userAgent;
+ let instructions='';
+ if(/iPhone|iPad|iPod/i.test(ua)) instructions='Open this page in <b>Safari</b>, tap <b>Share</b> and choose <b>Add to Home Screen</b>. Launch Πathos from the new icon for a standalone app.';
+ else if(/Android/i.test(ua)) instructions='In <b>Chrome</b>, open the browser menu (⋮) and choose <b>Install app</b> or <b>Add to Home screen</b>. Then launch Πathos from the home-screen icon.';
+ else instructions='In <b>Chrome or Edge</b>, open the menu (⋮ or ···), then choose <b>Install Πathos Personal</b>, <b>Install this site as an app</b>, or <b>Apps → Install this site as an app</b>. After installation, open Πathos from your desktop or Start menu: it runs in a window without browser tabs or an address bar. If the install option is missing, try opening the page directly in Chrome or Edge and reloading once.';
+ installHelp.querySelector('#pathosInstallInstructions').innerHTML=instructions;
+ installHelp.showModal();
 };
 $('resetPersonalBtn').onclick=()=>{
   if(!window.pathosPersonalReady)return;
