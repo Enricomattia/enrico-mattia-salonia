@@ -68,6 +68,9 @@ dialog{width:min(720px,calc(100vw - 24px));padding:26px 28px}.form-grid{row-gap:
 .home-rail-scroll:focus-visible {outline:2px solid var(--ink);outline-offset:2px;border-radius:8px}
 .home-rail-track {display:flex;position:relative;width:max-content;min-width:100%;gap:0;padding-top:3px}
 .home-rail-track:before {content:"";position:absolute;left:0;right:0;top:42px;height:2px;background:var(--line)}
+/* No timeline line when the archive has no dated experiences. */
+.home-rail-track.is-empty::before {display:none}
+.home-rail-track.is-empty {padding-top:0}
 .home-rail-item {flex:0 0 241px;min-width:0;padding:0 11px;position:relative}
 .home-rail-date {font-size:11px;color:var(--muted);font-weight:750;letter-spacing:.04em;height:31px;white-space:nowrap}
 .home-rail-dot {position:relative;width:14px;height:14px;border-radius:50%;border:3px solid var(--ink);background:var(--paper);margin:4px 0 18px 3px;z-index:1;box-shadow:0 0 0 4px var(--bg)}
@@ -958,6 +961,7 @@ function renderHomeTimeline(){
   if(!viewport||!track)return;
   const arr=db.experiences.filter(e=>experienceDate(e)&&e.status!=='planned'&&workFor(e.workId))
     .sort((a,b)=>experienceDate(b).localeCompare(experienceDate(a))||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+  track.classList.toggle('is-empty',!arr.length);
   if(!arr.length){track.innerHTML='<div class="home-timeline-empty">Your dated experiences will appear here as you add them.</div>';updateHomeTimelineArrows();return}
   track.innerHTML=arr.map(e=>{
     const w=workFor(e.workId),cover=editionCover(e)||w.cover||'';
