@@ -1,6 +1,7 @@
 export const metadata = {
   title: 'Πathos — Enrico Mattia Salonia',
   description: 'Books, films, theatre, games, reviews and saved passages.',
+  robots: { index: false, follow: false },
 };
 
 // Staging: a same-origin iframe preserves the existing Πathos interface.
