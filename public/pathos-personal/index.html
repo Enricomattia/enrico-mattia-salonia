@@ -10,7 +10,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#f8f8f5">
-<title>Πathos Personal — Offline</title>
+<title>Πathos Personal</title>
 <style>
 :root{--bg:#f4f0e8;--paper:#fffdf8;--ink:#1e1d1a;--muted:#716d65;--line:#d8d0c3;--accent:#222;--soft:#ebe4d8;--danger:#9f2c2c;--shadow:0 14px 40px rgba(40,32,18,.09)}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -354,6 +354,10 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
 .personal-status {font-size:12px;color:var(--muted);white-space:nowrap}
 .personal-status[data-status="error"] {color:var(--danger);font-weight:650}
 .personal-install {border-radius:3px!important;font-size:13px!important}
+/* In installed standalone mode, reserve the header for actual actions. */
+/* Keep save errors and active save indicators visible. */
+.personal-install[hidden],.pathos-standalone #installPersonalBtn,
+.pathos-standalone #personalStatus[data-status="ready"] {display:none!important}
 #entryForm label:has(input[name="isPublic"]) {display:none!important}
 .personal-top-note {display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:end}
 @media(max-width:580px){.personal-top-note{justify-content:start}.personal-status{font-size:11px}}
@@ -781,7 +785,7 @@ function saveDb(){
   // Snapshot immediately: later edits cannot mutate this queued revision.
   const snapshot=clone(db);
   pendingWrites++;
-  storageStatus('Saving on this device…');
+  storageStatus('Saving on this device…','busy');
   saveQueue=saveQueue.catch(()=>{}).then(()=>writeLocalArchive(snapshot))
     .then(()=>{pendingWrites--;if(!pendingWrites&&!lastSaveFailed)storageStatus('Saved on this device');})
     .catch(error=>{
@@ -1430,7 +1434,7 @@ installHelp.style.cssText='max-width:min(460px,calc(100vw - 32px));width:100%;bo
 installHelp.innerHTML=`<h2 style="font-size:22px;margin:0 0 14px">Install Πathos</h2><p id="pathosInstallInstructions" style="line-height:1.7;font-size:14px;margin:0 0 16px"></p><div style="display:flex;justify-content:end"><button type="button" class="btn" id="pathosInstallClose">Close</button></div>`;
 document.body.append(installHelp);
 installHelp.querySelector('#pathosInstallClose').onclick=()=>installHelp.close();
-function refreshInstallUI(){installButton.hidden=isStandalone();}
+function refreshInstallUI(){const standalone=isStandalone();document.documentElement.classList.toggle('pathos-standalone',standalone);installButton.hidden=standalone;}
 refreshInstallUI();
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();pendingInstallEvent=event;refreshInstallUI();});
 window.addEventListener('appinstalled',()=>{pendingInstallEvent=null;installButton.hidden=true;toast('Πathos installed — open it from your applications');});
