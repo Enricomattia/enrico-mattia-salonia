@@ -1,5 +1,5 @@
 /* Πathos Personal offline application shell. No access to /pathos or Supabase. */
-const CACHE='pathos-personal-shell-v2';
+const CACHE='pathos-personal-shell-v3';
 const COVERS='pathos-personal-covers-v1';
 const SHELL=[
  '/pathos-personal/index.html',
@@ -8,7 +8,11 @@ const SHELL=[
  '/pathos-personal/icon-512.png'
 ];
 self.addEventListener('install',event=>{
- event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting()));
+ // Cache the new shell, but do not replace the running app until accepted.
+ event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL.map(url=>new Request(url,{cache:'reload'})))));
+});
+self.addEventListener('message',event=>{
+ if(event.data?.type==='SKIP_WAITING')self.skipWaiting();
 });
 self.addEventListener('activate',event=>{
  event.waitUntil(Promise.all([
@@ -22,6 +26,7 @@ self.addEventListener('fetch',event=>{
  const url=new URL(req.url);
  if(url.origin===self.location.origin){
    if(!url.pathname.startsWith('/pathos-personal/'))return;
+   if(url.pathname==='/pathos-personal/sw.js')return;
    if(req.mode==='navigate'||SHELL.includes(url.pathname)){
      event.respondWith(caches.match(req,{ignoreSearch:true}).then(hit=>hit||fetch(req).then(response=>{
         if(response.ok){const copy=response.clone();event.waitUntil(caches.open(CACHE).then(c=>c.put(req,copy)));}
