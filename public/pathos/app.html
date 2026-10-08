@@ -1,0 +1,1339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f8f8f5">
+<title>Πathos · v0.5.6</title>
+<style>
+:root{--bg:#f4f0e8;--paper:#fffdf8;--ink:#1e1d1a;--muted:#716d65;--line:#d8d0c3;--accent:#222;--soft:#ebe4d8;--danger:#9f2c2c;--shadow:0 14px 40px rgba(40,32,18,.09)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}.topbar{max-width:1180px;margin:0 auto;padding:32px 28px 17px;display:flex;align-items:end;justify-content:space-between;gap:20px}.topbar h1{margin:2px 0 0;font:500 34px Georgia,serif}.eyebrow{font-size:11px;letter-spacing:.16em;font-weight:800;color:var(--muted)}.top-actions,.hero-actions,.filters,.dialog-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.tabs{max-width:1180px;margin:0 auto;padding:0 28px;border-bottom:1px solid var(--line);display:flex;gap:18px}.tab{background:none;border:0;padding:13px 3px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent}.tab.active{color:var(--ink);border-color:var(--ink)}main{max-width:1180px;margin:0 auto;padding:28px}.view{display:none}.view.active{display:block}
+.hero{background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:34px;display:flex;justify-content:space-between;gap:30px;align-items:end;box-shadow:var(--shadow)}.hero h2{font:500 43px/1.05 Georgia,serif;max-width:680px;margin:5px 0 13px}.kicker{font-weight:700;margin:0}.muted{color:var(--muted);line-height:1.55}.btn{border:1px solid var(--line);background:var(--paper);padding:10px 14px;border-radius:999px;cursor:pointer;font-weight:700}.btn:hover{transform:translateY(-1px)}.btn.primary{background:var(--accent);border-color:var(--accent);color:white}.btn.primary:active{filter:brightness(.88);transform:translateY(0)}.btn[disabled]{opacity:.68;cursor:wait;transform:none}.btn.busy::after{content:' …';letter-spacing:.08em}.btn.ghost{background:transparent}.btn.danger{border-color:#d9b5b5;color:var(--danger);background:#fff7f7}.file-btn{display:inline-flex;align-items:center}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0}.stat{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:18px}.stat strong{font:500 30px Georgia,serif;display:block}.stat span{color:var(--muted);font-size:13px}.section-head{display:flex;justify-content:space-between;align-items:end;gap:18px;margin:34px 0 14px}.section-head h2,.section-head h3{font:500 29px Georgia,serif;margin:3px 0 0}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card,.panel{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:18px}.card{cursor:pointer;display:flex;gap:14px;min-height:150px}.card:hover,.work-card:hover{box-shadow:var(--shadow)}.cover{width:82px;min-width:82px;height:116px;border-radius:9px;background:var(--soft);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:34px}.cover img,.work-cover img,.work-detail-cover img{width:100%;height:100%;object-fit:cover}.card h4,.work-card h3{margin:2px 0 6px;font-size:17px}.meta{font-size:13px;color:var(--muted);line-height:1.5}.rating{letter-spacing:.04em;margin-top:8px}.review-snippet{font-family:Georgia,serif;font-size:14px;line-height:1.48;margin:8px 0 0;color:#47433d;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.input{border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 11px;outline:none}.input:focus{border-color:#8e877b;box-shadow:0 0 0 3px rgba(50,45,35,.07)}.filters .input{min-width:150px}.filters input{min-width:280px}
+.library-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.work-card{background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden;cursor:pointer}.work-card .work-cover{aspect-ratio:3/2;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:46px;overflow:hidden}.work-info{padding:15px}.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 8px;font-size:11px;color:var(--muted);margin:0 5px 5px 0}.pill.current{border-color:#a8b99a;color:#4d6542}.pill.planned{border-color:#b9b0cb;color:#675a80}.pill.dnf{border-color:#d4adad;color:#8f4747}.liked{font-size:14px;margin-left:5px}
+.timeline{border-left:1px solid var(--line);margin-left:12px;padding-left:24px}.timeline-group{margin:0 0 30px}.timeline-group h3{font:500 25px Georgia,serif;margin:0 0 12px}.timeline-item{position:relative;padding:10px 0 16px;cursor:pointer}.timeline-item:before{content:"";position:absolute;left:-30px;top:16px;width:10px;height:10px;background:var(--bg);border:2px solid var(--ink);border-radius:50%}.timeline-title{font-weight:800}
+.import-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.panel h3{margin-top:0;font:500 22px Georgia,serif}.panel.compact{margin-top:15px}.import-report{margin:15px 0;background:#eef5ec;border:1px solid #c8dac2;border-radius:14px;padding:14px}.notice{margin:0 0 18px;padding:13px 15px;border:1px solid var(--line);background:rgba(255,255,255,.45);border-radius:14px}.hidden{display:none!important}.empty{padding:34px;text-align:center;border:1px dashed var(--line);border-radius:18px;color:var(--muted)}
+dialog{border:1px solid var(--line);border-radius:22px;background:var(--paper);width:min(780px,calc(100vw - 28px));max-height:90vh;overflow:auto;box-shadow:0 30px 100px rgba(0,0,0,.2);padding:24px}dialog::backdrop{background:rgba(28,25,20,.4);backdrop-filter:blur(2px)}.dialog-head{display:flex;justify-content:space-between;align-items:start;gap:14px;margin-bottom:20px}.dialog-head h2{font:500 30px Georgia,serif;margin:3px 0}.icon-btn{font-size:30px;line-height:1;background:none;border:0;cursor:pointer}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700}.span-2{grid-column:1/-1}.textarea{min-height:150px;resize:vertical;font-family:Georgia,serif;line-height:1.55}.check{display:flex;gap:8px;align-items:center;font-size:13px}.dialog-actions{margin-top:20px}.spacer{flex:1}.experience-list{display:flex;flex-direction:column;gap:10px}.experience{border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer}.experience:hover{background:#faf7f0}.tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.work-detail-top{display:flex;gap:18px}.work-detail-cover{width:130px;min-width:130px;height:180px;background:var(--soft);border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:50px}.work-detail-top h2{font:500 34px Georgia,serif;margin:0 0 5px}.work-detail-body{margin-top:20px}.small{font-size:12px}.source-link{display:inline-block;margin-top:8px;color:inherit}.toast{position:fixed;right:22px;bottom:22px;background:#1f1f1f;color:#fff;padding:11px 14px;border-radius:12px;box-shadow:var(--shadow);z-index:100}
+.insight-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.chart-panel{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:20px;min-width:0}.chart-panel.wide{grid-column:1/-1}.chart-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:18px}.chart-head h3{font:500 23px Georgia,serif;margin:2px 0}.chart-note{font-size:12px;color:var(--muted)}.hbar-chart{display:flex;flex-direction:column;gap:9px}.hbar-row{display:grid;grid-template-columns:86px 1fr 44px;gap:10px;align-items:center;font-size:12px}.hbar-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hbar-track{height:11px;background:var(--soft);border-radius:999px;overflow:hidden}.hbar-fill{height:100%;background:var(--ink);border-radius:999px;min-width:0}.hbar-value{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}.rating-bars{height:220px;display:flex;align-items:end;gap:8px;padding-top:12px;border-bottom:1px solid var(--line)}.rating-col{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:6px}.rating-bar{width:min(28px,75%);background:var(--ink);border-radius:6px 6px 0 0;min-height:0}.rating-count{font-size:11px;color:var(--muted);height:15px}.rating-label{font-size:10px;color:var(--muted);white-space:nowrap}.line-chart-wrap{overflow-x:auto}.line-chart{width:100%;min-width:520px;height:auto;display:block}.line-grid{stroke:var(--line);stroke-width:1}.line-path{fill:none;stroke:var(--ink);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}.line-dot{fill:var(--paper);stroke:var(--ink);stroke-width:2}.svg-label{font-size:10px;fill:var(--muted)}.year-bars{display:flex;align-items:end;gap:10px;height:230px;border-bottom:1px solid var(--line);padding-top:12px;overflow-x:auto}.year-col{height:100%;min-width:50px;flex:1;display:flex;align-items:end;justify-content:center;gap:4px;position:relative;padding-bottom:24px}.year-bar{width:16px;border-radius:5px 5px 0 0}.year-bar.consumed{background:var(--ink)}.year-bar.reviewed{background:#aaa399}.year-label{position:absolute;bottom:4px;font-size:10px;color:var(--muted)}.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px}.legend span:before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--ink);margin-right:5px}.legend span.reviewed:before{background:#aaa399}.review-list{display:flex;flex-direction:column;gap:10px}.review-row{border-top:1px solid var(--line);padding-top:10px}.review-row:first-child{border-top:0;padding-top:0}.review-row strong{display:block}.review-row .review-snippet{-webkit-line-clamp:2}.insight-empty{color:var(--muted);padding:18px 0}.stat small{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+
+.reviews-browser{display:flex;flex-direction:column;gap:14px}.review-card-full{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:22px;cursor:pointer}.review-card-full:hover{box-shadow:var(--shadow)}.review-card-head{display:flex;justify-content:space-between;align-items:start;gap:18px;margin-bottom:12px}.review-card-head h3{font:600 23px Georgia,serif;margin:2px 0 5px}.review-card-meta{font-size:13px;color:var(--muted);line-height:1.5}.review-body-full{font:16px/1.65 Georgia,serif;color:#34312c;margin:14px 0 0;white-space:normal}.review-tags{margin-top:14px}.review-rating-big{font-weight:700;white-space:nowrap}.review-filters{justify-content:flex-end}.review-filters input{min-width:250px}.review-filters select{min-width:135px}
+@media(max-width:850px){.cards,.library-grid,.import-grid{grid-template-columns:repeat(2,1fr)}.insight-grid{grid-template-columns:1fr}.chart-panel.wide{grid-column:auto}.stats{grid-template-columns:repeat(2,1fr)}.hero{align-items:start;flex-direction:column}.topbar{align-items:start;flex-direction:column}.top-actions{width:100%}.hero h2{font-size:36px}}
+@media(max-width:560px){main,.topbar,.tabs{padding-left:16px;padding-right:16px}.cards,.library-grid,.import-grid{grid-template-columns:1fr}.hero{padding:24px}.stats{grid-template-columns:repeat(2,1fr)}.filters{width:100%}.filters .input,.filters input{min-width:0;width:100%}.stack-mobile{align-items:start;flex-direction:column}.form-grid{grid-template-columns:1fr}.span-2{grid-column:auto}.work-detail-top{flex-direction:column}.work-detail-cover{width:110px;height:154px}}
+
+/* v0.3 — catalogue search and metadata */
+.library-grid{grid-template-columns:repeat(5,1fr)}.work-card .work-cover{aspect-ratio:2/3}.catalog-field{position:relative}.catalog-results{position:absolute;z-index:40;left:0;right:0;top:calc(100% + 5px);background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 50px rgba(30,25,18,.16);overflow:hidden;max-height:360px;overflow-y:auto}.catalog-result{display:grid;grid-template-columns:42px 1fr;gap:10px;width:100%;border:0;border-bottom:1px solid var(--line);background:var(--paper);text-align:left;padding:9px;cursor:pointer}.catalog-result:last-child{border-bottom:0}.catalog-result:hover,.catalog-result.active{background:#f6f1e7}.catalog-thumb{width:42px;height:60px;border-radius:5px;background:var(--soft);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:19px}.catalog-thumb img{width:100%;height:100%;object-fit:cover}.catalog-result strong{display:block;font-size:13px}.catalog-result .meta{font-size:11px}.catalog-message{padding:12px;font-size:12px;color:var(--muted)}.catalog-hint{font-size:11px;color:var(--muted);font-weight:500}.metadata-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}.metadata-actions{display:flex;gap:10px;flex-wrap:wrap}.progress-box{margin-top:14px;border:1px solid var(--line);border-radius:13px;padding:12px;background:#faf7f0;min-height:46px}.progress-line{display:flex;justify-content:space-between;gap:12px;font-size:12px}.progress-track{height:8px;background:var(--soft);border-radius:999px;overflow:hidden;margin-top:8px}.progress-fill{height:100%;background:var(--ink);width:0}.token-row{display:flex;gap:8px}.token-row .input{flex:1}.metadata-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.metadata-kpi{border:1px solid var(--line);border-radius:13px;padding:12px}.metadata-kpi strong{display:block;font:500 24px Georgia,serif}.metadata-kpi span{font-size:11px;color:var(--muted)}.metadata-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.metadata-note{font-size:12px;color:var(--muted);line-height:1.5}@media(max-width:900px){.library-grid{grid-template-columns:repeat(3,1fr)}.metadata-grid{grid-template-columns:1fr}}@media(max-width:560px){.library-grid{grid-template-columns:repeat(2,1fr)}.catalog-results{position:fixed;left:12px;right:12px;top:100px;max-height:60vh}.metadata-kpis{grid-template-columns:1fr 1fr}}
+
+/* v0.3.3: safer exact-edition covers + metadata action feedback */
+.edition-panel{border:1px solid var(--line);border-radius:16px;padding:14px;background:#faf7f0}.edition-head{display:flex;justify-content:space-between;gap:12px;align-items:start;margin-bottom:10px}.edition-head strong{font-size:14px}.edition-search-row{display:flex;gap:8px}.edition-search-row .input{flex:1}.edition-results{margin-top:10px;border:1px solid var(--line);border-radius:12px;overflow:hidden;max-height:310px;overflow-y:auto;background:var(--paper)}.edition-result{width:100%;display:grid;grid-template-columns:44px 1fr;gap:10px;text-align:left;border:0;border-bottom:1px solid var(--line);background:var(--paper);padding:9px;cursor:pointer}.edition-result:last-child{border-bottom:0}.edition-result:hover{background:#f6f1e7}.edition-thumb{width:44px;height:64px;border-radius:5px;background:var(--soft);overflow:hidden;display:flex;align-items:center;justify-content:center}.edition-thumb img{width:100%;height:100%;object-fit:cover}.edition-fields{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.edition-fields .span-3{grid-column:1/-1}.cover-upload-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.edition-preview{width:72px;height:104px;background:var(--soft);border-radius:7px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:28px}.edition-preview img{width:100%;height:100%;object-fit:cover}.edition-current{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}.experience-edition{margin-top:8px;padding:8px 10px;background:#faf7f0;border-radius:10px;font-size:12px;color:var(--muted)}@media(max-width:560px){.edition-search-row{flex-direction:column}.edition-fields{grid-template-columns:1fr}.edition-fields .span-3{grid-column:auto}}
+
+
+/* v0.4 — everyday-use polish */
+.home-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:14px;margin-top:20px}.home-panel{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:20px;min-width:0}.home-panel-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:14px}.home-panel-head h3{font:500 24px Georgia,serif;margin:2px 0}.year-numbers{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.year-number{background:#faf7f0;border:1px solid var(--line);border-radius:13px;padding:13px}.year-number strong{display:block;font:500 26px Georgia,serif}.year-number span{font-size:11px;color:var(--muted)}.media-breakdown{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}.media-chip{border:1px solid var(--line);border-radius:999px;padding:5px 9px;font-size:11px;color:var(--muted);background:#faf7f0}.home-review-list{display:flex;flex-direction:column;gap:8px}.mini-review{display:grid;grid-template-columns:44px 1fr auto;gap:11px;align-items:start;border:1px solid var(--line);border-radius:13px;padding:9px;cursor:pointer;background:#faf7f0}.mini-review:hover{background:var(--paper);box-shadow:0 6px 20px rgba(40,32,18,.06)}.mini-cover{width:44px;height:62px;border-radius:6px;background:var(--soft);overflow:hidden;display:flex;align-items:center;justify-content:center}.mini-cover img{width:100%;height:100%;object-fit:cover}.mini-review h4{margin:0 0 2px;font-size:13px}.mini-review-text{font:12px/1.4 Georgia,serif;color:#4b4741;margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.library-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-4px 0 13px}.library-count{font-size:12px;color:var(--muted)}.review-card-full{display:grid;grid-template-columns:74px 1fr;gap:18px}.review-list-cover{width:74px;height:106px;border-radius:9px;background:var(--soft);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:28px}.review-list-cover img{width:100%;height:100%;object-fit:cover}.review-card-content{min-width:0}.work-metrics{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}.work-metric{border:1px solid var(--line);border-radius:999px;padding:5px 9px;font-size:11px;color:var(--muted);background:#faf7f0}.work-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}.favorite-btn.active{background:#fff1f1;border-color:#dcb5b5;color:#8e3030}.work-summary-review{margin-top:14px;border-top:1px solid var(--line);padding-top:13px}.work-summary-review p{font:15px/1.55 Georgia,serif;margin:7px 0 0;color:#3f3b36}.view-link{border:0;background:none;text-decoration:underline;text-underline-offset:3px;cursor:pointer;color:inherit;font-weight:700;padding:0}@media(max-width:850px){.home-grid{grid-template-columns:1fr}.review-card-full{grid-template-columns:58px 1fr}.review-list-cover{width:58px;height:83px}}@media(max-width:560px){.year-numbers{grid-template-columns:repeat(2,1fr)}.library-toolbar{align-items:start;flex-direction:column}.review-card-full{grid-template-columns:1fr}.review-list-cover{display:none}.mini-review{grid-template-columns:38px 1fr}.mini-review>div:last-child{display:none}.mini-cover{width:38px;height:54px}}
+
+/* v0.4.3 — reference/event pages */
+.quote-editor{border:1px solid var(--line);border-radius:16px;padding:14px;background:#faf7f0}.quote-editor-head{display:flex;justify-content:space-between;gap:12px;align-items:start;margin-bottom:10px}.quote-editor-head strong{font-size:14px}.quote-editor-list{display:flex;flex-direction:column;gap:10px}.quote-item{border:1px solid var(--line);border-radius:13px;padding:11px;background:var(--paper)}.quote-item-top{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:start}.quote-item textarea{min-height:82px;resize:vertical;font:15px/1.5 Georgia,serif}.quote-item-meta{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:center;margin-top:8px}.quote-feature{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);white-space:nowrap}.quote-remove{border:0;background:none;cursor:pointer;color:var(--danger);font-weight:700;padding:6px}.presentation-quote{margin:14px 0 0;padding:15px 17px;border-left:3px solid var(--ink);background:#faf7f0;border-radius:0 12px 12px 0}.presentation-quote p{font:italic 17px/1.55 Georgia,serif;margin:0;color:#39352f}.presentation-quote footer{font-size:11px;color:var(--muted);margin-top:8px}.experience-passages{margin-top:11px;border-top:1px solid var(--line);padding-top:10px}.saved-passage{margin:7px 0 0;font:italic 14px/1.5 Georgia,serif;color:#454039}.saved-passage small{display:block;font:11px/1.4 Inter,ui-sans-serif,system-ui;color:var(--muted);margin-top:4px}.passages-browser{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.passage-card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:20px;cursor:pointer;min-width:0}.passage-card:hover{box-shadow:var(--shadow)}.passage-card blockquote{font:italic 18px/1.55 Georgia,serif;margin:12px 0;color:#35312c}.passage-card .featured-mark{font-size:11px;color:var(--muted)}.review-presentation-quote{margin:10px 0 15px;padding:10px 13px;border-left:2px solid var(--line);font:italic 14px/1.5 Georgia,serif;color:#4a453f;background:#faf7f0}.review-presentation-quote small{display:block;font:11px Inter,ui-sans-serif,system-ui;color:var(--muted);margin-top:5px}@media(max-width:760px){.passages-browser{grid-template-columns:1fr}.quote-item-meta{grid-template-columns:1fr}.quote-feature{white-space:normal}}
+
+.experience-source{margin-top:7px}.inline-link{color:inherit;text-decoration:underline;text-underline-offset:3px}.inline-link:hover{opacity:.72}
+
+/* v0.5 — simpler visual hierarchy, calm navigation, progressive disclosure */
+:root{--bg:#f6f4ef;--paper:#fffefa;--soft:#f0ece4;--line:#ddd8ce;--muted:#736e66;--shadow:0 10px 32px rgba(30,28,23,.055)}
+body{font-size:14px}main{padding-top:23px}.topbar{padding-top:25px;padding-bottom:18px}.topbar h1{font-size:30px}
+.tabs{align-items:stretch;gap:24px;overflow:visible}.tab{font-size:13px;font-weight:650;white-space:nowrap;padding:15px 1px}.tab:hover{color:var(--ink)}
+.mobile-more{display:none}.more-menu{position:relative;margin-left:auto}.more-menu>summary{list-style:none;display:flex;align-items:center;gap:5px;cursor:pointer}.more-menu>summary::-webkit-details-marker{display:none}.more-menu-panel{position:absolute;right:0;top:calc(100% + 4px);z-index:60;min-width:210px;background:var(--paper);border:1px solid var(--line);padding:6px;border-radius:14px;box-shadow:0 14px 35px rgba(25,22,17,.13)}
+.menu-view{display:block;width:100%;padding:11px 12px;text-align:left;border:0;background:transparent;border-radius:8px;cursor:pointer;font-size:13px}.menu-view:hover,.menu-view.active{background:var(--soft)}
+.hero{box-shadow:none;padding:26px 29px;align-items:center;border-radius:19px}.hero h2{font-size:36px}.hero .muted{max-width:530px;margin:8px 0 0}.hero-actions{flex-shrink:0}.stats{gap:10px}.stat{padding:15px;border-radius:14px}.stat strong{font-size:27px}.home-panel{padding:18px}.home-panel-head h3{font-size:23px}
+.section-head{align-items:center}.section-head h2{font-size:28px}.filters{gap:8px}.filters .input{min-width:0}.filters input{min-width:220px}
+.filter-details{position:relative}.filter-details summary{list-style:none;cursor:pointer}.filter-details summary::-webkit-details-marker{display:none}.btn.subtle{font-weight:600;background:transparent}.filter-panel{position:absolute;right:0;top:calc(100% + 8px);min-width:235px;display:flex;flex-direction:column;gap:8px;background:var(--paper);border:1px solid var(--line);padding:12px;border-radius:13px;box-shadow:0 13px 30px rgba(25,22,17,.15);z-index:45}.filter-panel .input{width:100%;min-width:0}
+.review-filters input{min-width:220px}.review-filters select{min-width:115px}.library-grid{gap:13px}.work-card{border-radius:14px}.work-info{padding:13px}.work-card h3{font-size:15px}.work-card .work-cover{aspect-ratio:2/3}
+dialog{width:min(720px,calc(100vw - 24px));padding:26px 28px}.form-grid{row-gap:15px}.field{font-size:12px;gap:7px}.field .input{width:100%;min-width:0}.date-control{display:flex;gap:7px;align-items:center}.date-control>.input{flex:1;min-width:0}.today-btn{background:#f0ece4;border:1px solid var(--line);border-radius:9px;padding:10px 11px;cursor:pointer;font-size:12px;font-weight:700;flex:none}.today-btn:hover{background:#e8e1d4}
+.entry-details{border:1px solid var(--line);border-radius:14px;background:var(--paper);min-width:0}.entry-details>summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:750;font-size:13px}.entry-details>summary::-webkit-details-marker{display:none}.entry-details>summary:before{content:'+';font-size:18px;color:var(--muted);order:3}.entry-details[open]>summary:before{content:'−'}.entry-summary-note{font-size:11px;font-weight:500;color:var(--muted);margin-left:auto;text-align:right}.details-inner{padding:0 15px 15px}.details-inner.form-grid{display:grid}.edition-panel,.quote-editor{border:0;background:var(--paper);padding:0}.edition-fields{margin-top:15px}.textarea{min-height:140px}
+.dialog-actions{position:sticky;bottom:-26px;background:var(--paper);padding:14px 0 2px;margin-top:8px;z-index:10;border-top:1px solid var(--line)}.import-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.backup-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.danger-details{margin-top:22px;border-top:1px solid var(--line);padding-top:15px}.danger-details>summary{font-size:12px;color:var(--muted);cursor:pointer}.data-panel .muted{max-width:650px}
+@media(max-width:850px){.tabs{gap:17px}.hero h2{font-size:32px}}
+@media(max-width:560px){.topbar{padding:18px 16px 12px;flex-direction:row;align-items:center;gap:8px}.topbar h1{font-size:24px}.eyebrow{font-size:10px}.top-actions{width:auto}.top-actions .btn{font-size:12px;padding:10px}.tabs{overflow-x:auto;gap:20px;padding:0 16px;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}.more-menu{display:none}.mobile-more{display:block;position:sticky;right:0;z-index:50;flex:none;align-self:center;background:var(--paper);border:1px solid var(--line);border-radius:10px;font-size:12px;font-weight:650;padding:8px 9px;box-shadow:-10px 0 10px var(--bg)}.hero{padding:20px;align-items:flex-start}.hero h2{font-size:29px}.hero-actions{width:100%}.hero-actions .btn{width:100%}.section-head{align-items:start}.section-head .filters{width:100%}.filters .input,.filters input{width:auto;flex:1}.filters input{flex-basis:100%}.filter-panel{left:auto;right:0}.form-grid{grid-template-columns:1fr}.date-control{width:100%}dialog{padding:19px 16px}.dialog-actions{bottom:-19px}.details-inner.form-grid{grid-template-columns:1fr}.import-grid{grid-template-columns:1fr}.entry-summary-note{max-width:60%}}
+
+/* v0.5.1 — diary-led home, scrolling horizontal timeline and relocated statistics */
+#home .section-head {margin-top:30px}
+.home-timeline-section {min-width:0}
+.home-timeline-heading {display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:14px}
+.home-timeline-heading h2 {font:500 32px/1.2 Georgia,serif;margin:4px 0 2px}
+.home-timeline-description {margin:5px 0 0}
+.home-timeline-actions {display:flex;gap:8px;align-items:center;flex:none}
+.rail-arrow {border:1px solid var(--line);background:var(--paper);border-radius:50%;width:37px;height:37px;display:grid;place-items:center;font-size:20px;cursor:pointer;line-height:1}
+.rail-arrow:hover:not(:disabled) {border-color:var(--ink);background:var(--soft)}
+.rail-arrow:disabled {opacity:.32;cursor:default}
+.home-timeline-actions .view-link {margin-left:9px;font-size:12px;white-space:nowrap}
+.home-rail-scroll {min-width:0;max-width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:#bbb2a5 transparent;overscroll-behavior-inline:contain;padding:2px 1px 17px}
+.home-rail-scroll:focus-visible {outline:2px solid var(--ink);outline-offset:2px;border-radius:8px}
+.home-rail-track {display:flex;position:relative;width:max-content;min-width:100%;gap:0;padding-top:3px}
+.home-rail-track:before {content:"";position:absolute;left:0;right:0;top:42px;height:2px;background:var(--line)}
+.home-rail-item {flex:0 0 241px;min-width:0;padding:0 11px;position:relative}
+.home-rail-date {font-size:11px;color:var(--muted);font-weight:750;letter-spacing:.04em;height:31px;white-space:nowrap}
+.home-rail-dot {position:relative;width:14px;height:14px;border-radius:50%;border:3px solid var(--ink);background:var(--paper);margin:4px 0 18px 3px;z-index:1;box-shadow:0 0 0 4px var(--bg)}
+.home-rail-item:first-child .home-rail-dot {background:var(--ink)}
+.home-rail-card {display:block;width:100%;height:202px;background:var(--paper);border:1px solid var(--line);border-radius:15px;cursor:pointer;text-align:left;padding:13px;transition:border-color .15s,box-shadow .15s}
+.home-rail-card:hover {border-color:#aaa196;box-shadow:0 8px 20px rgba(30,28,23,.08)}
+.home-rail-card:focus-visible {outline:2px solid var(--ink);outline-offset:2px}
+.home-rail-card-top {display:grid;grid-template-columns:55px minmax(0,1fr);gap:11px;align-items:start}
+.home-rail-cover {width:55px;height:79px;border-radius:7px;background:var(--soft);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:24px}
+.home-rail-cover img {width:100%;height:100%;object-fit:cover}
+.home-rail-type {font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--muted);margin-bottom:5px}
+.home-rail-title {font-size:14px;font-weight:780;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.home-rail-creator {font-size:11px;color:var(--muted);line-height:1.5;margin-top:5px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.home-rail-rating {font-size:12px;font-weight:750;margin-top:6px}
+.home-rail-snippet {font:12px/1.45 Georgia,serif;color:#45413b;margin:13px 0 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.home-rail-venue {font-size:11px;color:var(--muted);margin-top:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.home-timeline-empty {width:min(100%,560px);padding:30px;border:1px dashed var(--line);border-radius:16px;color:var(--muted)}
+.home-writing-section .home-review-list {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.home-writing-section .mini-review {background:var(--paper);padding:13px;min-width:0;grid-template-columns:51px minmax(0,1fr) auto;align-items:start}
+.home-writing-section .mini-cover {width:51px;height:72px}
+.home-writing-section .mini-review h4 {font-size:14px}
+.home-writing-section .mini-review-text {font-size:13px;-webkit-line-clamp:3}
+.insight-summary>.section-head {margin-top:26px}
+.insight-year-panel {padding:20px;background:var(--paper);border:1px solid var(--line);border-radius:17px;margin:14px 0 23px}
+.insight-year-panel h3 {font:500 24px Georgia,serif;margin:4px 0 16px}
+.insight-year-panel .year-numbers {grid-template-columns:repeat(4,minmax(0,1fr))}
+.insight-year-panel .year-number {background:var(--bg)}
+@media(max-width:850px){.home-writing-section .home-review-list {grid-template-columns:1fr}}
+@media(max-width:560px){
+ .home-timeline-heading {align-items:start;gap:9px}
+ .home-timeline-heading h2 {font-size:29px}
+ .home-timeline-actions {gap:5px;flex-wrap:wrap;justify-content:flex-end;max-width:149px}
+ .rail-arrow {width:34px;height:34px}
+ .home-timeline-actions .view-link {margin:1px 0 0 0;font-size:11px}
+ .home-timeline-description {max-width:230px;font-size:11px}
+ .home-rail-item {flex-basis:226px;padding:0 9px}
+ .home-rail-card {height:199px}
+ .home-writing-section .mini-review {grid-template-columns:43px minmax(0,1fr) auto}
+ .home-writing-section .mini-cover {width:43px;height:61px}
+ .insight-year-panel .year-numbers {grid-template-columns:repeat(2,minmax(0,1fr))}
+ .insight-year-panel {padding:15px}
+}
+/* v0.5.2 — aligned with enricomattiasalonia.com: ivory, charcoal, quiet teal, typography-led */
+:root{
+ --bg:#f8f8f5; --paper:#ffffff; --ink:#303334; --muted:#727977;
+ --line:#dce2df; --accent:#a8dadc; --soft:#eff4f2; --danger:#9a3838;
+ --shadow:none;
+}
+html {scroll-behavior:smooth}
+body {background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,ui-sans-serif,sans-serif;font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.site-masthead {border-bottom:1px solid var(--line);background:var(--bg)}
+.site-masthead-inner {max-width:1180px;margin:auto;padding:12px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.site-home-link {color:var(--ink);font-size:12px;font-weight:650;letter-spacing:.025em;text-decoration:none}
+.site-home-link:hover {text-decoration:underline;text-decoration-color:#70bbc0;text-underline-offset:4px}
+.site-masthead-kicker {color:var(--muted);font-size:10px;font-weight:650;letter-spacing:.12em}
+.topbar {padding:34px 28px 28px;align-items:center}
+.topbar h1 {font-family:inherit;font-weight:630;font-size:36px;line-height:1.2;letter-spacing:-.045em;margin:5px 0 0}
+.heading-period {color:#7cc9cc}
+.topbar .eyebrow {color:var(--muted);font-size:10px;font-weight:750;letter-spacing:.13em}
+.tabs {border-bottom:1px solid var(--line);gap:30px;align-items:stretch}
+.tab {border-bottom:3px solid transparent;text-transform:uppercase;letter-spacing:.11em;font-size:11px;font-weight:750;color:#636d6b;padding:16px 2px 14px;transition:color .12s,border-color .12s}
+.tab.active,.tab:hover {color:var(--ink)}
+.tab.active {border-bottom-color:var(--accent)}
+.more-menu>summary {gap:5px}
+.more-menu-panel,.filter-panel {border-radius:3px;box-shadow:0 8px 25px rgba(34,51,48,.08);border:1px solid var(--line);background:#fff}
+.menu-view {border-radius:2px}
+.menu-view:hover,.menu-view.active {background:var(--soft)}
+main {padding-top:40px;padding-bottom:80px}
+.eyebrow {font-size:10px;font-weight:750;letter-spacing:.12em;color:#78827f}
+.section-head {margin-top:39px;margin-bottom:18px}
+.section-head h2,.section-head h3,.home-timeline-heading h2 {font-family:inherit;font-weight:630;letter-spacing:-.04em;line-height:1.25}
+.section-head h2 {font-size:27px}
+.home-timeline-heading h2 {font-size:30px}
+.home-timeline-heading {margin-bottom:22px}
+.home-timeline-description {color:var(--muted);font-size:12px;margin-top:6px}
+.meta,.chart-note {color:var(--muted)}
+.btn {border-radius:3px;background:transparent;border:1px solid #c9d2ce;padding:10px 14px;font-size:12px;font-weight:650;box-shadow:none;transition:background .15s,border-color .15s,transform .15s}
+.btn:hover {background:var(--soft);border-color:#a4c6c3;transform:none}
+.btn.primary {background:#303738;border-color:#303738;color:#fff}
+.btn.primary:hover {background:#1b3838;border-color:#1b3838}
+.btn.subtle,.btn.ghost {background:transparent;border-color:transparent}
+.btn.subtle:hover,.btn.ghost:hover {background:var(--soft);border-color:var(--line)}
+.input {background:#fff;border:1px solid #ced8d3;border-radius:3px;padding:10px 12px;color:var(--ink)}
+.input:focus {border-color:#82b9ba;box-shadow:0 0 0 3px rgba(168,218,220,.26)}
+.input::placeholder {color:#8b9692}
+.filters {gap:9px}
+.filters .input {background:transparent}
+.panel,.card,.home-panel,.chart-panel,.stat,.year-number,.work-card,.passage-card,.review-card-full,.notice,.experience,.edition-panel,.quote-editor,.quote-item,.metadata-kpi,.progress-box,.import-report {box-shadow:none}
+.panel,.chart-panel,.home-panel {background:transparent;border:1px solid var(--line);border-radius:2px}
+.panel {padding:25px}
+.panel h3,.chart-head h3,.home-panel h3 {font-family:inherit;font-weight:650;letter-spacing:-.035em}
+.card {border:0;border-bottom:1px solid var(--line);background:transparent;border-radius:0;padding:16px 3px;min-height:0}
+.card:hover,.work-card:hover,.passage-card:hover,.review-card-full:hover {box-shadow:none}
+.work-card {border:0;border-bottom:1px solid var(--line);background:transparent;border-radius:0;transition:opacity .14s}
+.work-card:hover {opacity:.76}
+.work-card .work-cover {background:#e8efec;border-radius:2px;aspect-ratio:2/3}
+.work-info {padding:15px 2px 17px}
+.work-card h3 {font-weight:650;line-height:1.3;font-size:14px}
+.work-card .meta {font-size:12px}
+.cover,.work-detail-cover,.mini-cover,.review-list-cover,.home-rail-cover,.edition-preview {border-radius:2px;background:#e9efec}
+.pill,.media-chip,.work-metric,.metadata-badges .pill {background:transparent;border:1px solid var(--line);border-radius:2px;color:#5f6a68;padding:4px 7px;font-size:10px}
+.home-rail-scroll {scrollbar-color:#a8dadc transparent}
+.home-rail-track:before {height:1px;background:#c1d7d4}
+.home-rail-dot {width:12px;height:12px;border:2px solid #7cbdc0;box-shadow:0 0 0 4px var(--bg);background:var(--bg)}
+.home-rail-item:first-child .home-rail-dot {background:#7bbec1}
+.home-rail-date {font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:#597470}
+.home-rail-card {height:193px;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:12px 2px;text-align:left}
+.home-rail-card:hover {border-color:#83c4c6;background:transparent;box-shadow:none}
+.home-rail-cover {width:52px;height:74px}
+.home-rail-card-top {grid-template-columns:52px minmax(0,1fr);gap:12px}
+.home-rail-type {color:#657775;letter-spacing:.11em;font-size:10px}
+.home-rail-title {font-weight:650}
+.home-rail-rating {color:var(--ink)}
+.home-rail-snippet {font:12px/1.5 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;color:#68716f}
+.rail-arrow {background:transparent;width:34px;height:34px;border-radius:2px;border:1px solid var(--line);color:#466360}
+.rail-arrow:hover:not(:disabled) {background:#e6f2f1;border-color:#8cc9cb}
+.view-link,.inline-link,.source-link {font-family:inherit;color:#28575a;text-decoration:underline;text-decoration-color:#a8dadc;text-underline-offset:4px;font-weight:650}
+.home-writing-section {margin-top:42px;border-top:1px solid var(--line);padding-top:5px}
+.home-review-list {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:32px;row-gap:0}
+.mini-review {border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;padding:18px 0;align-items:start}
+.mini-review:hover {background:transparent;box-shadow:none}
+.mini-review h4 {font-weight:700;font-size:13px}
+.mini-review-text {font:12px/1.5 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;color:#606b68}
+.year-number {background:transparent;border-color:var(--line);border-radius:2px}
+.year-number strong,.stat strong,.metadata-kpi strong {font-family:inherit;font-weight:620;letter-spacing:-.04em}
+.stats {gap:14px}
+.stat {border:0;border-top:2px solid #b0d7d7;background:transparent;border-radius:0;padding:13px 1px}
+.stat span {font-size:12px}
+.chart-panel {padding:23px;background:transparent}
+.chart-panel.wide {grid-column:1/-1}
+.hbar-track {background:#e5eeea}
+.hbar-fill,.rating-bar,.year-bar.consumed {background:#568f93}
+.year-bar.reviewed {background:#bdd6d2}
+.line-path {stroke:#568f93}
+.line-dot {stroke:#568f93}
+.line-grid {stroke:#dbe5e2}
+.review-card-full {border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;padding:19px 0}
+.review-card-head h3 {font-family:inherit;font-size:20px;font-weight:670;letter-spacing:-.03em}
+.review-body-full {font:15px/1.75 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;color:#3e4846}
+.review-list-cover {border-radius:2px}
+.review-presentation-quote,.presentation-quote {border-color:#8ac7c9;background:#f1f6f4;border-radius:0}
+.passage-card {background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:18px 4px 23px}
+.passage-card blockquote,.presentation-quote p,.saved-passage {font-family:inherit;color:#454f4d}
+.passage-card blockquote {font-size:17px;line-height:1.7;font-style:italic;font-weight:400}
+.timeline {border-left-color:#9ecfd0}
+.timeline-item:before {border-color:#78bdc0;background:var(--bg)}
+.notice {background:transparent;border:0;border-left:2px solid #a8dadc;border-radius:0;padding:8px 15px;color:var(--muted)}
+.empty {border:1px dashed #c5d5d0;border-radius:2px;background:transparent}
+.progress-box,.metadata-kpi {background:transparent;border-radius:2px}
+.progress-fill {background:#74b8ba}
+.import-report {background:#edf5f3;border:1px solid #b4d8d6;border-radius:2px}
+.filter-panel {padding:12px}
+.entry-details,.edition-panel,.quote-editor,.quote-item,.experience {border-radius:2px;background:#fff}
+.entry-details>summary:hover {background:var(--soft)}
+.dialog-actions {background:#fff}
+dialog {background:#fff;border-radius:4px;border-color:#d9e2dd;box-shadow:0 26px 80px rgba(25,45,40,.15)}
+dialog::backdrop {background:rgba(25,38,36,.42)}
+.dialog-head h2,.work-detail-top h2 {font-family:inherit;font-weight:650;letter-spacing:-.04em}
+.field {font-weight:620;color:#364442}
+.edition-head strong,.quote-editor-head strong {font-weight:700}
+.catalog-results,.edition-results {border-radius:3px}
+.catalog-result:hover,.edition-result:hover {background:#edf5f3}
+.catalog-thumb,.edition-thumb {border-radius:2px}
+.toast {background:#2c4140;border-radius:3px;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+*:focus-visible {outline-color:#64afb3;outline-offset:3px}
+@media (max-width:850px) {
+ .home-review-list {grid-template-columns:1fr}
+ .tabs {gap:18px}
+}
+@media (max-width:560px) {
+ .site-masthead-inner {padding:10px 16px}
+ .site-masthead-kicker {display:none}
+ .topbar {padding:22px 16px 18px}
+ .topbar h1 {font-size:26px}
+ .topbar .eyebrow {font-size:9px}
+ .tabs {padding-left:16px;padding-right:16px;gap:16px}
+ .tab {font-size:10px;letter-spacing:.07em;padding:13px 1px}
+ .tabs {gap:17px;overflow-x:hidden;justify-content:space-between}
+ .tabs>.tab[data-view="passages"],.tabs>.tab[data-view="insights"] {display:none}
+ .mobile-more {position:relative;right:auto;box-shadow:none;border-radius:2px;background:transparent;min-width:91px;margin-left:auto}
+ main {padding-top:26px}
+ .home-timeline-heading h2 {font-size:25px}
+ .home-rail-item {flex-basis:220px}
+ .home-rail-card {height:186px}
+ .home-review-list {grid-template-columns:1fr}
+ .home-writing-section {margin-top:34px}
+ .panel,.chart-panel {padding:16px}
+ .review-card-full {padding:15px 0}
+ .btn {padding:9px 11px}
+}
+@media (max-width:360px) {
+ .tabs>.tab[data-view="reviews"] {display:none}
+}
+@media (prefers-reduced-motion: reduce) {html{scroll-behavior:auto};*{transition:none!important}}
+
+/* v0.5.3 — quieter presentation, single-word working title */
+.site-masthead{display:none}
+.topbar{padding-top:25px;padding-bottom:18px}
+.topbar h1{margin:0;font-size:35px;letter-spacing:-.055em}
+.home-timeline-heading h2,.section-head h2{margin-top:0}
+@media(max-width:560px){.topbar{padding-top:19px;padding-bottom:17px}}
+
+/* v0.5.4 — Πathos wordmark, nested writing navigation and wheel timeline */
+.pathos-wordmark {display:flex;align-items:baseline;gap:0;white-space:nowrap;font-weight:660!important;letter-spacing:-.065em!important}
+.pathos-wordmark .pathos-pi {font-family:"Times New Roman",Times,"Liberation Serif",serif;font-size:1.08em;font-weight:400;letter-spacing:-.06em;margin-right:.02em;line-height:.88;vertical-align:baseline;transform:translateY(.01em)}
+.review-modes {display:flex;gap:24px;align-items:center;border-bottom:1px solid var(--line);margin:2px 0 22px}
+.review-mode-btn {border:0;border-bottom:2px solid transparent;color:var(--muted);background:transparent;cursor:pointer;font-size:13px;font-weight:650;padding:12px 1px 11px}
+.review-mode-btn.active,.review-mode-btn:hover {color:var(--ink)}
+.review-mode-btn.active {border-bottom-color:var(--accent)}
+.review-mode-panel>.section-head {margin-top:12px}
+.home-rail-scroll {scroll-snap-type:none!important;scroll-behavior:auto;overscroll-behavior-x:contain}
+.home-rail-item {scroll-snap-align:none!important}
+@media(max-width:560px){.pathos-wordmark .pathos-pi{font-size:1.05em}.review-modes{gap:18px;margin-bottom:14px}}
+
+@media(max-width:560px){
+  .review-mode-panel .section-head.stack-mobile {display:block;margin:8px 0 18px}
+  .review-mode-panel .section-head .filters {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}
+  .review-mode-panel .section-head .filters input {grid-column:1/-1;min-width:0;width:100%}
+  .review-mode-panel .section-head .filters select {min-width:0;width:100%;max-width:100%}
+  .review-mode-panel .section-head .filters .filter-details {width:100%;min-width:0}
+  .review-mode-panel .section-head .filters .filter-details>summary {display:block;width:100%;text-align:center}
+}
+
+/* v0.5.6 — accessible chart drill-downs and simpler filter control */
+.filter-details>summary.btn.subtle{padding:10px 14px;border:1px solid var(--line);border-radius:3px;background:transparent;white-space:nowrap;font-size:12px;font-weight:600}
+.filter-details[open]>summary.btn.subtle{border-color:var(--accent);background:var(--soft);color:var(--ink)}
+.insight-hit{cursor:pointer;transition:background-color .13s,opacity .13s;}
+.insight-hit:hover{opacity:.75}
+.insight-hit:focus-visible{outline:2px solid #387d82;outline-offset:4px;border-radius:3px}
+.rating-col.insight-hit{border:0;padding:0;background:none;color:inherit;min-width:0}
+.rating-col.insight-hit:hover .rating-bar,.rating-col.insight-hit:focus-visible .rating-bar{background:#22676d}
+.hbar-row.insight-hit{border:0;text-align:left;width:100%;background:transparent;padding:7px 5px;margin:-7px -5px;box-sizing:content-box;border-radius:4px;cursor:pointer;color:inherit;font:inherit}
+.hbar-row.insight-hit:hover,.hbar-row.insight-hit:focus-visible{background:#edf4f1;opacity:1}
+.hbar-row.insight-hit:hover .hbar-fill{background:#22676d}
+.year-col{gap:4px}
+.year-col .year-hit{border:0;background:transparent;align-self:flex-end;display:flex;align-items:end;justify-content:center;padding:0;min-width:18px;height:100%;cursor:pointer;position:relative}
+.year-col .year-hit .year-bar{display:block;position:absolute;bottom:24px;left:50%;transform:translateX(-50%);min-height:2px}
+.year-col .year-hit:hover .year-bar,.year-col .year-hit:focus-visible .year-bar{filter:brightness(.75)}
+.year-col .year-hit:focus-visible{outline:2px solid #387d82;outline-offset:1px}
+.line-chart .insight-point-hit{cursor:pointer}
+.line-chart .insight-point-hit .point-target{fill:transparent;stroke:transparent;stroke-width:0}
+.line-chart .insight-point-hit:hover .line-dot,.line-chart .insight-point-hit:focus .line-dot{fill:#b4dad9;stroke:#24656b;stroke-width:3}
+.line-chart .insight-point-hit:focus{outline:none}
+.line-chart .insight-point-hit:focus .point-target{stroke:#24656b;stroke-width:1.5;stroke-dasharray:3 3}
+.insight-stat-action{border:0;background:transparent;text-align:left;color:inherit;width:100%;cursor:pointer;border-radius:4px}
+.insight-stat-action:hover{background:#edf4f1}
+.insight-stat-action:focus-visible{outline:2px solid #387d82;outline-offset:2px}
+.insight-dialog{width:min(920px,calc(100vw - 32px));padding:25px;max-height:86vh}
+.insight-dialog .dialog-head{position:sticky;top:-25px;background:var(--paper);z-index:2;padding:10px 0 18px;margin-bottom:8px;border-bottom:1px solid var(--line)}
+.insight-dialog .dialog-head h2{font-size:25px}
+.insight-dialog .dialog-head p{margin:7px 0 0}
+.insight-drill-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;padding-top:12px}
+.insight-drill-item{display:grid;grid-template-columns:55px minmax(0,1fr);gap:13px;text-align:left;width:100%;border:1px solid var(--line);background:var(--paper);padding:11px;cursor:pointer;color:inherit;font:inherit;border-radius:5px;min-height:92px}
+.insight-drill-item:hover,.insight-drill-item:focus-visible{border-color:#568f93;background:#f0f6f3;outline:none}
+.insight-drill-item .mini-cover{width:55px;height:78px}
+.insight-drill-item .drill-title{font-weight:700;line-height:1.25;margin:1px 0 5px}
+.insight-drill-item .drill-excerpt{font-size:12px;line-height:1.45;margin-top:5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+@media(max-width:620px){.insight-drill-results{grid-template-columns:1fr}.insight-dialog{padding:16px}.insight-dialog .dialog-head{top:-16px}.insight-drill-item{grid-template-columns:45px minmax(0,1fr)}.insight-drill-item .mini-cover{width:45px;height:64px}}
+
+/* Hosted private editor: hide editing controls unless authenticated as owner. */
+body:not(.pathos-owner) #addBtn, body:not(.pathos-owner) #backupBtn,
+body:not(.pathos-owner) #restoreInput, body:not(.pathos-owner) label:has(#restoreInput), body:not(.pathos-owner) #resetSnapshotBtn,
+body:not(.pathos-owner) #enrichBooksBtn, body:not(.pathos-owner) #enrichFilmsBtn,
+body:not(.pathos-owner) #enrichAllBtn, body:not(.pathos-owner) #saveTmdbBtn,
+body:not(.pathos-owner) #addAgain, body:not(.pathos-owner) #favoriteWorkBtn,
+body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-view="import"] {display:none!important}
+.pathos-auth-control {font-size:12px;padding:8px 12px;border:1px solid #cad6d7;background:#f8f8f5;color:#303c40;cursor:pointer}
+.pathos-auth-control:hover {background:#e7f2f0}
+.pathos-sync-status{font-size:11px;color:#53666a;margin-right:8px}
+.pathos-signin-dialog{border:1px solid #ddd;padding:22px;max-width:380px;width:90vw;background:#fff}
+.pathos-signin-dialog form{display:grid;gap:12px}
+.pathos-signin-dialog input{min-width:0;padding:10px;border:1px solid #ddd}
+.pathos-signin-dialog menu{display:flex;gap:8px;justify-content:end}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="archive-heading"><h1 class="pathos-wordmark" aria-label="Πathos"><span class="pathos-pi" aria-hidden="true">Π</span><span>athos</span></h1></div>
+  <div class="top-actions"><button class="btn primary" id="addBtn">+ Add experience</button></div>
+</header>
+<nav class="tabs">
+  <button data-view="home" class="tab active">Home</button>
+  <button data-view="library" class="tab">Library</button>
+  <button data-view="reviews" class="tab">Reviews</button>
+  <button data-view="insights" class="tab">Insights</button>
+  <details class="more-menu" id="moreMenu">
+    <summary class="tab" id="moreMenuLabel">More <span aria-hidden="true">⌄</span></summary>
+    <div class="more-menu-panel">
+      <button type="button" class="menu-view" data-view="timeline">Timeline</button>
+      <button type="button" class="menu-view" data-view="metadata">Metadata & covers</button>
+      <button type="button" class="menu-view" data-view="import">Import & backup</button>
+    </div>
+  </details>
+  <select id="mobileMore" class="mobile-more" aria-label="More pages"><option value="">More</option><option value="insights">Insights</option><option value="timeline">Timeline</option><option value="metadata">Metadata</option><option value="import">Import / Backup</option></select>
+</nav>
+<main>
+<section id="home" class="view active">
+  <section class="home-timeline-section" aria-label="Recent cultural experiences">
+    <div class="home-timeline-heading">
+      <div>
+        
+        <h2>Recent</h2>
+        
+      </div>
+      <div class="home-timeline-actions">
+        <button type="button" class="rail-arrow" id="homeTimelinePrev" aria-label="Scroll timeline to newer entries" title="Newer entries">←</button>
+        <button type="button" class="rail-arrow" id="homeTimelineNext" aria-label="Scroll timeline to older entries" title="Older entries">→</button>
+        <button type="button" class="view-link" id="viewFullTimelineBtn">Full timeline ↗</button>
+      </div>
+    </div>
+    <div id="homeTimelineScroll" class="home-rail-scroll" role="region" aria-label="Scroll horizontally through dated experiences" tabindex="0">
+      <div id="homeTimelineTrack" class="home-rail-track"></div>
+    </div>
+  </section>
+  <section id="currentSection" class="hidden">
+    <div class="section-head"><div><h3>Current</h3></div></div>
+    <div id="currentList" class="cards"></div>
+  </section>
+  <section class="home-writing-section">
+    <div class="section-head"><div><h2>Recent reviews</h2></div><button class="view-link" id="viewAllReviewsBtn">View all reviews ↗</button></div>
+    <div id="homeLatestReviews" class="home-review-list"></div>
+  </section>
+</section>
+
+<section id="library" class="view">
+  <div class="section-head stack-mobile">
+    <div><h2>Library</h2><div id="libraryCount" class="meta"></div></div>
+    <div class="filters">
+      <input id="searchInput" class="input" placeholder="Search title, creator, review, tag…">
+      <select id="typeFilter" class="input"><option value="">All media</option></select>
+      <details class="filter-details" id="libraryAdvanced"><summary class="btn subtle">Filters</summary><div class="filter-panel">
+      <select id="statusFilter" class="input">
+        <option value="">All statuses</option><option value="completed">Completed</option><option value="in-progress">In progress</option><option value="planned">Planned</option><option value="dnf">Did not finish</option>
+      </select>
+      <select id="libraryContentFilter" class="input">
+        <option value="">Everything</option><option value="favorite">Favorites</option><option value="reviewed">With a review</option><option value="unreviewed">Without a review</option>
+      </select>
+      </div></details>
+      <select id="librarySort" class="input">
+        <option value="title">Title A–Z</option><option value="recent">Recently experienced</option><option value="rating">Highest rated</option><option value="year">Newest work first</option><option value="experiences">Most experienced</option>
+      </select>
+    </div>
+  </div>
+  <div id="libraryGrid" class="library-grid"></div>
+</section>
+
+<section id="timeline" class="view">
+  <div class="section-head"><div><h2>Timeline</h2></div></div>
+  
+  <div id="timelineList" class="timeline"></div>
+</section>
+
+<section id="reviews" class="view">
+  <div class="review-modes" role="tablist" aria-label="Writing sections">
+    <button type="button" class="review-mode-btn active" data-review-mode="reviews" role="tab" aria-selected="true" aria-controls="reviewContentPane">Reviews</button>
+    <button type="button" class="review-mode-btn" data-review-mode="passages" role="tab" aria-selected="false" aria-controls="passagesPane">Passages</button>
+  </div>
+  <div id="reviewContentPane" class="review-mode-panel" role="tabpanel">
+
+  <div class="section-head stack-mobile">
+    <div><div id="reviewsCount" class="meta"></div></div>
+    <div class="filters review-filters">
+      <input id="reviewSearch" class="input" placeholder="Search reviews, titles, creators…">
+      <select id="reviewTypeFilter" class="input"><option value="">All media</option></select>
+      <details class="filter-details" id="reviewsAdvanced"><summary class="btn subtle">Filters</summary><div class="filter-panel">
+      <select id="reviewRatingFilter" class="input">
+        <option value="">All ratings</option>
+        <option value="5">5 stars</option>
+        <option value="4">4–4.99</option>
+        <option value="3">3–3.99</option>
+        <option value="lt3">Below 3</option>
+        <option value="unrated">Unrated</option>
+      </select>
+      <select id="reviewYearFilter" class="input"><option value="">All years</option></select>
+      <select id="reviewSourceFilter" class="input"><option value="">All sources</option></select>
+      </div></details>
+      <select id="reviewSort" class="input">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="rating-desc">Highest rated</option>
+        <option value="rating-asc">Lowest rated</option>
+        <option value="longest">Longest reviews</option>
+        <option value="shortest">Shortest reviews</option>
+        <option value="title">Title A–Z</option>
+      </select>
+    </div>
+  </div>
+  
+  <div id="reviewsList" class="reviews-browser"></div>
+  </div>
+  <div id="passagesPane" class="review-mode-panel hidden" role="tabpanel">
+
+  <div class="section-head stack-mobile">
+    <div><div id="passagesCount" class="meta"></div></div>
+    <div class="filters review-filters">
+      <input id="passageSearch" class="input" placeholder="Search passages, titles, creators…">
+      <select id="passageTypeFilter" class="input"><option value="">All media</option></select>
+      <details class="filter-details" id="passagesAdvanced"><summary class="btn subtle">Filters</summary><div class="filter-panel">
+      <select id="passageYearFilter" class="input"><option value="">All years</option></select>
+      <select id="passageFeaturedFilter" class="input"><option value="">All passages</option><option value="featured">Presentation passages</option></select>
+      </div></details>
+      <select id="passageSort" class="input"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="title">Title A–Z</option></select>
+    </div>
+  </div>
+  
+  <div id="passagesList" class="passages-browser"></div>
+  </div>
+</section>
+
+<section id="insights" class="view">
+  <div class="section-head"><div><h2>Insights</h2></div></div>
+  
+  <div class="insight-summary">
+    <div class="section-head"><div><h3>At a glance</h3></div></div>
+    <div class="stats" id="stats"></div>
+    <div class="insight-year-panel">
+      
+      <h3 id="homeYearTitle">Your year so far</h3>
+      <div id="homeYearSummary"></div>
+    </div>
+  </div>
+  <div class="section-head"><div><h3>Ratings & writing</h3></div><span class="meta">Select a bar or point to see the entries</span></div>
+  <div class="stats" id="insightStats"></div>
+  <div class="insight-grid">
+    <section class="chart-panel"><div class="chart-head"><div><h3>Rating distribution</h3></div><div class="chart-note" id="ratingDistNote"></div></div><div id="ratingDistribution"></div></section>
+    <section class="chart-panel"><div class="chart-head"><div><h3>Average rating by medium</h3></div><div class="chart-note">Minimum 2 ratings</div></div><div id="ratingByMedium"></div></section>
+    <section class="chart-panel wide"><div class="chart-head"><div><h3>Experiences and written reviews by year</h3></div><div class="chart-note">Based on actual experience dates</div></div><div id="activityByYear"></div></section>
+    <section class="chart-panel wide"><div class="chart-head"><div><h3>Average rating by year</h3></div><div class="chart-note">Years with at least 2 ratings</div></div><div id="ratingTrend"></div></section>
+    <section class="chart-panel"><div class="chart-head"><div><h3>Review rate by medium</h3></div><div class="chart-note">Share with written review</div></div><div id="reviewRateByMedium"></div></section>
+    <section class="chart-panel"><div class="chart-head"><div><h3>Your longest reviews</h3></div><div class="chart-note">By word count</div></div><div id="longestReviews" class="review-list"></div></section>
+  </div>
+</section>
+
+
+<section id="metadata" class="view">
+  <div class="section-head"><div><h2>Metadata & covers</h2></div></div>
+  <div class="notice muted">Nothing here changes your ratings, reviews or dates. Enrichment only adds catalogue information. For books with a StoryGraph ISBN, v0.4 resolves the exact edition first and keeps edition metadata on the reading itself.</div>
+  <div class="metadata-grid">
+    <div class="panel">
+      <h3>Enrich your existing archive</h3>
+      <p class="metadata-note">Books use Open Library and need no account. ISBN-based StoryGraph entries are treated as exact editions, not merely as works. A cover is now saved only when Open Library actually reports one for that edition; a bare ISBN is no longer treated as proof that a cover exists. Films and TV use TMDB; the token stays only in this browser and is never included in your exported archive.</p>
+      <div class="metadata-actions">
+        <button class="btn primary" id="enrichBooksBtn">Enrich books</button>
+        <button class="btn primary" id="enrichFilmsBtn">Enrich films & TV</button>
+        <button class="btn primary" id="enrichAllBtn">Enrich everything</button>
+      </div>
+      <div id="metadataProgress" class="progress-box"><div class="meta">Ready. Enrichment is conservative: if a match is unclear, the work is left alone.</div></div>
+      <div id="metadataKpis" class="metadata-kpis"></div>
+    </div>
+    <div class="panel">
+      <h3>TMDB access</h3>
+      <p class="metadata-note">Needed for film/TV posters, directors, runtime, genres and title search. Paste a TMDB <strong>API Read Access Token</strong> here. It is stored only in your browser's local storage.</p>
+      <div class="token-row"><input id="tmdbTokenInput" class="input" type="password" autocomplete="off" placeholder="TMDB API Read Access Token"><button id="saveTmdbBtn" class="btn primary">Save</button></div>
+      <div id="tmdbTokenStatus" class="meta" style="margin-top:9px"></div>
+      <p class="metadata-note" style="margin-top:18px">The Add experience dialog now searches your own library first. Books then search Open Library automatically; films and TV search TMDB when this token is configured.</p><p class="metadata-note"><em>This product uses the TMDB API but is not endorsed or certified by TMDB.</em></p>
+    </div>
+  </div>
+</section>
+
+<section id="import" class="view">
+  <div class="section-head"><div><h2>Import</h2></div></div>
+  <div id="importReport" class="import-report hidden"></div>
+  <div class="import-grid">
+    <div class="panel">
+      <h3>Letterboxd export</h3>
+      <p class="muted">Choose the ZIP that Letterboxd gives you. The importer combines watched, ratings, diary, reviews and likes instead of importing them as duplicates.</p>
+      <label class="btn primary file-btn">Choose Letterboxd ZIP<input id="letterboxdZipInput" type="file" accept=".zip,application/zip" hidden></label>
+    </div>
+    <div class="panel">
+      <h3>StoryGraph export</h3>
+      <p class="muted">Choose the StoryGraph CSV. Read, currently-reading, to-read and DNF statuses are preserved, together with dates, rating, review, format and ISBN/UID.</p>
+      <label class="btn primary file-btn">Choose StoryGraph CSV<input id="storygraphInput" type="file" accept=".csv,text/csv" hidden></label>
+    </div>
+    <div class="panel">
+      <h3>Generic CSV</h3>
+      <p class="muted">For theatre, games or other media later. Recognised fields include Title, Type, Creator, Start Date, End Date, Rating, Review, Tags and Status.</p>
+      <label class="btn file-btn">Choose CSV<input id="genericInput" type="file" accept=".csv,text/csv" hidden></label>
+    </div>
+  </div>
+  <div class="panel compact data-panel">
+    <h3>Backups & data safety</h3>
+    <p class="muted">This version still stores your changes in the browser. Export a backup periodically — especially before switching computers or browsers.</p>
+    <div class="backup-actions">
+      <button class="btn primary" id="backupBtn">Export backup</button>
+      <label class="btn file-btn">Restore backup<input id="restoreInput" type="file" accept="application/json,.json" hidden></label>
+    </div>
+    <details class="danger-details"><summary>Reset archive to original imported snapshot</summary>
+      <p class="metadata-note">Only use this if you want to discard all changes made in your browser since the original import.</p>
+      
+    </details>
+  </div>
+</section>
+</main>
+
+<dialog id="entryDialog">
+  <div class="dialog-head"><div><h2>Add or edit</h2></div><button class="icon-btn" id="closeDialog">×</button></div>
+  <form id="entryForm">
+    <div class="form-grid">
+      <label class="field">Medium<select class="input" name="type"><option>Book</option><option>Film</option><option>TV</option><option>Theatre</option><option>Videogame</option><option>Album</option><option>Concert</option><option>Exhibition</option><option>Podcast</option><option>Opera</option><option>Other</option></select></label>
+      <label class="field">Status<select class="input" name="status"><option value="completed">Completed</option><option value="in-progress">In progress</option><option value="planned">Planned</option><option value="dnf">Did not finish</option></select></label>
+      <label class="field span-2 catalog-field">Title
+        <input class="input" name="title" id="titleInput" required autocomplete="off" placeholder="Start typing a title…">
+        <span class="catalog-hint" id="catalogHint">Searches your library and, where available, a catalogue.</span>
+        <div id="catalogResults" class="catalog-results hidden"></div>
+      </label>
+      <label class="field" id="startDateField"><span id="startDateLabel">Started</span><span class="date-control"><input class="input" id="startDateInput" type="date" name="startDate"><button type="button" class="today-btn" data-today="startDateInput" title="Set start date to today">Today</button></span></label>
+      <label class="field" id="endDateField"><span id="endDateLabel">Finished</span><span class="date-control"><input class="input" id="endDateInput" type="date" name="endDate"><button type="button" class="today-btn" data-today="endDateInput" title="Set date to today">Today</button></span><span id="dateOrderError" class="catalog-hint hidden" style="color:#a33;margin-top:5px">Finish date cannot be earlier than the start date.</span></label>
+      <label class="field">Rating (0–5)<input class="input" type="number" min="0" max="5" step="0.25" name="rating" placeholder="Optional"></label>
+      <label class="field">Venue / platform<input class="input" name="venue" placeholder="Optional"></label>
+      <label class="field span-2">Review<textarea class="input textarea" name="review" placeholder="What stayed with you?"></textarea></label>
+      <details class="entry-details span-2" id="passagesDetails"><summary>Saved passages <span id="passageFormCount" class="entry-summary-note">Optional</span></summary>
+        <div class="details-inner"><div class="quote-editor">
+          <div class="quote-editor-head"><div><strong>Sentences / passages</strong><div class="catalog-hint">Collect quotations, with an optional page, scene or context.</div></div><button id="addQuoteBtn" type="button" class="btn">+ Add passage</button></div>
+          <div id="quoteEditorList" class="quote-editor-list"></div>
+          <div class="catalog-hint" style="margin-top:9px">Mark a quotation as <strong>presentation</strong> to show it as an epigraph on its work page.</div>
+        </div></div>
+      </details>
+      <details class="entry-details span-2" id="bookEditionDetails"><summary>Exact book edition <span id="editionFormSummary" class="entry-summary-note">Optional · ISBN, EAN, cover</span></summary>
+        <div class="details-inner">
+          <div id="editionPanel" class="edition-panel hidden">
+            <div class="edition-head"><div><strong>Book edition</strong><div class="catalog-hint">Each reading can use a different edition and cover.</div></div></div>
+            <div class="edition-search-row"><input id="editionSearch" class="input" autocomplete="off" placeholder="Filter by ISBN, publisher, year, language…"><button id="editionLookupBtn" type="button" class="btn">Find editions</button></div>
+            <div id="editionResults" class="edition-results hidden"></div>
+            <div class="edition-fields">
+              <input type="hidden" name="editionOlid"><input type="hidden" name="editionWorkKey">
+              <label class="field">ISBN<input class="input" name="editionIsbn" autocomplete="off"></label>
+              <label class="field">EAN / barcode<input class="input" name="editionEan" autocomplete="off" placeholder="If different from ISBN"></label>
+              <label class="field">StoryGraph ISBN / UID<input class="input" name="editionSourceId" autocomplete="off"></label>
+              <label class="field">Other ID type<input class="input" name="editionOtherType" placeholder="SBN, catalogue ID…"></label>
+              <label class="field">Other ID value<input class="input" name="editionOtherId" autocomplete="off"></label>
+              <label class="field">Publisher<input class="input" name="editionPublisher"></label>
+              <label class="field">Edition year<input class="input" name="editionYear" inputmode="numeric"></label>
+              <label class="field">Language<input class="input" name="editionLanguage" placeholder="e.g. Italian"></label>
+              <label class="field">Format<input class="input" name="editionFormat" placeholder="paperback, digital…"></label>
+              <label class="field">Pages<input class="input" name="editionPages" inputmode="numeric"></label>
+              <label class="field span-3">Exact edition cover URL<input id="editionCoverInput" class="input" name="editionCover"></label>
+              <div class="span-3 cover-upload-row"><div id="editionCoverPreview" class="edition-preview">📚</div><label class="btn file-btn">Choose your own cover<input id="editionCoverFile" type="file" accept="image/*" hidden></label><span class="catalog-hint">Saved locally and included in backups.</span></div>
+            </div>
+            <div id="editionCurrent" class="edition-current"></div>
+          </div>
+        </div>
+      </details>
+      <details class="entry-details span-2" id="moreEntryDetails"><summary>More details <span class="entry-summary-note">Creator, year, links, tags</span></summary>
+        <div class="details-inner form-grid">
+          <label class="field">Creator / author / director<input class="input" name="creator"></label>
+          <label class="field">Original year<input class="input" name="year" inputmode="numeric"></label>
+          <label class="field span-2"><span id="sourceUrlLabel">Reference / event page</span><input class="input" type="url" name="sourceUrl" placeholder="https://…"><span class="catalog-hint">Keep a link to the official event, production or reference page.</span></label>
+          <label class="field span-2">Tags<input class="input" name="tags" placeholder="e.g. sci-fi, Rome, theatre"></label>
+          <label class="field span-2">Work cover / poster URL<input class="input" name="cover"></label>
+          <label class="check span-2"><input type="checkbox" name="repeat"> Reread / rewatch / replay</label><label class="check span-2"><input type="checkbox" name="isPublic"> Publish this experience (including its review and saved passages)</label>
+        </div>
+      </details>
+    </div>
+    <div class="dialog-actions"><button type="button" class="btn danger hidden" id="deleteBtn">Delete</button><div class="spacer"></div><button type="button" class="btn" id="cancelBtn">Cancel</button><button class="btn primary" type="submit">Save</button></div>
+  </form>
+</dialog>
+
+<dialog id="insightDialog" class="insight-dialog" aria-labelledby="insightDialogTitle">
+  <div class="dialog-head"><div><h2 id="insightDialogTitle">Experiences</h2><p class="meta" id="insightDialogCount"></p></div><button class="icon-btn" type="button" id="closeInsightDialog" aria-label="Close results">×</button></div>
+  <div id="insightDialogList" class="insight-drill-results"></div>
+</dialog>
+
+<dialog id="workDialog">
+  <div class="dialog-head"><div id="workDialogTitle"></div><button class="icon-btn" id="closeWorkDialog">×</button></div>
+  <div id="workDialogBody"></div>
+</dialog>
+
+<script>
+const PRELOADED_DB={schemaVersion:6,works:[],experiences:[]};
+const STORYGRAPH_EDITION_ROWS=[];
+const STORAGE_KEY='culturalArchive.v2';
+const MEDIA_ICONS={Book:'📚',Film:'🎬',TV:'📺',Theatre:'🎭',Videogame:'🎮',Album:'💿',Concert:'🎵',Exhibition:'🖼️',Podcast:'🎙️',Opera:'🎼',Other:'✦'};
+const STATUS_LABELS={completed:'Completed','in-progress':'In progress',planned:'Planned',dnf:'Did not finish'};
+const TMDB_TOKEN_KEY='culturalArchive.tmdbToken';
+const TMDB_IMG='https://image.tmdb.org/t/p/w500';
+const $=id=>document.getElementById(id);
+const uid=()=>globalThis.crypto?.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const clone=x=>JSON.parse(JSON.stringify(x));
+const norm=s=>String(s||'').trim().toLowerCase().replace(/\s+/g,' ');
+function cleanIsbn(value){const s=String(value||'').replace(/[^0-9Xx]/g,'').toUpperCase();return (s.length===10||s.length===13)?s:''}
+function isValidIsbn(value){return Boolean(cleanIsbn(value))}
+function storygraphRowFor(w){if(!w)return null;const t=norm(w.title),a=norm(w.creator);return STORYGRAPH_EDITION_ROWS.find(r=>norm(r.title)===t&&(!a||!r.creator||norm(r.creator)===a||norm(r.creator).includes(a)||a.includes(norm(r.creator))))||null}
+function storygraphHasExactNonIsbn(e){return e?.source==='StoryGraph'&&e?.edition?.sourceId&&!isValidIsbn(e.edition.sourceId)}
+function isOpenLibraryCover(url){return /covers\.openlibrary\.org/i.test(String(url||''))}
+
+function cleanImportedReview(value){
+  const raw=String(value??'');
+  if(!raw)return'';
+  // StoryGraph exports some reviews as HTML fragments. Preserve paragraph breaks,
+  // strip markup, decode entities such as &nbsp;, and normalize whitespace.
+  const withBreaks=raw
+    .replace(/<br\s*\/?\s*>/gi,'\n')
+    .replace(/<\/(?:div|p|li|blockquote|h[1-6])\s*>/gi,'\n')
+    .replace(/<(?:div|p|li|blockquote|h[1-6])\b[^>]*>/gi,'');
+  const doc=new DOMParser().parseFromString(withBreaks,'text/html');
+  return String(doc.body.textContent||'')
+    .replace(/\u00a0/g,' ')
+    .replace(/[ \t]+\n/g,'\n')
+    .replace(/\n[ \t]+/g,'\n')
+    .replace(/[ \t]{2,}/g,' ')
+    .replace(/\n{3,}/g,'\n\n')
+    .trim();
+}
+function uniqueText(values){const seen=new Set();return (values||[]).map(x=>String(x||'').trim()).filter(Boolean).filter(x=>{const k=norm(x);if(seen.has(k))return false;seen.add(k);return true})}
+function normalizeQuotes(values){
+  const arr=Array.isArray(values)?values:[];let featuredUsed=false;
+  return arr.map(q=>typeof q==='string'?{text:q}:q||{}).map(q=>{const text=String(q.text||q.quote||'').trim(),note=String(q.note||q.location||q.context||'').trim();let featured=Boolean(q.featured||q.presentation);if(featuredUsed)featured=false;if(featured)featuredUsed=true;return{id:String(q.id||uid()),text,note,featured}}).filter(q=>q.text);
+}
+function quotesForExperience(e){return normalizeQuotes(e?.quotes||[])}
+function quoteCountForWork(workId){return experiencesFor(workId).reduce((n,e)=>n+quotesForExperience(e).length,0)}
+function presentationQuoteForExperience(e){const qs=quotesForExperience(e);return qs.find(q=>q.featured)||null}
+function presentationQuoteForWork(workId){
+  const entries=[];for(const e of experiencesFor(workId)){for(const q of quotesForExperience(e))entries.push({quote:q,experience:e})}
+  return entries.find(x=>x.quote.featured)||entries[0]||null;
+}
+function migrateDatabase(database){
+  let changed=false;database.works=database.works||[];database.experiences=database.experiences||[];
+  for(const w of database.works){
+    w.aliases=uniqueText([...(w.aliases||[]),w.sourceMetadata?.originalTitle,...(w.sourceMetadata?.alternativeTitles||[])]).filter(x=>norm(x)!==norm(w.title));
+    if(!Array.isArray(w.aliases)){w.aliases=[];changed=true}
+  }
+  for(const e of database.experiences){
+    if(e.source==='StoryGraph' && e.review){const cleaned=cleanImportedReview(e.review);if(cleaned!==e.review){e.review=cleaned;changed=true}}
+    const normalizedQuotes=normalizeQuotes(e.quotes||[]);if(JSON.stringify(normalizedQuotes)!==JSON.stringify(e.quotes||[])){e.quotes=normalizedQuotes;changed=true}
+    const w=database.works.find(x=>x.id===e.workId);
+    if(w?.type==='Book'&&!e.edition){
+      const legacyRaw=w.external?.isbn||'';const legacy={isbn:cleanIsbn(legacyRaw),sourceId:legacyRaw&&!cleanIsbn(legacyRaw)?legacyRaw:'',publisher:w.sourceMetadata?.publisher||'',publishYear:w.sourceMetadata?.editionYear||'',language:w.sourceMetadata?.language||'',format:w.sourceMetadata?.format||'',pages:w.sourceMetadata?.pages||'',cover:w.cover||'',olid:w.sourceMetadata?.editionOlid||'',workKey:w.external?.openlibraryKey||'',contributors:w.sourceMetadata?.contributors||'',source:e.source==='StoryGraph'?'StoryGraph':'legacy'};
+      if(Object.values(legacy).some(Boolean)){e.edition=normalizeEdition(legacy);changed=true}
+    }
+    if(w?.type==='Book'&&e.source==='StoryGraph'&&STORYGRAPH_EDITION_ROWS.length){
+      e.edition=normalizeEdition(e.edition||{})||{source:'StoryGraph'};
+      const sg=storygraphRowFor(w);if(sg?.uid&&e.edition.sourceId!==sg.uid){e.edition.sourceId=sg.uid;changed=true}
+      if(sg?.format&&!e.edition.format){e.edition.format=sg.format;changed=true}
+      if(sg?.contributors&&!e.edition.contributors){e.edition.contributors=sg.contributors;changed=true}
+      const exactIsbn=cleanIsbn(e.edition.sourceId||sg?.uid||e.edition.isbn);if(exactIsbn&&e.edition.isbn!==exactIsbn){e.edition.isbn=exactIsbn;changed=true}
+      if(!exactIsbn&&e.edition.isbn){e.edition.isbn='';changed=true}
+      // A generic Open Library cover is not evidence for a StoryGraph edition whose UID is not an ISBN.
+      if(storygraphHasExactNonIsbn(e)){
+        if(e.edition.cover&&isOpenLibraryCover(e.edition.cover)){e.edition.cover='';changed=true}
+        if(w.cover&&isOpenLibraryCover(w.cover)){w.cover='';changed=true}
+      }
+    }
+  }
+  if((database.schemaVersion||0)<6){database.schemaVersion=6;changed=true}
+  return {database,changed};
+}
+function loadDb(){return migrateDatabase(clone(PRELOADED_DB)).database;}
+let db=loadDb();
+let editingExperienceId=null;
+window.pathosCanEdit=false;
+window.pathosBridge={
+  getArchive:()=>clone(db),
+  setArchive:archive=>{db=migrateDatabase(clone(archive)).database;renderAll();},
+  notify:msg=>toast(msg)
+};
+function saveDb(){renderAll(); if(window.pathosCanEdit&&window.pathosHostedSave)window.pathosHostedSave(clone(db));else alert('Sign in to save changes.');}
+function toast(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
+function dateLabel(s){if(!s)return'';const d=new Date(s+'T12:00:00');return d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}
+function experienceDate(e){return e.endDate||e.startDate||''}
+function stars(r){if(r===''||r==null||Number.isNaN(Number(r)))return'';const n=Number(r);const decimals=Number.isInteger(n)?0:Number.isInteger(n*2)?1:2;return `★ ${n.toFixed(decimals)}/5`}
+function formatRating(r){if(r===''||r==null||Number.isNaN(Number(r)))return'';const n=Number(r);const decimals=Number.isInteger(n)?0:Number.isInteger(n*2)?1:2;return n.toFixed(decimals)}
+function workFor(id){return db.works.find(w=>w.id===id)}
+function experiencesFor(workId){return db.experiences.filter(e=>e.workId===workId).sort((a,b)=>(experienceDate(b)||b.loggedDate||'').localeCompare(experienceDate(a)||a.loggedDate||''))}
+function mediumIcon(type){return MEDIA_ICONS[type]||MEDIA_ICONS.Other}
+function statusPill(status){if(!status||status==='completed')return'';const cls=status==='in-progress'?'current':status;return `<span class="pill ${cls}">${esc(STATUS_LABELS[status]||status)}</span>`}
+function editionCover(e){return e?.edition?.cover||''}
+function generatedIsbnCover(url,isbn=''){const u=String(url||'');const clean=String(isbn||'').replace(/[^0-9Xx]/g,'');return Boolean(clean)&&u.includes('/b/isbn/'+clean+'-')}
+function safeWebUrl(value){try{const u=new URL(String(value||'').trim());return (u.protocol==='http:'||u.protocol==='https:')?u.href:''}catch{return''}}
+function sourcePageLink(e){const u=safeWebUrl(e?.sourceUrl);return u?`<a class="inline-link" href="${esc(u)}" target="_blank" rel="noopener noreferrer">Open reference page ↗</a>`:''}
+function bestRecordedBookCover(w){const ex=experiencesFor(w.id);return ex.map(e=>e.edition?.cover||'').find(Boolean)||''}
+function coverHTML(w,cls='cover',e=null){const cover=editionCover(e)||w.cover||'';return `<div class="${cls}">${cover?`<img src="${esc(cover)}" alt="" onerror="this.style.display='none';this.parentElement.textContent='${mediumIcon(w.type)}'">`:mediumIcon(w.type)}</div>`}
+function workSearchText(w){return uniqueText([w.title,w.creator,w.year,...(w.aliases||[]),w.sourceMetadata?.originalTitle,...(w.sourceMetadata?.alternativeTitles||[])]).join(' ')}
+function findWork(data){
+  const ext=data.external||{};
+  if(ext.letterboxd){const w=db.works.find(w=>w.external?.letterboxd===ext.letterboxd);if(w)return w}
+  if(ext.openlibraryKey){const w=db.works.find(w=>w.external?.openlibraryKey===ext.openlibraryKey);if(w)return w}
+  if(ext.tmdb){const w=db.works.find(w=>String(w.external?.tmdb||'')===String(ext.tmdb));if(w)return w}
+  return db.works.find(w=>norm(w.title)===norm(data.title)&&norm(w.type)===norm(data.type||'Other')&&(!data.creator||!w.creator||norm(w.creator).includes(norm(data.creator))||norm(data.creator).includes(norm(w.creator))));
+}
+function findOrCreateWork(data){
+  let w=findWork(data);
+  if(w){
+    if(!w.creator&&data.creator)w.creator=data.creator;if(!w.year&&data.year)w.year=data.year;if(!w.cover&&data.cover)w.cover=data.cover;
+    if(data.liked)w.liked=true;w.external=w.external||{};Object.assign(w.external,data.external||{});w.sourceMetadata=Object.assign(w.sourceMetadata||{},data.sourceMetadata||{});w.aliases=uniqueText([...(w.aliases||[]),...(data.aliases||[]),data.sourceMetadata?.originalTitle,...(data.sourceMetadata?.alternativeTitles||[])]).filter(x=>norm(x)!==norm(w.title));return w;
+  }
+  w={id:uid(),title:String(data.title||'Untitled').trim(),type:data.type||'Other',creator:data.creator||'',year:data.year||'',cover:data.cover||'',liked:Boolean(data.liked),external:data.external||{},sourceMetadata:data.sourceMetadata||{},aliases:uniqueText(data.aliases||[]).filter(x=>norm(x)!==norm(data.title)),createdAt:new Date().toISOString()};
+  db.works.push(w);return w;
+}
+function normalizeEdition(ed){if(!ed)return null;const rawIsbn=String(ed.isbn||'').trim();const x={isbn:cleanIsbn(rawIsbn),ean:String(ed.ean||'').trim(),identifierType:String(ed.identifierType||'').trim(),identifierValue:String(ed.identifierValue||'').trim(),sourceId:String(ed.sourceId||ed.storygraphUid||'').trim(),publisher:String(ed.publisher||'').trim(),publishYear:String(ed.publishYear||'').trim(),language:String(ed.language||'').trim(),format:String(ed.format||'').trim(),pages:String(ed.pages||'').trim(),cover:String(ed.cover||'').trim(),olid:String(ed.olid||'').trim(),workKey:String(ed.workKey||'').trim(),contributors:String(ed.contributors||'').trim(),source:String(ed.source||'').trim()};if(!x.sourceId&&rawIsbn&&!x.isbn)x.sourceId=rawIsbn;return Object.values(x).some(Boolean)?x:null}
+function editionFromData(data){return normalizeEdition(data.edition||{isbn:data.editionIsbn,ean:data.editionEan,identifierType:data.editionOtherType,identifierValue:data.editionOtherId,publisher:data.editionPublisher,publishYear:data.editionYear,language:data.editionLanguage,format:data.editionFormat,pages:data.editionPages,cover:data.editionCover,olid:data.editionOlid,workKey:data.editionWorkKey,contributors:data.sourceMetadata?.contributors||'',source:data.source||'manual'})}
+function addExperience(data){
+  const w=findOrCreateWork(data);const ed=w.type==='Book'?editionFromData(data):null;
+  const e={id:uid(),workId:w.id,startDate:data.startDate||'',endDate:data.endDate||'',loggedDate:data.loggedDate||'',rating:data.rating===''||data.rating==null?'':Number(data.rating),review:data.review||'',quotes:normalizeQuotes(data.quotes||[]),venue:data.venue||'',sourceUrl:safeWebUrl(data.sourceUrl||''),isPublic:!!data.isPublic,tags:Array.isArray(data.tags)?data.tags:String(data.tags||'').split(',').map(s=>s.trim()).filter(Boolean),repeat:Boolean(data.repeat),status:data.status||'completed',source:data.source||'manual',details:data.details||{},edition:ed,createdAt:new Date().toISOString()};
+  if(ed?.cover)w.cover=ed.cover;if(ed?.workKey){w.external=w.external||{};w.external.openlibraryKey=w.external.openlibraryKey||ed.workKey}
+  db.experiences.push(e);return e;
+}
+function duplicateExperience(m){
+  const w=findWork(m);if(!w)return false;
+  return db.experiences.some(e=>e.workId===w.id&&String(e.status||'completed')===String(m.status||'completed')&&String(e.startDate||'')===String(m.startDate||'')&&String(e.endDate||'')===String(m.endDate||'')&&String(e.rating??'')===String(m.rating??'')&&norm(e.review)===norm(m.review));
+}
+
+function renderAll(){renderStats();renderHomeExtras();renderCurrent();renderHomeTimeline();renderFilters();renderLibrary();renderTimeline();renderReviewFilters();renderReviews();renderPassageFilters();renderPassages();renderInsights();renderMetadataKpis()}
+function renderStats(){
+  const completed=db.experiences.filter(e=>(e.status||'completed')==='completed').length;
+  const rated=db.experiences.filter(e=>e.rating!==''&&e.rating!=null);
+  const avg=rated.length?(rated.reduce((a,e)=>a+Number(e.rating),0)/rated.length).toFixed(1):'—';
+  const reviews=db.experiences.filter(e=>String(e.review||'').trim()).length;
+  $('stats').innerHTML=[['Works',db.works.length],['Completed',completed],['Written reviews',reviews],['Average rating',avg]].map(([l,v])=>`<div class="stat"><strong>${v}</strong><span>${l}</span></div>`).join('');
+}
+
+function renderHomeExtras(){
+  const year=String(new Date().getFullYear());
+  if($('homeYearTitle'))$('homeYearTitle').textContent=`${year} so far`;
+  const arr=db.experiences.filter(e=>e.status!=='planned'&&experienceDate(e)?.startsWith(year));
+  const rated=arr.filter(e=>e.rating!==''&&e.rating!=null),reviewed=arr.filter(e=>String(e.review||'').trim());
+  const avg=rated.length?(rated.reduce((a,e)=>a+Number(e.rating),0)/rated.length).toFixed(2):'—';
+  const words=reviewed.reduce((a,e)=>a+reviewWords(e),0);
+  const byType={};arr.forEach(e=>{const w=workFor(e.workId);if(w)byType[w.type]=(byType[w.type]||0)+1});
+  if($('homeYearSummary'))$('homeYearSummary').innerHTML=`<div class="year-numbers"><div class="year-number"><strong>${arr.length}</strong><span>experiences</span></div><div class="year-number"><strong>${avg}</strong><span>average rating</span></div><div class="year-number"><strong>${reviewed.length}</strong><span>written reviews</span></div><div class="year-number"><strong>${words.toLocaleString()}</strong><span>review words</span></div></div><div class="media-breakdown">${Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`<span class="media-chip">${esc(t)} ${n}</span>`).join('')||'<span class="meta">No dated experiences this year yet.</span>'}</div>`;
+  const reviews=db.experiences.filter(e=>String(e.review||'').trim()).sort((a,b)=>(reviewDate(b)||'').localeCompare(reviewDate(a)||'')||String(b.createdAt||'').localeCompare(String(a.createdAt||''))).slice(0,4);
+  if($('homeLatestReviews')){$('homeLatestReviews').innerHTML=reviews.length?reviews.map(e=>{const w=workFor(e.workId);const cover=editionCover(e)||w?.cover||'';return `<article class="mini-review" data-exp="${e.id}"><div class="mini-cover">${cover?`<img src="${esc(cover)}" alt="" onerror="this.style.display='none'">`:mediumIcon(w?.type||'Other')}</div><div><h4>${esc(w?.title||'Untitled')}</h4><div class="meta">${esc(w?.type||'')}${e.rating!==''?` · ${stars(e.rating)}`:''}${reviewDate(e)?` · ${esc(dateLabel(reviewDate(e)))}`:''}</div><div class="mini-review-text">${esc(e.review)}</div></div><div class="meta">${reviewWords(e)}w</div></article>`}).join(''):'<div class="meta">No written reviews yet.</div>';bindExperienceClicks($('homeLatestReviews'))}
+}
+function workAverageRating(wid){const a=experiencesFor(wid).filter(e=>e.rating!==''&&e.rating!=null).map(e=>Number(e.rating));return a.length?a.reduce((s,x)=>s+x,0)/a.length:null}
+function workLatestDate(wid){return experiencesFor(wid).map(experienceDate).filter(Boolean).sort().pop()||''}
+function reviewWords(e){return String(e.review||'').trim()?String(e.review).trim().split(/\s+/).length:0}
+function datedYear(e){const d=experienceDate(e);return d&&/^\d{4}/.test(d)?d.slice(0,4):''}
+function pct(n,d){return d?Math.round(n/d*100):0}
+function reviewDate(e){return experienceDate(e)||e.loggedDate||''}
+function renderReviewFilters(){
+  const reviewed=db.experiences.filter(e=>String(e.review||'').trim());
+  const currentType=$('reviewTypeFilter')?.value||'', currentYear=$('reviewYearFilter')?.value||'', currentSource=$('reviewSourceFilter')?.value||'';
+  const types=[...new Set(reviewed.map(e=>workFor(e.workId)?.type).filter(Boolean))].sort();
+  const years=[...new Set(reviewed.map(e=>{const d=reviewDate(e);return /^\d{4}/.test(d)?d.slice(0,4):''}).filter(Boolean))].sort((a,b)=>b.localeCompare(a));
+  const sources=[...new Set(reviewed.map(e=>e.source).filter(Boolean))].sort();
+  if($('reviewTypeFilter')) $('reviewTypeFilter').innerHTML='<option value="">All media</option>'+types.map(t=>`<option value="${esc(t)}" ${t===currentType?'selected':''}>${esc(t)}</option>`).join('');
+  if($('reviewYearFilter')) $('reviewYearFilter').innerHTML='<option value="">All years</option>'+years.map(y=>`<option value="${esc(y)}" ${y===currentYear?'selected':''}>${esc(y)}</option>`).join('');
+  if($('reviewSourceFilter')) $('reviewSourceFilter').innerHTML='<option value="">All sources</option>'+sources.map(x=>`<option value="${esc(x)}" ${x===currentSource?'selected':''}>${esc(x)}</option>`).join('');
+}
+function reviewMatchesRating(e,filter){
+  if(!filter)return true;
+  const has=e.rating!==''&&e.rating!=null&&Number.isFinite(Number(e.rating));
+  if(filter==='unrated')return !has;if(!has)return false;const r=Number(e.rating);
+  if(filter==='5')return r===5;if(filter==='4')return r>=4&&r<5;if(filter==='3')return r>=3&&r<4;if(filter==='lt3')return r<3;return true;
+}
+function renderReviews(){
+  if(!$('reviewsList'))return;
+  const q=norm($('reviewSearch').value),type=$('reviewTypeFilter').value,rating=$('reviewRatingFilter').value,year=$('reviewYearFilter').value,source=$('reviewSourceFilter').value,sort=$('reviewSort').value;
+  let arr=db.experiences.filter(e=>String(e.review||'').trim()).filter(e=>{
+    const w=workFor(e.workId);if(!w)return false;const d=reviewDate(e),y=/^\d{4}/.test(d)?d.slice(0,4):'';
+    if(type&&w.type!==type)return false;if(year&&y!==year)return false;if(source&&e.source!==source)return false;if(!reviewMatchesRating(e,rating))return false;
+    if(q&&!([w.title,w.creator,e.review,e.source,...(e.tags||[])].some(x=>norm(x).includes(q))))return false;return true;
+  });
+  const dateVal=e=>reviewDate(e)||'';const ratingVal=e=>(e.rating===''||e.rating==null)?-1:Number(e.rating);
+  if(sort==='newest')arr.sort((a,b)=>dateVal(b).localeCompare(dateVal(a))||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+  else if(sort==='oldest')arr.sort((a,b)=>(dateVal(a)||'9999').localeCompare(dateVal(b)||'9999')||String(a.createdAt||'').localeCompare(String(b.createdAt||'')));
+  else if(sort==='rating-desc')arr.sort((a,b)=>ratingVal(b)-ratingVal(a)||reviewWords(b)-reviewWords(a));
+  else if(sort==='rating-asc')arr.sort((a,b)=>(ratingVal(a)<0?99:ratingVal(a))-(ratingVal(b)<0?99:ratingVal(b))||reviewWords(b)-reviewWords(a));
+  else if(sort==='longest')arr.sort((a,b)=>reviewWords(b)-reviewWords(a));
+  else if(sort==='shortest')arr.sort((a,b)=>reviewWords(a)-reviewWords(b));
+  else if(sort==='title')arr.sort((a,b)=>(workFor(a.workId)?.title||'').localeCompare(workFor(b.workId)?.title||''));
+  const total=db.experiences.filter(e=>String(e.review||'').trim()).length;$('reviewsCount').textContent=`Showing ${arr.length} of ${total} written review${total===1?'':'s'}`;
+  $('reviewsList').innerHTML=arr.length?arr.map(e=>{const w=workFor(e.workId),d=reviewDate(e),cover=editionCover(e)||w?.cover||'';const bits=[w?.type,w?.creator,dateLabel(d),e.source,`${reviewWords(e)} words`].filter(Boolean);return `<article class="review-card-full" data-exp="${e.id}"><div class="review-list-cover">${cover?`<img src="${esc(cover)}" alt="" onerror="this.style.display='none';this.parentElement.textContent='${mediumIcon(w?.type||'Other')}'">`:mediumIcon(w?.type||'Other')}</div><div class="review-card-content"><div class="review-card-head"><div><div class="eyebrow">${esc((w?.type||'OTHER').toUpperCase())}</div><h3>${esc(w?.title||'Untitled')}</h3><div class="review-card-meta">${bits.map(esc).join(' · ')}</div></div><div class="review-rating-big">${e.rating!==''?stars(e.rating):'<span class="muted">Unrated</span>'}</div></div>${presentationQuoteForExperience(e)?`<div class="review-presentation-quote">${esc(presentationQuoteForExperience(e).text).replace(/\n/g,'<br>')}${presentationQuoteForExperience(e).note?`<small>${esc(presentationQuoteForExperience(e).note)}</small>`:''}</div>`:''}<div class="review-body-full">${esc(e.review).replace(/\n/g,'<br>')}</div>${e.tags?.length?`<div class="review-tags">${e.tags.map(t=>`<span class="pill">${esc(t)}</span>`).join('')}</div>`:''}</div></article>`}).join(''):'<div class="empty">No reviews match these filters.</div>';
+  bindExperienceClicks($('reviewsList'));
+}
+function renderPassageFilters(){
+  if(!$('passageTypeFilter'))return;const rows=[];db.experiences.forEach(e=>quotesForExperience(e).forEach(q=>rows.push({e,q,w:workFor(e.workId)})));
+  const curType=$('passageTypeFilter').value||'',curYear=$('passageYearFilter').value||'';
+  const types=[...new Set(rows.map(x=>x.w?.type).filter(Boolean))].sort();const years=[...new Set(rows.map(x=>{const d=reviewDate(x.e);return /^\d{4}/.test(d)?d.slice(0,4):''}).filter(Boolean))].sort((a,b)=>b.localeCompare(a));
+  $('passageTypeFilter').innerHTML='<option value="">All media</option>'+types.map(t=>`<option value="${esc(t)}" ${t===curType?'selected':''}>${esc(t)}</option>`).join('');
+  $('passageYearFilter').innerHTML='<option value="">All years</option>'+years.map(y=>`<option value="${esc(y)}" ${y===curYear?'selected':''}>${esc(y)}</option>`).join('');
+}
+function renderPassages(){
+  if(!$('passagesList'))return;const q=norm($('passageSearch').value),type=$('passageTypeFilter').value,year=$('passageYearFilter').value,featured=$('passageFeaturedFilter').value,sort=$('passageSort').value;
+  let rows=[];db.experiences.forEach(e=>quotesForExperience(e).forEach(quote=>{const w=workFor(e.workId);if(w)rows.push({e,w,quote})}));const total=rows.length;
+  rows=rows.filter(x=>{const d=reviewDate(x.e),y=/^\d{4}/.test(d)?d.slice(0,4):'';if(type&&x.w.type!==type)return false;if(year&&y!==year)return false;if(featured==='featured'&&!x.quote.featured)return false;if(q&&![x.quote.text,x.quote.note,x.w.title,x.w.creator,x.w.type].some(v=>norm(v).includes(q)))return false;return true});
+  const d=x=>reviewDate(x.e)||'';if(sort==='oldest')rows.sort((a,b)=>(d(a)||'9999').localeCompare(d(b)||'9999'));else if(sort==='title')rows.sort((a,b)=>a.w.title.localeCompare(b.w.title));else rows.sort((a,b)=>d(b).localeCompare(d(a))||String(b.e.createdAt||'').localeCompare(String(a.e.createdAt||'')));
+  $('passagesCount').textContent=`Showing ${rows.length} of ${total} saved passage${total===1?'':'s'}`;
+  $('passagesList').innerHTML=rows.length?rows.map(x=>`<article class="passage-card" data-exp="${x.e.id}"><div class="eyebrow">${esc(x.w.type.toUpperCase())}${x.quote.featured?' · PRESENTATION':''}</div><h3 style="margin:5px 0 0;font:600 21px Georgia,serif">${esc(x.w.title)}</h3><div class="meta">${esc(x.w.creator||'')}${reviewDate(x.e)?` · ${esc(dateLabel(reviewDate(x.e)))}`:''}</div><blockquote>${esc(x.quote.text).replace(/\n/g,'<br>')}</blockquote>${x.quote.note?`<div class="meta">${esc(x.quote.note)}</div>`:''}</article>`).join(''):'<div class="empty" style="grid-column:1/-1">No passages match these filters.</div>';bindExperienceClicks($('passagesList'));
+}
+function renderInsights(){
+  const experienced=db.experiences.filter(e=>e.status!=='planned');
+  const rated=experienced.filter(e=>e.rating!==''&&e.rating!=null&&Number.isFinite(Number(e.rating)));
+  const reviewed=experienced.filter(e=>String(e.review||'').trim());
+  const words=reviewed.reduce((sum,e)=>sum+reviewWords(e),0);
+  const five=rated.filter(e=>Number(e.rating)===5).length;
+  const reviewRate=pct(reviewed.length,experienced.length);
+  $('insightStats').innerHTML=[
+    ['Rated',rated.length,`${pct(rated.length,experienced.length)}% of experienced items`],
+    ['Written reviews',reviewed.length,`${reviewRate}% review rate`],
+    ['Words written',words.toLocaleString(),reviewed.length?`${Math.round(words/reviewed.length)} words per review`:'' ],
+    ['Five-star ratings',five,rated.length?`${pct(five,rated.length)}% of ratings`:'' ]
+  ].map(([l,v,sub],i)=>i===2?`<div class="stat"><strong>${v}</strong><span>${l}</span>${sub?`<small>${sub}</small>`:''}</div>`:`<button type="button" class="stat insight-stat-action" data-drill="${['allRated','allReviewed','','fiveStars'][i]}"><strong>${v}</strong><span>${l}</span>${sub?`<small>${sub}</small>`:''}</button>`).join('');
+  renderRatingDistribution(rated);
+  renderRatingByMedium(rated);
+  renderActivityByYear(experienced);
+  renderRatingTrend(rated);
+  renderReviewRateByMedium(experienced);
+  renderLongestReviews(reviewed);
+}
+
+function insightHasRating(e){return e.rating!==''&&e.rating!=null&&Number.isFinite(Number(e.rating))}
+function insightReview(e){return Boolean(String(e.review||'').trim())}
+function openInsightDrill(kind,value){
+  const all=db.experiences.filter(e=>e.status!=='planned');
+  let title='Experiences',matching=[];
+  if(kind==='rating'){matching=all.filter(e=>insightHasRating(e)&&Number(e.rating)===Number(value));title=`Rated ${formatRating(Number(value))}/5`}
+  else if(kind==='ratedMedium'){matching=all.filter(e=>insightHasRating(e)&&workFor(e.workId)?.type===value);title=`${value} · Rated experiences`}
+  else if(kind==='year'){matching=all.filter(e=>datedYear(e)===value);title=`${value} · Experiences`}
+  else if(kind==='reviewedYear'){matching=all.filter(e=>datedYear(e)===value&&insightReview(e));title=`${value} · Written reviews`}
+  else if(kind==='ratedYear'){matching=all.filter(e=>datedYear(e)===value&&insightHasRating(e));title=`${value} · Ratings`}
+  else if(kind==='reviewedMedium'){matching=all.filter(e=>workFor(e.workId)?.type===value&&insightReview(e));title=`${value} · Written reviews`}
+  else if(kind==='allRated'){matching=all.filter(insightHasRating);title='All rated experiences'}
+  else if(kind==='allReviewed'){matching=all.filter(insightReview);title='All written reviews'}
+  else if(kind==='fiveStars'){matching=all.filter(e=>insightHasRating(e)&&Number(e.rating)===5);title='Five-star experiences'}
+  else return;
+  matching.sort((a,b)=>(experienceDate(b)||b.loggedDate||'').localeCompare(experienceDate(a)||a.loggedDate||'')||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+  $('insightDialogTitle').textContent=title;
+  $('insightDialogCount').textContent=`${matching.length} matching experience${matching.length===1?'':'s'} · Select one to open it`;
+  $('insightDialogList').innerHTML=matching.length?matching.map(e=>{
+    const w=workFor(e.workId);if(!w)return'';
+    const cover=editionCover(e)||w.cover||'';
+    return `<button type="button" class="insight-drill-item" data-exp="${esc(e.id)}"><span class="mini-cover">${cover?`<img src="${esc(cover)}" alt="" onerror="this.style.display='none'">`:mediumIcon(w.type)}</span><span><span class="drill-title" style="display:block">${esc(w.title)}</span><span class="meta">${esc(w.type)}${e.rating!==''&&e.rating!=null?` · ★ ${formatRating(e.rating)}/5`:''}${experienceDate(e)?` · ${esc(dateLabel(experienceDate(e)))}`:''}</span>${e.review?`<span class="drill-excerpt" style="display:-webkit-box">${esc(e.review)}</span>`:''}</span></button>`;
+  }).join(''):'<div class="insight-empty">No matching entries.</div>';
+  $('insightDialog').showModal();
+}
+$('closeInsightDialog').addEventListener('click',()=>$('insightDialog').close());
+$('insightDialogList').addEventListener('click',event=>{
+  const item=event.target.closest('[data-exp]');if(!item)return;
+  $('insightDialog').close();openExperience(item.dataset.exp);
+});
+$('insights').addEventListener('click',event=>{
+  const item=event.target.closest('[data-drill]');if(!item)return;
+  openInsightDrill(item.dataset.drill,item.dataset.value||'');
+});
+$('insights').addEventListener('keydown',event=>{
+  if(event.key!=='Enter'&&event.key!==' ')return;
+  const item=event.target.closest('[data-drill]');if(!item||item.tagName.toLowerCase()!=='g')return;
+  event.preventDefault();openInsightDrill(item.dataset.drill,item.dataset.value||'');
+});
+
+function renderRatingDistribution(rated){
+  const counts={};rated.forEach(e=>{const r=Number(e.rating);counts[r]=(counts[r]||0)+1});
+  const buckets=Object.keys(counts).map(Number).sort((a,b)=>a-b),max=Math.max(1,...Object.values(counts));
+  $('ratingDistNote').textContent=`${rated.length} ratings`;
+  $('ratingDistribution').innerHTML=rated.length?`<div class="rating-bars">${buckets.map(x=>{const c=counts[x];const label=Number.isInteger(x)?x.toFixed(0):Number.isInteger(x*2)?x.toFixed(1):x.toFixed(2);return `<button type="button" class="rating-col insight-hit" data-drill="rating" data-value="${x}" title="Show ${c} experiences rated ${label}/5" aria-label="Show ${c} experiences rated ${label} out of 5"><span class="rating-count">${c||''}</span><span class="rating-bar" style="height:${c/max*165}px"></span><span class="rating-label">${label}</span></button>`}).join('')}</div>`:'<div class="insight-empty">No ratings yet.</div>';
+}
+function renderRatingByMedium(rated){
+  const map={};rated.forEach(e=>{const w=workFor(e.workId);if(!w)return;(map[w.type]||=[]).push(Number(e.rating))});
+  const data=Object.entries(map).map(([type,a])=>({type,count:a.length,avg:a.reduce((s,x)=>s+x,0)/a.length})).filter(x=>x.count>=2).sort((a,b)=>b.avg-a.avg||b.count-a.count);
+  $('ratingByMedium').innerHTML=data.length?`<div class="hbar-chart">${data.map(x=>`<button type="button" class="hbar-row insight-hit" data-drill="ratedMedium" data-value="${esc(x.type)}" title="Show ${x.count} rated ${esc(x.type.toLowerCase())} experiences"><span class="hbar-label" title="${esc(x.type)}">${esc(x.type)} <span class="muted">(${x.count})</span></span><span class="hbar-track"><span class="hbar-fill" style="width:${x.avg/5*100}%;display:block"></span></span><span class="hbar-value">${x.avg.toFixed(2)}</span></button>`).join('')}</div>`:'<div class="insight-empty">Not enough ratings by medium yet.</div>';
+}
+function renderActivityByYear(experienced){
+  const map={};experienced.forEach(e=>{const y=datedYear(e);if(!y)return;if(!map[y])map[y]={all:0,reviews:0};map[y].all++;if(String(e.review||'').trim())map[y].reviews++});
+  const years=Object.keys(map).sort();if(!years.length){$('activityByYear').innerHTML='<div class="insight-empty">Add experience dates to see activity over time.</div>';return}
+  const max=Math.max(1,...years.map(y=>map[y].all));
+  $('activityByYear').innerHTML=`<div class="year-bars">${years.map(y=>`<div class="year-col"><button type="button" class="year-hit insight-hit" data-drill="year" data-value="${y}" title="${y}: ${map[y].all} experiences" aria-label="Show ${map[y].all} experiences in ${y}"><span class="year-bar consumed" style="height:${map[y].all/max*175}px"></span></button><button type="button" class="year-hit insight-hit" data-drill="reviewedYear" data-value="${y}" title="${y}: ${map[y].reviews} reviews" aria-label="Show ${map[y].reviews} reviewed experiences in ${y}"><span class="year-bar reviewed" style="height:${map[y].reviews/max*175}px"></span></button><div class="year-label">${y}</div></div>`).join('')}</div><div class="legend"><span>Experiences</span><span class="reviewed">Written reviews</span></div>`;
+}
+function renderRatingTrend(rated){
+  const map={};rated.forEach(e=>{const y=datedYear(e);if(!y)return;(map[y]||=[]).push(Number(e.rating))});
+  const data=Object.entries(map).map(([year,a])=>({year,count:a.length,avg:a.reduce((s,x)=>s+x,0)/a.length})).filter(x=>x.count>=2).sort((a,b)=>a.year.localeCompare(b.year));
+  if(data.length<2){$('ratingTrend').innerHTML='<div class="insight-empty">Not enough dated ratings across multiple years yet.</div>';return}
+  const W=900,H=260,L=45,R=20,T=20,B=38,innerW=W-L-R,innerH=H-T-B;
+  const x=i=>L+(data.length===1?innerW/2:i*innerW/(data.length-1));const y=v=>T+(5-v)/5*innerH;
+  const path=data.map((d,i)=>`${i?'L':'M'} ${x(i).toFixed(1)} ${y(d.avg).toFixed(1)}`).join(' ');
+  const grid=[1,2,3,4,5].map(v=>`<line class="line-grid" x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}"/><text class="svg-label" x="${L-10}" y="${y(v)+3}" text-anchor="end">${v}</text>`).join('');
+  const pts=data.map((d,i)=>`<g class="insight-point-hit insight-hit" tabindex="0" role="button" data-drill="ratedYear" data-value="${d.year}" aria-label="Show ${d.count} rated experiences from ${d.year}" ><circle class="point-target" cx="${x(i)}" cy="${y(d.avg)}" r="13"/><circle class="line-dot" cx="${x(i)}" cy="${y(d.avg)}" r="5"/><title>${d.year}: ${d.avg.toFixed(2)}/5 (${d.count} ratings)</title></g><text class="svg-label" x="${x(i)}" y="${H-12}" text-anchor="middle">${d.year}</text>`).join('');
+  $('ratingTrend').innerHTML=`<div class="line-chart-wrap"><svg class="line-chart" viewBox="0 0 ${W} ${H}" role="group" aria-label="Average rating by year; select a data point to see experiences">${grid}<path class="line-path" d="${path}"/>${pts}</svg></div>`;
+}
+function renderReviewRateByMedium(experienced){
+  const map={};experienced.forEach(e=>{const w=workFor(e.workId);if(!w)return;if(!map[w.type])map[w.type]={all:0,reviews:0};map[w.type].all++;if(String(e.review||'').trim())map[w.type].reviews++});
+  const data=Object.entries(map).map(([type,x])=>({type,...x,rate:pct(x.reviews,x.all)})).sort((a,b)=>b.rate-a.rate||b.all-a.all);
+  $('reviewRateByMedium').innerHTML=data.length?`<div class="hbar-chart">${data.map(x=>`<button type="button" class="hbar-row insight-hit" data-drill="reviewedMedium" data-value="${esc(x.type)}" title="Show ${x.reviews} written reviews of ${esc(x.type.toLowerCase())} experiences"><span class="hbar-label" title="${esc(x.type)}">${esc(x.type)}</span><span class="hbar-track"><span class="hbar-fill" style="width:${x.rate}%;display:block"></span></span><span class="hbar-value">${x.rate}%</span></button>`).join('')}</div>`:'<div class="insight-empty">No experiences yet.</div>';
+}
+function renderLongestReviews(reviewed){
+  const top=[...reviewed].sort((a,b)=>reviewWords(b)-reviewWords(a)).slice(0,5);
+  $('longestReviews').innerHTML=top.length?top.map(e=>{const w=workFor(e.workId);return `<article class="review-row" data-exp="${e.id}" style="cursor:pointer"><strong>${esc(w?.title||'Untitled')}</strong><div class="meta">${esc(w?.type||'')} · ${reviewWords(e)} words${e.rating!==''?` · ${stars(e.rating)}`:''}</div><p class="review-snippet">${esc(e.review)}</p></article>`}).join(''):'<div class="insight-empty">No written reviews yet.</div>';bindExperienceClicks($('longestReviews'));
+}
+
+function renderCurrent(){
+  const arr=db.experiences.filter(e=>e.status==='in-progress');
+  $('currentSection').classList.toggle('hidden',!arr.length);
+  $('currentList').innerHTML=arr.map(experienceCard).join('');bindExperienceClicks($('currentList'));
+}
+function renderHomeTimeline(){
+  const viewport=$('homeTimelineScroll'),track=$('homeTimelineTrack');
+  if(!viewport||!track)return;
+  const arr=db.experiences.filter(e=>experienceDate(e)&&e.status!=='planned'&&workFor(e.workId))
+    .sort((a,b)=>experienceDate(b).localeCompare(experienceDate(a))||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+  if(!arr.length){track.innerHTML='<div class="home-timeline-empty">Your dated experiences will appear here as you add them.</div>';updateHomeTimelineArrows();return}
+  track.innerHTML=arr.map(e=>{
+    const w=workFor(e.workId),cover=editionCover(e)||w.cover||'';
+    const image=cover?`<img src="${esc(cover)}" alt="" loading="lazy" onerror="this.style.display='none';this.parentElement.textContent='${mediumIcon(w.type)}'">`:mediumIcon(w.type);
+    const excerpt=String(e.review||'').trim();
+    return `<div class="home-rail-item"><div class="home-rail-date">${esc(dateLabel(experienceDate(e)))}</div><div class="home-rail-dot" aria-hidden="true"></div><button class="home-rail-card" type="button" data-exp="${esc(e.id)}" aria-label="Open ${esc(w.title)}, ${esc(dateLabel(experienceDate(e)))}"><div class="home-rail-card-top"><div class="home-rail-cover">${image}</div><div style="min-width:0"><div class="home-rail-type">${esc(w.type)}</div><div class="home-rail-title">${esc(w.title)}</div><div class="home-rail-creator">${esc(w.creator||'')}</div>${e.rating!==''&&e.rating!=null?`<div class="home-rail-rating">★ ${esc(formatRating(e.rating))}/5</div>`:''}</div></div>${excerpt?`<p class="home-rail-snippet">${esc(excerpt)}</p>`:e.venue?`<div class="home-rail-venue">${esc(e.venue)}</div>`:''}</button></div>`;
+  }).join('');
+  bindExperienceClicks(track);
+  viewport.scrollLeft=0;
+  updateHomeTimelineArrows();
+}
+function updateHomeTimelineArrows(){
+  const scroller=$('homeTimelineScroll');if(!scroller)return;
+  const prev=$('homeTimelinePrev'),next=$('homeTimelineNext');
+  if(prev)prev.disabled=scroller.scrollLeft<=2;
+  if(next)next.disabled=scroller.scrollLeft+scroller.clientWidth>=scroller.scrollWidth-3;
+}
+function scrollHomeTimeline(direction){
+  const viewport=$('homeTimelineScroll');if(!viewport)return;
+  viewport.scrollBy({left:direction*Math.max(210,Math.round(viewport.clientWidth*.76)),behavior:'smooth'});
+}
+function renderRecent(){
+  const arr=db.experiences.filter(e=>experienceDate(e)&&e.status!=='planned').sort((a,b)=>experienceDate(b).localeCompare(experienceDate(a))).slice(0,9);
+  $('recentList').innerHTML=arr.length?arr.map(experienceCard).join(''):`<div class="empty">No dated experiences yet.</div>`;bindExperienceClicks($('recentList'));
+}
+function experienceCard(e){
+  const w=workFor(e.workId);if(!w)return'';
+  const when=[e.startDate&&e.endDate&&e.startDate!==e.endDate?`${dateLabel(e.startDate)} → ${dateLabel(e.endDate)}`:dateLabel(e.endDate||e.startDate),e.venue].filter(Boolean).join(' · ');
+  return `<article class="card" data-exp="${e.id}">${coverHTML(w,'cover',e)}<div><div class="eyebrow">${esc(w.type.toUpperCase())}${w.liked?' <span class="liked">♥</span>':''}</div><h4>${esc(w.title)}</h4><div class="meta">${esc(w.creator)}${w.creator&&w.year?' · ':''}${esc(w.year)}</div><div>${statusPill(e.status)}${e.repeat?'<span class="pill">repeat</span>':''}</div><div class="meta">${esc(when||((e.status==='planned')?'Not started':'Date unknown'))}</div>${e.rating!==''?`<div class="rating">${stars(e.rating)}</div>`:''}${e.review?`<p class="review-snippet">${esc(e.review)}</p>`:''}</div></article>`;
+}
+function renderFilters(){
+  const current=$('typeFilter').value;const types=[...new Set(db.works.map(w=>w.type))].sort();
+  $('typeFilter').innerHTML='<option value="">All media</option>'+types.map(t=>`<option ${t===current?'selected':''}>${esc(t)}</option>`).join('');
+}
+function workStatus(wid){
+  const ex=experiencesFor(wid);if(ex.some(e=>e.status==='in-progress'))return'in-progress';if(ex.some(e=>e.status==='completed'))return'completed';if(ex.some(e=>e.status==='dnf'))return'dnf';if(ex.some(e=>e.status==='planned'))return'planned';return'';
+}
+function renderLibrary(){
+  const q=norm($('searchInput').value),type=$('typeFilter').value,status=$('statusFilter').value,content=$('libraryContentFilter')?.value||'',sort=$('librarySort')?.value||'title';
+  let works=db.works.filter(w=>(!type||w.type===type)&&(!status||workStatus(w.id)===status)).filter(w=>{
+    const ex=experiencesFor(w.id);
+    if(content==='favorite'&&!w.liked)return false;
+    if(content==='reviewed'&&!ex.some(e=>String(e.review||'').trim()))return false;
+    if(content==='unreviewed'&&ex.some(e=>String(e.review||'').trim()))return false;
+    if(!q)return true;return [workSearchText(w),w.type,...ex.flatMap(e=>[e.review,e.venue,e.sourceUrl,e.source,e.edition?.isbn,e.edition?.sourceId,e.edition?.publisher,...(e.tags||[]),...quotesForExperience(e).flatMap(q=>[q.text,q.note])])].some(x=>norm(x).includes(q));
+  });
+  if(sort==='recent')works.sort((a,b)=>workLatestDate(b.id).localeCompare(workLatestDate(a.id))||a.title.localeCompare(b.title));
+  else if(sort==='rating')works.sort((a,b)=>(workAverageRating(b.id)??-1)-(workAverageRating(a.id)??-1)||a.title.localeCompare(b.title));
+  else if(sort==='year')works.sort((a,b)=>(Number(b.year)||0)-(Number(a.year)||0)||a.title.localeCompare(b.title));
+  else if(sort==='experiences')works.sort((a,b)=>experiencesFor(b.id).length-experiencesFor(a.id).length||a.title.localeCompare(b.title));
+  else works.sort((a,b)=>a.title.localeCompare(b.title));
+  if($('libraryCount'))$('libraryCount').textContent=`Showing ${works.length} of ${db.works.length} works`;
+  $('libraryGrid').innerHTML=works.length?works.map(w=>{
+    const ex=experiencesFor(w.id),latest=ex[0],st=workStatus(w.id),avg=workAverageRating(w.id);
+    return `<article class="work-card" data-work="${w.id}">${coverHTML(w,'work-cover',latest)}<div class="work-info"><div class="eyebrow">${esc(w.type.toUpperCase())}${w.liked?' <span class="liked">♥</span>':''}</div><h3>${esc(w.title)}</h3><div class="meta">${esc(w.creator)}${w.creator&&w.year?' · ':''}${esc(w.year)}</div><div>${statusPill(st)}</div><div class="meta">${ex.length} experience${ex.length===1?'':'s'}${avg!=null?` · ★ ${formatRating(avg)}/5`:''}</div></div></article>`;
+  }).join(''):`<div class="empty">No matching works.</div>`;
+  document.querySelectorAll('[data-work]').forEach(el=>el.onclick=()=>openWork(el.dataset.work));
+}
+function renderTimeline(){
+  const arr=db.experiences.filter(e=>experienceDate(e)&&e.status!=='planned').sort((a,b)=>experienceDate(b).localeCompare(experienceDate(a)));
+  if(!arr.length){$('timelineList').innerHTML='<div class="empty">Your timeline will appear here.</div>';return}
+  const groups={};arr.forEach(e=>{const d=experienceDate(e);const key=new Date(d+'T12:00:00').toLocaleDateString(undefined,{month:'long',year:'numeric'});(groups[key]||=[]).push(e)});
+  $('timelineList').innerHTML=Object.entries(groups).map(([month,es])=>`<section class="timeline-group"><h3>${esc(month)}</h3>${es.map(e=>{const w=workFor(e.workId);return `<div class="timeline-item" data-exp="${e.id}"><div class="small muted">${esc(dateLabel(experienceDate(e)))} · ${esc(w?.type||'')} · ${esc(e.source||'manual')}</div><div class="timeline-title">${esc(w?.title||'Untitled')}</div><div class="meta">${esc(w?.creator||'')}${e.rating!==''?` · ${stars(e.rating)}`:''}</div></div>`}).join('')}</section>`).join('');
+  bindExperienceClicks($('timelineList'));
+}
+function bindExperienceClicks(root){root.querySelectorAll('[data-exp]').forEach(el=>el.onclick=()=>openExperience(el.dataset.exp))}
+function externalLinks(w){
+  const parts=[];if(w.external?.letterboxd)parts.push(`<a class="source-link" href="${esc(w.external.letterboxd)}" target="_blank" rel="noopener">Open on Letterboxd ↗</a>`);if(w.external?.openlibraryKey)parts.push(`<a class="source-link" href="https://openlibrary.org${esc(w.external.openlibraryKey.startsWith('/')?w.external.openlibraryKey:'/'+w.external.openlibraryKey)}" target="_blank" rel="noopener">Open Library work ↗</a>`);if(w.external?.tmdb)parts.push(`<a class="source-link" href="https://www.themoviedb.org/${w.type==='TV'?'tv':'movie'}/${esc(w.external.tmdb)}" target="_blank" rel="noopener">TMDB ↗</a>`);return parts.join('')
+}
+function editionSummary(ed){if(!ed)return'';return [ed.publisher,ed.publishYear,ed.language,ed.format,ed.pages?`${ed.pages} pp.`:'',ed.isbn?`ISBN ${ed.isbn}`:'',ed.ean?`EAN ${ed.ean}`:'',ed.identifierValue?`${ed.identifierType||'ID'} ${ed.identifierValue}`:'',ed.sourceId?`UID ${ed.sourceId}`:''].filter(Boolean).join(' · ')}
+function editionLinks(ed){if(!ed)return'';const links=[];if(ed.olid)links.push(`<a class="source-link" href="https://openlibrary.org${esc(ed.olid.startsWith('/')?ed.olid:'/'+ed.olid)}" target="_blank" rel="noopener">Exact edition on Open Library ↗</a>`);else if(ed.isbn)links.push(`<a class="source-link" href="https://openlibrary.org/isbn/${esc(ed.isbn)}" target="_blank" rel="noopener">ISBN on Open Library ↗</a>`);return links.join('')}
+function openWork(id){
+  const w=workFor(id);if(!w)return;const ex=experiencesFor(id),latest=ex[0];$('workDialogTitle').innerHTML=`<div class="eyebrow">${esc(w.type.toUpperCase())}${w.liked?' <span class="liked">♥</span>':''}</div><h2>${esc(w.title)}</h2>`;
+  const runtime=w.sourceMetadata?.runtime?`${w.sourceMetadata.runtime} min`:'';const genres=Array.isArray(w.sourceMetadata?.genres)?w.sourceMetadata.genres.slice(0,4).join(', '):'';const metaBits=[w.creator,w.year,runtime,genres].filter(Boolean).join(' · ');
+  const rated=ex.filter(e=>e.rating!==''&&e.rating!=null),reviewed=ex.filter(e=>String(e.review||'').trim()),avg=rated.length?rated.reduce((a,e)=>a+Number(e.rating),0)/rated.length:null;const passageCount=quoteCountForWork(id),presentation= presentationQuoteForWork(id);
+  const dates=ex.map(experienceDate).filter(Boolean).sort(),first=dates[0]||'',last=dates.at(-1)||'';const latestReview=reviewed.slice().sort((a,b)=>(reviewDate(b)||'').localeCompare(reviewDate(a)||''))[0];
+  $('workDialogBody').innerHTML=`<div class="work-detail-top">${coverHTML(w,'work-detail-cover',latest)}<div style="min-width:0;flex:1"><div class="meta">${esc(metaBits)}</div>${w.aliases?.length?`<div class="meta" style="margin-top:5px">Also known as: ${esc(w.aliases.slice(0,6).join(' · '))}</div>`:''}${externalLinks(w)}<div class="work-metrics"><span class="work-metric">${ex.length} experience${ex.length===1?'':'s'}</span>${avg!=null?`<span class="work-metric">★ ${formatRating(avg)} average</span>`:''}<span class="work-metric">${reviewed.length} review${reviewed.length===1?'':'s'}</span>${passageCount?`<span class="work-metric">${passageCount} passage${passageCount===1?'':'s'}</span>`:''}${first?`<span class="work-metric">${first===last?esc(dateLabel(first)):esc(dateLabel(first))+' → '+esc(dateLabel(last))}</span>`:''}</div><div class="work-actions"><button class="btn primary" id="addAgain">+ Add another experience</button><button class="btn favorite-btn ${w.liked?'active':''}" id="favoriteWorkBtn">${w.liked?'♥ Favorite':'♡ Mark favorite'}</button></div>${presentation?`<blockquote class="presentation-quote"><p>${esc(presentation.quote.text).replace(/\n/g,'<br>')}</p>${presentation.quote.note?`<footer>${esc(presentation.quote.note)}</footer>`:''}</blockquote>`:''}${latestReview?`<div class="work-summary-review"><div class="eyebrow">LATEST REVIEW</div><p>${esc(latestReview.review).replace(/\n/g,'<br>')}</p></div>`:''}</div></div><div class="work-detail-body"><div class="experience-list">${ex.length?ex.map(e=>`<article class="experience" data-exp="${e.id}"><div><strong>${esc(dateLabel(e.endDate||e.startDate)||STATUS_LABELS[e.status]||'Undated')}</strong> ${statusPill(e.status)}${e.repeat?' <span class="pill">repeat</span>':''}</div><div class="meta">${e.startDate&&e.endDate&&e.startDate!==e.endDate?`${esc(dateLabel(e.startDate))} → ${esc(dateLabel(e.endDate))}`:''}${e.venue?` · ${esc(e.venue)}`:''}${e.source?` · imported from ${esc(e.source)}`:''}</div>${e.edition?`<div class="experience-edition"><strong>Edition:</strong> ${esc(editionSummary(e.edition)||'edition recorded')} ${editionLinks(e.edition)}</div>`:''}${e.sourceUrl?`<div class="experience-source">${sourcePageLink(e)}</div>`:''}${e.rating!==''?`<div class="rating">${stars(e.rating)}</div>`:''}${quotesForExperience(e).length?`<div class="experience-passages"><div class="eyebrow">PASSAGES</div>${quotesForExperience(e).map(q=>`<div class="saved-passage">${q.featured?'★ ':''}${esc(q.text).replace(/\n/g,'<br>')}${q.note?`<small>${esc(q.note)}</small>`:''}</div>`).join('')}</div>`:''}${e.review?`<p style="font-family:Georgia,serif;line-height:1.55">${esc(e.review).replace(/\n/g,'<br>')}</p>`:''}${e.tags?.length?`<div class="tag-row">${e.tags.map(t=>`<span class="pill">${esc(t)}</span>`).join('')}</div>`:''}${e.loggedDate?`<div class="meta small" style="margin-top:8px">Logged/added: ${esc(dateLabel(e.loggedDate))}</div>`:''}</article>`).join(''):'<div class="empty">No experiences yet.</div>'}</div></div>`;
+  $('workDialog').showModal();bindExperienceClicks($('workDialogBody'));$('addAgain').onclick=()=>{if(!window.pathosCanEdit){toast('Sign in to edit');return;}$('workDialog').close();openEntryDialog({work:w})};$('favoriteWorkBtn').onclick=()=>{if(!window.pathosCanEdit){toast('Sign in to edit');return;}w.liked=!w.liked;saveDb();renderAll();$('favoriteWorkBtn').classList.toggle('active',w.liked);$('favoriteWorkBtn').textContent=w.liked?'♥ Favorite':'♡ Mark favorite';$('workDialogTitle').innerHTML=`<div class="eyebrow">${esc(w.type.toUpperCase())}${w.liked?' <span class="liked">♥</span>':''}</div><h2>${esc(w.title)}</h2>`;toast(w.liked?'Added to favorites':'Removed from favorites')}
+}
+let selectedCatalogItem=null;
+let catalogTimer=null;
+let catalogAbort=null;
+function tmdbToken(){return localStorage.getItem(TMDB_TOKEN_KEY)||''}
+function setCatalogHint(){
+  const type=$('entryForm')?.elements?.type?.value||'Book';
+  const hints={Book:'Searches your archive + Open Library.',Film:tmdbToken()?'Searches your archive + TMDB.':'Searches your archive. Add a TMDB token under Metadata for film search.',TV:tmdbToken()?'Searches your archive + TMDB.':'Searches your archive. Add a TMDB token under Metadata for TV search.'};
+  if($('catalogHint'))$('catalogHint').textContent=hints[type]||'Searches your existing archive first.';
+}
+function localCatalogResults(q,type){
+  q=norm(q);if(!q)return[];return db.works.filter(w=>(!type||w.type===type)&&norm(workSearchText(w)).includes(q)).slice(0,6).map(w=>({provider:'local',id:w.id,title:w.title,creator:w.creator||'',year:w.year||'',cover:(experiencesFor(w.id)[0]?.edition?.cover||w.cover||''),type:w.type,external:w.external||{},sourceMetadata:w.sourceMetadata||{},aliases:w.aliases||[],label:'Already in your archive'}));
+}
+function olCover(doc){return doc.cover_i&&Number(doc.cover_i)>0?`https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`:''}
+function editionFromOlDoc(d,workKey=''){if(!d)return null;const isbn=(d.isbn_13?.[0]||d.isbn_10?.[0]||d.isbn?.[0]||'');const covers=(d.covers||[]).map(Number).filter(n=>Number.isFinite(n)&&n>0);const coverId=(Number(d.cover_i)>0?Number(d.cover_i):(covers[0]||''));const lang=(d.language||d.languages||[]).map(x=>typeof x==='string'?x:(x.key||'').split('/').pop()).join(', ');const yearMatch=String(d.publish_date||d.publish_year||'').match(/(1[0-9]{3}|20[0-9]{2})/);return normalizeEdition({isbn,publisher:(d.publishers||d.publisher||[]).join? (d.publishers||d.publisher||[]).join(', '):(d.publisher||''),publishYear:yearMatch?.[1]||'',language:lang,format:d.physical_format||d.format||'',pages:d.number_of_pages||d.number_of_pages_median||'',cover:coverId?`https://covers.openlibrary.org/b/id/${coverId}-L.jpg`:'',olid:d.key||'',workKey})}
+async function searchOpenLibrary(q,signal){
+  const url='https://openlibrary.org/search.json?'+new URLSearchParams({title:q,limit:'7',fields:'key,title,author_name,first_publish_year,cover_i,subject,editions,editions.key,editions.title,editions.isbn,editions.publisher,editions.publish_date,editions.language,editions.cover_i'});const r=await fetch(url,{signal});if(!r.ok)throw new Error('Open Library unavailable');const j=await r.json();
+  return (j.docs||[]).map(d=>{const ed=d.editions?.docs?.[0];return{provider:'openlibrary',id:d.key,title:d.title||q,creator:(d.author_name||[]).slice(0,2).join(', '),year:d.first_publish_year||'',cover:Number(ed?.cover_i)>0?`https://covers.openlibrary.org/b/id/${ed.cover_i}-L.jpg`:olCover(d),type:'Book',external:{openlibraryKey:d.key},sourceMetadata:{genres:(d.subject||[]).slice(0,6)},suggestedEdition:editionFromOlDoc(ed,d.key)}});
+}
+async function tmdbFetch(path,params={},signal){const token=tmdbToken();if(!token)throw new Error('TMDB token missing');const url='https://api.themoviedb.org/3'+path+'?'+new URLSearchParams(params);const r=await fetch(url,{headers:{Authorization:`Bearer ${token}`,accept:'application/json'},signal});if(!r.ok)throw new Error(r.status===401?'TMDB token was rejected.':'TMDB request failed.');return r.json()}
+function tmdbLanguage(){const x=navigator.language||'en-US';return /^[a-z]{2}-[A-Z]{2}$/.test(x)?x:'en-US'}
+async function searchTmdb(q,type,signal){const isTv=type==='TV',path=isTv?'/search/tv':'/search/movie';const j=await tmdbFetch(path,{query:q,include_adult:'false',language:tmdbLanguage(),page:'1'},signal);return (j.results||[]).slice(0,7).map(d=>{const date=isTv?d.first_air_date:d.release_date;const localized=isTv?(d.name||d.original_name):(d.title||d.original_title);const original=isTv?d.original_name:d.original_title;return{provider:'tmdb',id:d.id,title:localized,creator:'',year:(date||'').slice(0,4),cover:d.poster_path?TMDB_IMG+d.poster_path:'',type,external:{tmdb:d.id},aliases:uniqueText([original]).filter(x=>norm(x)!==norm(localized)),sourceMetadata:{originalTitle:original,overview:d.overview||''}}})}
+function catalogThumb(x){return `<span class="catalog-thumb">${x.cover?`<img src="${esc(x.cover)}" alt="">`:mediumIcon(x.type)}</span>`}
+function renderCatalogResults(items,message=''){const box=$('catalogResults');if(!box)return;if(!items.length&&!message){box.classList.add('hidden');box.innerHTML='';return}box.innerHTML=(message?`<div class="catalog-message">${esc(message)}</div>`:'')+items.map((x,i)=>`<button type="button" class="catalog-result" data-cat="${i}">${catalogThumb(x)}<span><strong>${esc(x.title)}</strong><span class="meta">${esc([x.creator,x.year,x.label||x.provider].filter(Boolean).join(' · '))}</span>${x.aliases?.length?`<span class="meta">${esc(x.aliases.slice(0,2).join(' / '))}</span>`:''}</span></button>`).join('');box.classList.remove('hidden');box.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>selectCatalogItem(items[Number(b.dataset.cat)]))}
+function localItemFromWork(w,label='Already in your archive'){return{provider:'local',id:w.id,title:w.title,creator:w.creator||'',year:w.year||'',cover:(experiencesFor(w.id)[0]?.edition?.cover||w.cover||''),type:w.type,external:w.external||{},sourceMetadata:w.sourceMetadata||{},aliases:w.aliases||[],label}}
+async function runCatalogSearch(){
+  const f=$('entryForm'),q=f.elements.title.value.trim(),type=f.elements.type.value;if(q.length<2){renderCatalogResults([]);return}selectedCatalogItem=null;if(catalogAbort)catalogAbort.abort();catalogAbort=new AbortController();const signal=catalogAbort.signal;const local=localCatalogResults(q,type);renderCatalogResults(local,'Searching catalogue…');
+  try{let remote=[];if(type==='Book')remote=await searchOpenLibrary(q,signal);else if((type==='Film'||type==='TV')&&tmdbToken())remote=await searchTmdb(q,type,signal);
+    const combined=[...local];const seenIds=new Set(local.map(x=>x.id));for(const x of remote){const existing=findWork(x);if(existing){if(!seenIds.has(existing.id)){combined.push(localItemFromWork(existing,'Already in your archive · catalogue match'));seenIds.add(existing.id)}}else if(!combined.some(y=>norm(y.title)===norm(x.title)&&String(y.year||'')===String(x.year||'')))combined.push(x)}
+    let msg='';if(!combined.length){if((type==='Film'||type==='TV')&&!tmdbToken())msg='No local match. Add a TMDB token under Metadata to search films and TV.';else if(!['Book','Film','TV'].includes(type))msg='No matching work in your archive. You can still enter it manually.';else msg='No catalogue match found. You can still enter it manually.'}renderCatalogResults(combined,msg)
+  }catch(e){if(e.name!=='AbortError')renderCatalogResults(local,e.message||'Catalogue search failed; manual entry still works.')}
+}
+async function hydrateTmdbSelection(item){
+  try{const isTv=item.type==='TV';const detail=await tmdbFetch(`/${isTv?'tv':'movie'}/${item.id}`,{append_to_response:'credits,alternative_titles,translations',language:tmdbLanguage()});const crew=detail.credits?.crew||[];const director=crew.find(x=>x.job==='Director')?.name||'';item.creator=director||item.creator;item.cover=detail.poster_path?TMDB_IMG+detail.poster_path:item.cover;item.year=((isTv?detail.first_air_date:detail.release_date)||'').slice(0,4)||item.year;const alt=isTv?(detail.alternative_titles?.results||[]).map(x=>x.title):(detail.alternative_titles?.titles||[]).map(x=>x.title);const trans=(detail.translations?.translations||[]).flatMap(x=>{const d=x.data||{};return [d.title,d.name]});const original=isTv?detail.original_name:detail.original_title;item.aliases=uniqueText([...(item.aliases||[]),original,...alt,...trans]).filter(x=>norm(x)!==norm(item.title));item.sourceMetadata={...(item.sourceMetadata||{}),genres:(detail.genres||[]).map(g=>g.name),runtime:isTv?(detail.episode_run_time?.[0]||''):(detail.runtime||''),countries:(detail.production_countries||[]).map(c=>c.name),originalTitle:original,alternativeTitles:item.aliases,overview:detail.overview||''}}
+  catch{}return item
+}
+async function selectCatalogItem(item){
+  if(item.provider==='tmdb')item=await hydrateTmdbSelection({...item});selectedCatalogItem=item;const f=$('entryForm');f.elements.title.value=item.title||'';f.elements.creator.value=item.creator||'';f.elements.year.value=item.year||'';f.elements.cover.value=item.cover||'';renderCatalogResults([]);updateEditionPanel();
+  if(item.type==='Book'){
+    clearEditionForm();const localW=item.provider==='local'?workFor(item.id):null;const localEd=localW?experiencesFor(localW.id).find(e=>e.edition)?.edition:null;if(localEd)fillEditionForm(localEd);
+    const workKey=item.external?.openlibraryKey||localEd?.workKey||'';if(workKey)loadEditionsForWork(workKey,item.suggestedEdition);else $('editionCurrent').textContent='No Open Library work is linked yet. You can still enter the exact edition manually or look it up by ISBN.';
+  }
+  $('catalogHint').textContent=item.provider==='local'?'Using an existing work from your archive.':`Matched with ${item.provider==='tmdb'?'TMDB':'Open Library'}.`;
+}
+function attachCatalogueSearch(){const f=$('entryForm'),title=f.elements.title,type=f.elements.type;if(!title||title.dataset.catalogBound)return;title.dataset.catalogBound='1';title.addEventListener('input',()=>{selectedCatalogItem=null;clearTimeout(catalogTimer);catalogTimer=setTimeout(runCatalogSearch,280)});type.addEventListener('change',()=>{selectedCatalogItem=null;setCatalogHint();updateEditionPanel();updateDateFields();if(title.value.trim().length>=2)runCatalogSearch()});title.addEventListener('keydown',e=>{if(e.key==='Escape')renderCatalogResults([])});document.addEventListener('click',e=>{if(!e.target.closest('.catalog-field'))renderCatalogResults([])});setCatalogHint();updateEditionPanel();updateDateFields()}
+function mergeSelectedCatalog(data){if(!selectedCatalogItem)return data;data.external={...(selectedCatalogItem.external||{})};data.sourceMetadata={...(selectedCatalogItem.sourceMetadata||{})};data.aliases=selectedCatalogItem.aliases||[];if(!data.creator)data.creator=selectedCatalogItem.creator||'';if(!data.year)data.year=selectedCatalogItem.year||'';if(!data.cover)data.cover=selectedCatalogItem.cover||'';return data}
+let editionCandidates=[];
+let selectedEdition=null;
+function languageLabel(code){return ({ita:'Italian',eng:'English',fre:'French',fra:'French',spa:'Spanish',ger:'German',deu:'German',por:'Portuguese',rus:'Russian'})[String(code||'').toLowerCase()]||code||''}
+const SINGLE_DATE_MEDIA={Film:'Watched on',Theatre:'Attended on',Concert:'Attended on',Exhibition:'Visited on',Opera:'Attended on'};
+function updateDateFields(){
+  const f=$('entryForm');if(!f)return;const type=f.elements.type.value;const sourceLabel=$('sourceUrlLabel');if(sourceLabel)sourceLabel.textContent=['Theatre','Concert','Opera','Exhibition'].includes(type)?'Official event / production page':'Reference / source page';const startField=$('startDateField'),endField=$('endDateField'),start=f.elements.startDate,end=f.elements.endDate;const singleLabel=SINGLE_DATE_MEDIA[type]||'';
+  if(singleLabel){
+    if(!end.value&&start.value)end.value=start.value;start.value='';startField?.classList.add('hidden');if($('endDateLabel'))$('endDateLabel').textContent=singleLabel;end.removeAttribute('min');
+  }else{
+    startField?.classList.remove('hidden');if($('startDateLabel'))$('startDateLabel').textContent='Started';if($('endDateLabel'))$('endDateLabel').textContent=type==='Book'?'Finished':type==='Videogame'?'Finished':type==='TV'?'Finished':type==='Podcast'?'Finished':'Finished';
+  }
+  validateDateOrder(false);
+}
+function validateDateOrder(report=false){
+  const f=$('entryForm');if(!f)return true;const type=f.elements.type.value,start=f.elements.startDate,end=f.elements.endDate,err=$('dateOrderError');
+  if(SINGLE_DATE_MEDIA[type]){end.setCustomValidity('');err?.classList.add('hidden');end.removeAttribute('min');return true}
+  if(start.value)end.min=start.value;else end.removeAttribute('min');
+  const bad=Boolean(start.value&&end.value&&end.value<start.value);
+  end.setCustomValidity(bad?'Finish date cannot be earlier than the start date.':'');err?.classList.toggle('hidden',!bad);
+  if(bad&&report)end.reportValidity();return !bad;
+}
+function updateEditionPanel(){const f=$('entryForm');if(!f)return;const show=f.elements.type.value==='Book';$('bookEditionDetails')?.classList.toggle('hidden',!show);$('editionPanel')?.classList.toggle('hidden',!show);if(show)renderEditionPreview()}
+function clearEditionForm(){const f=$('entryForm');if(!f)return;['editionIsbn','editionEan','editionOtherType','editionOtherId','editionSourceId','editionPublisher','editionYear','editionLanguage','editionFormat','editionPages','editionCover','editionOlid','editionWorkKey'].forEach(k=>{if(f.elements[k])f.elements[k].value=''});selectedEdition=null;editionCandidates=[];$('editionResults')?.classList.add('hidden');if($('editionResults'))$('editionResults').innerHTML='';if($('editionCurrent'))$('editionCurrent').textContent='';renderEditionPreview()}
+function editionFromForm(){const f=$('entryForm');return normalizeEdition({isbn:f.elements.editionIsbn?.value,ean:f.elements.editionEan?.value,identifierType:f.elements.editionOtherType?.value,identifierValue:f.elements.editionOtherId?.value,sourceId:f.elements.editionSourceId?.value,publisher:f.elements.editionPublisher?.value,publishYear:f.elements.editionYear?.value,language:f.elements.editionLanguage?.value,format:f.elements.editionFormat?.value,pages:f.elements.editionPages?.value,cover:f.elements.editionCover?.value,olid:f.elements.editionOlid?.value,workKey:f.elements.editionWorkKey?.value,source:selectedEdition?.source||'manual'})}
+function renderEditionPreview(){const box=$('editionCoverPreview');if(!box)return;const url=$('entryForm')?.elements?.editionCover?.value?.trim()||'';box.innerHTML=url?`<img src="${esc(url)}" alt="">`:'📚';const img=box.querySelector('img');if(img){img.onload=()=>{box.title='Exact edition cover'};img.onerror=()=>{box.textContent='📚';box.title='That cover URL did not return an image';const cur=$('editionCurrent');if(cur&&!/Loading|Looking up/.test(cur.textContent||''))cur.textContent='That cover URL does not return an image. You can choose your own cover below.'}}}
+function fillEditionForm(ed){ed=normalizeEdition(ed);if(!ed)return;selectedEdition=ed;const f=$('entryForm');const vals={editionIsbn:ed.isbn,editionEan:ed.ean,editionOtherType:ed.identifierType,editionOtherId:ed.identifierValue,editionSourceId:ed.sourceId,editionPublisher:ed.publisher,editionYear:ed.publishYear,editionLanguage:languageLabel(ed.language),editionFormat:ed.format,editionPages:ed.pages,editionCover:ed.cover,editionOlid:ed.olid,editionWorkKey:ed.workKey};Object.entries(vals).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v||''});$('editionCurrent').textContent=editionSummary(ed)||'Edition selected';renderEditionPreview()}
+function editionSearchText(ed){return norm([ed.isbn,ed.ean,ed.identifierType,ed.identifierValue,ed.sourceId,ed.publisher,ed.publishYear,ed.language,languageLabel(ed.language),ed.format,ed.pages,ed.olid].filter(Boolean).join(' '))}
+function renderEditionResults(filter=''){const box=$('editionResults');if(!box)return;let arr=editionCandidates;const q=norm(filter);if(q)arr=arr.filter(ed=>editionSearchText(ed).includes(q));arr=arr.slice(0,30);if(!arr.length){box.innerHTML='<div class="catalog-message">No matching edition in this catalogue list. You can fill the fields manually.</div>';box.classList.remove('hidden');return}box.innerHTML=arr.map((ed,i)=>`<button type="button" class="edition-result" data-ed="${i}"><span class="edition-thumb">${ed.cover?`<img src="${esc(ed.cover)}" alt="">`:'📚'}</span><span><strong>${esc(ed.publisher||'Edition')}${ed.publishYear?` · ${esc(ed.publishYear)}`:''}</strong><span class="meta">${esc([languageLabel(ed.language),ed.format,ed.pages?`${ed.pages} pp.`:'',ed.isbn?`ISBN ${ed.isbn}`:'',ed.ean?`EAN ${ed.ean}`:'',ed.identifierValue?`${ed.identifierType||'ID'} ${ed.identifierValue}`:'',ed.sourceId?`UID ${ed.sourceId}`:''].filter(Boolean).join(' · '))}</span></span></button>`).join('');box.classList.remove('hidden');box.querySelectorAll('[data-ed]').forEach((b,i)=>b.onclick=()=>{fillEditionForm(arr[i]);box.classList.add('hidden')})}
+async function lookupEditionByIsbn(raw){const isbn=String(raw||'').replace(/[^0-9Xx]/g,'');if(!(isbn.length===10||isbn.length===13))throw new Error('Enter a 10- or 13-digit ISBN.');const r=await fetch(`https://openlibrary.org/isbn/${encodeURIComponent(isbn)}.json`);if(!r.ok)throw new Error('That ISBN was not found on Open Library.');const d=await r.json();const workKey=d.works?.[0]?.key||'';const ed=editionFromOlDoc({...d,isbn:[isbn]},workKey);if(ed){ed.source='Open Library ISBN';if(!ed.isbn)ed.isbn=isbn}return ed}
+async function fetchWorkEditions(workKey){const id=String(workKey||'').split('/').filter(Boolean).pop();if(!id)return[];const r=await fetch(`https://openlibrary.org/works/${encodeURIComponent(id)}/editions.json?limit=100`);if(!r.ok)throw new Error('Could not load editions.');const j=await r.json();const items=(j.entries||[]).map(d=>{const ed=editionFromOlDoc(d,`/works/${id}`);if(ed)ed.source='Open Library';return ed}).filter(Boolean);const lang=(navigator.language||'').slice(0,2);return items.sort((a,b)=>{const score=x=>(x.cover?3:0)+(x.isbn?2:0)+(lang==='it'&&/ita|italian/i.test(x.language)?3:0)+(x.publisher?1:0);return score(b)-score(a)})}
+async function loadEditionsForWork(workKey,suggested=null){$('editionCurrent').textContent='Loading known editions…';try{editionCandidates=await fetchWorkEditions(workKey);if(suggested){const x=normalizeEdition(suggested);if(x&&!editionCandidates.some(e=>e.olid&&x.olid&&e.olid===x.olid))editionCandidates.unshift(x)}$('editionCurrent').textContent=`${editionCandidates.length} catalogue edition${editionCandidates.length===1?'':'s'} loaded. Filter them below, or enter your edition manually.`;renderEditionResults($('editionSearch').value)}catch(e){$('editionCurrent').textContent=e.message||'Could not load editions; manual edition entry still works.'}}
+async function editionLookup(){const q=$('editionSearch').value.trim();if(/^(?:97[89])?[0-9Xx\- ]{10,17}$/.test(q)){try{$('editionCurrent').textContent='Looking up ISBN…';const ed=await lookupEditionByIsbn(q);if(ed){fillEditionForm(ed);editionCandidates=[ed,...editionCandidates.filter(x=>x.olid!==ed.olid)];renderEditionResults('');return}}catch(e){$('editionCurrent').textContent=e.message}}
+  const wk=$('entryForm').elements.editionWorkKey?.value||selectedCatalogItem?.external?.openlibraryKey||'';if(wk)await loadEditionsForWork(wk);else $('editionCurrent').textContent='Choose an Open Library work first, enter an ISBN, or fill the edition fields manually.'}
+async function compressCover(file){if(!file)return'';const bmp=await createImageBitmap(file);const scale=Math.min(1,600/bmp.width,900/bmp.height);const c=document.createElement('canvas');c.width=Math.max(1,Math.round(bmp.width*scale));c.height=Math.max(1,Math.round(bmp.height*scale));c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.78)}
+function titleScore(a,b){a=norm(a).replace(/[^a-z0-9à-ž ]/g,'');b=norm(b).replace(/[^a-z0-9à-ž ]/g,'');if(a===b)return 4;if(a.includes(b)||b.includes(a))return 2;const aw=new Set(a.split(' ')),bw=b.split(' ');return bw.filter(x=>aw.has(x)).length/Math.max(1,bw.length)}
+function bestBookDoc(w,docs){return [...docs].sort((a,b)=>{const aa=(a.author_name||[]).some(x=>w.creator&&(norm(w.creator).includes(norm(x))||norm(x).includes(norm(w.creator))));const ba=(b.author_name||[]).some(x=>w.creator&&(norm(w.creator).includes(norm(x))||norm(x).includes(norm(w.creator))));const sa=titleScore(a.title,w.title)+(aa?2:0);const sb=titleScore(b.title,w.title)+(ba?2:0);return sb-sa})[0]}
+async function enrichBook(w){
+  const ex=experiencesFor(w.id);let matched=false;let hasStoryGraphExactNonIsbn=false;
+  for(const e of ex){
+    if(e.source==='StoryGraph'&&e.edition?.sourceId&&!isValidIsbn(e.edition.sourceId))hasStoryGraphExactNonIsbn=true;
+    const exactIsbn=cleanIsbn(e.edition?.isbn||e.edition?.sourceId||'');
+    if(exactIsbn){try{const oldEditionCover=e.edition.cover||'';const ed=await lookupEditionByIsbn(exactIsbn);if(ed){e.edition=Object.assign({},e.edition,ed,{isbn:exactIsbn,sourceId:e.edition.sourceId||exactIsbn,contributors:e.edition.contributors||w.sourceMetadata?.contributors||'',source:e.edition.source||'Open Library ISBN'});if(ed.cover){w.cover=ed.cover}else{if(generatedIsbnCover(oldEditionCover,exactIsbn))e.edition.cover='';if(generatedIsbnCover(w.cover,exactIsbn))w.cover=''}if(ed.workKey){w.external=w.external||{};w.external.openlibraryKey=ed.workKey}matched=true}}catch{}}
+  }
+  if(matched){const exact=bestRecordedBookCover(w);if(exact)w.cover=exact;else if(ex.some(e=>generatedIsbnCover(w.cover,e.edition?.isbn)))w.cover='';return true;}
+  let params={limit:'5',fields:'key,title,author_name,first_publish_year,cover_i,subject'};params.title=w.title;if(w.creator)params.author=w.creator;const r=await fetch('https://openlibrary.org/search.json?'+new URLSearchParams(params));if(!r.ok)throw new Error('Open Library request failed');const j=await r.json();const d=bestBookDoc(w,j.docs||[]);if(!d||titleScore(d.title,w.title)<1)return false;w.external=w.external||{};if(d.key)w.external.openlibraryKey=d.key;if(!w.creator&&d.author_name?.[0])w.creator=d.author_name.join(', ');if(!w.year&&d.first_publish_year)w.year=String(d.first_publish_year);w.sourceMetadata=w.sourceMetadata||{};if(d.subject?.length)w.sourceMetadata.genres=d.subject.slice(0,6);
+  // For a StoryGraph edition identified by a non-ISBN UID, a work-level cover is not edition-safe.
+  if(!hasStoryGraphExactNonIsbn&&!w.cover&&d.cover_i)w.cover=`https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg`;
+  else if(hasStoryGraphExactNonIsbn&&isOpenLibraryCover(w.cover))w.cover='';
+  return true
+}
+async function enrichTmdbWork(w){
+  const isTv=w.type==='TV';const params={query:w.title,include_adult:'false',language:tmdbLanguage(),page:'1'};if(w.year)params[isTv?'first_air_date_year':'year']=String(w.year);let search=await tmdbFetch(isTv?'/search/tv':'/search/movie',params);let results=search.results||[];if(!results.length&&w.year){delete params[isTv?'first_air_date_year':'year'];search=await tmdbFetch(isTv?'/search/tv':'/search/movie',params);results=search.results||[]}
+  const best=results.sort((a,b)=>{const ta=isTv?(a.name||a.original_name):(a.title||a.original_title),tb=isTv?(b.name||b.original_name):(b.title||b.original_title);const ya=((isTv?a.first_air_date:a.release_date)||'').slice(0,4),yb=((isTv?b.first_air_date:b.release_date)||'').slice(0,4);return (titleScore(tb,w.title)+(w.year&&yb==w.year?2:0))-(titleScore(ta,w.title)+(w.year&&ya==w.year?2:0))})[0];if(!best||titleScore(isTv?(best.name||best.original_name):(best.title||best.original_title),w.title)<1)return false;
+  const item=await hydrateTmdbSelection({provider:'tmdb',id:best.id,type:w.type,title:w.title,creator:w.creator,year:w.year,cover:w.cover,external:{tmdb:best.id},sourceMetadata:{},aliases:w.aliases||[]});w.external=w.external||{};w.external.tmdb=best.id;if(item.cover)w.cover=item.cover;if(item.creator)w.creator=item.creator;if(!w.year&&item.year)w.year=item.year;w.aliases=uniqueText([...(w.aliases||[]),...(item.aliases||[])]).filter(x=>norm(x)!==norm(w.title));w.sourceMetadata=Object.assign(w.sourceMetadata||{},item.sourceMetadata||{});return true
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function setMetadataBusy(active,kind=''){const ids=['enrichBooksBtn','enrichFilmsBtn','enrichAllBtn'];ids.forEach(id=>{const b=$(id);if(!b)return;b.disabled=active;b.classList.toggle('busy',active&&((kind==='books'&&id==='enrichBooksBtn')||(kind==='screen'&&id==='enrichFilmsBtn')||(kind==='all'&&id==='enrichAllBtn')))})}
+function progressHtml(label,done,total,matched,failed=0){const pct=total?Math.round(done/total*100):0;return `<div class="progress-line"><strong>${esc(label)}</strong><span>${done}/${total} · ${matched} matched${failed?` · ${failed} errors`:''}</span></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>`}
+async function enrichWorks(kind,manageBusy=true){
+  let works=kind==='books'?db.works.filter(w=>w.type==='Book'):db.works.filter(w=>w.type==='Film'||w.type==='TV');if(kind!=='books'&&!tmdbToken()){toast('Add your TMDB token first');document.querySelector('[data-view="metadata"]')?.click();$('tmdbTokenInput')?.focus();return}
+  if(!works.length)return;if(manageBusy)setMetadataBusy(true,kind);const box=$('metadataProgress');let matched=0,failed=0;try{for(let i=0;i<works.length;i++){box.innerHTML=progressHtml(kind==='books'?'Enriching books':'Enriching films & TV',i,works.length,matched,failed)+`<div class="meta" style="margin-top:8px">${esc(works[i].title)}</div>`;try{const ok=kind==='books'?await enrichBook(works[i]):await enrichTmdbWork(works[i]);if(ok)matched++}catch{failed++}saveDb();await sleep(kind==='books'?140:100)}saveDb();box.innerHTML=progressHtml('Finished',works.length,works.length,matched,failed)+`<div class="meta" style="margin-top:8px">Matched ${matched} work${matched===1?'':'s'}. For books, StoryGraph edition IDs are preserved. Work-level covers are never substituted for an exact StoryGraph edition unless the edition can be verified by ISBN.</div>`;toast(`Metadata: ${matched} matched`)}finally{if(manageBusy)setMetadataBusy(false,kind)}
+}
+async function enrichEverything(){if(!tmdbToken()){toast('Add your TMDB token first');$('tmdbTokenInput')?.focus();return}setMetadataBusy(true,'all');try{await enrichWorks('books',false);await enrichWorks('screen',false)}finally{setMetadataBusy(false,'all')}}
+function renderMetadataKpis(){const box=$('metadataKpis');if(!box)return;const total=db.works.length,covers=db.works.filter(w=>w.cover).length,catalogued=db.works.filter(w=>w.external?.openlibraryKey||w.external?.tmdb).length;const bookEx=db.experiences.filter(e=>workFor(e.workId)?.type==='Book');const exactCovers=bookEx.filter(e=>e.edition?.cover).length;box.innerHTML=`<div class="metadata-kpi"><strong>${covers}</strong><span>with cover/poster</span></div><div class="metadata-kpi"><strong>${exactCovers}</strong><span>readings with exact cover</span></div><div class="metadata-kpi"><strong>${catalogued}</strong><span>catalogue matched</span></div>`;const st=$('tmdbTokenStatus');if(st)st.textContent=tmdbToken()?'TMDB token saved in this browser.':'No TMDB token saved yet.';const input=$('tmdbTokenInput');if(input&&document.activeElement!==input)input.value=tmdbToken()?tmdbToken():''}
+function appendQuoteRow(q={}){
+  const list=$('quoteEditorList');if(!list)return;const row=document.createElement('div');row.className='quote-item';const id=String(q.id||uid());row.dataset.quoteId=id;
+  row.innerHTML=`<div class="quote-item-top"><textarea class="input quote-text" placeholder="Sentence, dialogue or passage…"></textarea><button type="button" class="quote-remove" title="Remove passage">Remove</button></div><div class="quote-item-meta"><input class="input quote-note" placeholder="Where / context — e.g. p. 84, chapter 3, scene, speaker"><label class="quote-feature"><input type="radio" name="presentationQuote" value="${esc(id)}"> Use as presentation</label></div>`;
+  row.querySelector('.quote-text').value=q.text||'';row.querySelector('.quote-note').value=q.note||'';if(q.featured)row.querySelector('input[type=radio]').checked=true;row.querySelector('.quote-remove').onclick=()=>row.remove();list.appendChild(row);
+}
+function renderQuoteEditor(quotes=[]){const list=$('quoteEditorList');if(!list)return;list.innerHTML='';normalizeQuotes(quotes).forEach(appendQuoteRow)}
+function quotesFromEditor(){const list=$('quoteEditorList');if(!list)return[];return normalizeQuotes([...list.querySelectorAll('.quote-item')].map(row=>({id:row.dataset.quoteId,text:row.querySelector('.quote-text')?.value||'',note:row.querySelector('.quote-note')?.value||'',featured:Boolean(row.querySelector('input[type=radio]')?.checked)})))}
+function localToday(){const d=new Date();const n=x=>String(x).padStart(2,'0');return `${d.getFullYear()}-${n(d.getMonth()+1)}-${n(d.getDate())}`}
+function updateFormSections(){
+  const f=$('entryForm');if(!f)return;
+  const qs=quotesFromEditor();if($('passageFormCount'))$('passageFormCount').textContent=qs.length?`${qs.length} saved`:'Optional';
+  const ed=editionFromForm();if($('editionFormSummary'))$('editionFormSummary').textContent=ed?(ed.publisher||ed.isbn||ed.ean||ed.identifierValue||'Recorded'):'Optional · ISBN, EAN, cover';
+}
+function resetFormSections(existing=false){
+  ['passagesDetails','bookEditionDetails','moreEntryDetails'].forEach(id=>{if($(id))$(id).open=false});
+  if(existing){
+    const f=$('entryForm');
+    if((f.elements.sourceUrl?.value||'')||(f.elements.tags?.value||'')||(f.elements.repeat?.checked))$('moreEntryDetails').open=true;
+    if(quotesFromEditor().length)$('passagesDetails').open=true;
+  }
+  updateFormSections();
+}
+function openEntryDialog(opts={}){
+  if(!window.pathosCanEdit){toast('Sign in to edit');return;}
+  editingExperienceId=null;selectedCatalogItem=null;$('deleteBtn').classList.add('hidden');$('entryForm').reset();clearEditionForm();renderQuoteEditor([]);const w=opts.work;
+  if(w){['title','type','creator','year','cover'].forEach(k=>{if($('entryForm').elements[k])$('entryForm').elements[k].value=w[k]||''});$('entryForm').elements.repeat.checked=true;selectedCatalogItem=localItemFromWork(w);const lastEd=experiencesFor(w.id).find(e=>e.edition)?.edition;if(lastEd)fillEditionForm(lastEd)}
+  attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(false);$('entryDialog').showModal();
+}
+function openExperience(id){
+  if(!window.pathosCanEdit){const item=db.experiences.find(x=>x.id===id);if(item)openWork(item.workId);return;}
+  const e=db.experiences.find(x=>x.id===id);if(!e)return;const w=workFor(e.workId);if(!w)return;editingExperienceId=id;const f=$('entryForm');f.reset();clearEditionForm();Object.entries({title:w.title,type:w.type,creator:w.creator,year:w.year,cover:w.cover,status:e.status||'completed',startDate:e.startDate,endDate:e.endDate,rating:e.rating,venue:e.venue,sourceUrl:e.sourceUrl||'',tags:(e.tags||[]).join(', '),review:e.review}).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??''});f.elements.repeat.checked=e.repeat;f.elements.isPublic.checked=!!e.isPublic;renderQuoteEditor(e.quotes||[]);if(e.edition)fillEditionForm(e.edition);selectedCatalogItem=localItemFromWork(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(true);$('deleteBtn').classList.remove('hidden');$('entryDialog').showModal();
+}
+$('entryForm').addEventListener('submit',ev=>{if(!window.pathosCanEdit){ev.preventDefault();return;}
+  ev.preventDefault();const f=new FormData(ev.currentTarget);let data=Object.fromEntries(f.entries());if(SINGLE_DATE_MEDIA[data.type])data.startDate='';if(!validateDateOrder(true))return;data.repeat=f.get('repeat')==='on';data.isPublic=f.get('isPublic')==='on';data.quotes=quotesFromEditor();data=mergeSelectedCatalog(data);if(data.type==='Book')data.edition=editionFromForm();
+  if(editingExperienceId){const e=db.experiences.find(x=>x.id===editingExperienceId);const oldWork=workFor(e.workId);if(oldWork&&norm(oldWork.title)===norm(data.title)){Object.assign(oldWork,{title:data.title,type:data.type,creator:data.creator,year:data.year,cover:data.cover||oldWork.cover});oldWork.external=Object.assign(oldWork.external||{},data.external||{});oldWork.sourceMetadata=Object.assign(oldWork.sourceMetadata||{},data.sourceMetadata||{});oldWork.aliases=uniqueText([...(oldWork.aliases||[]),...(data.aliases||[])])}else e.workId=findOrCreateWork(data).id;Object.assign(e,{startDate:data.startDate,endDate:data.endDate,rating:data.rating===''?'':Number(data.rating),venue:data.venue,sourceUrl:safeWebUrl(data.sourceUrl||''),isPublic:!!data.isPublic,review:data.review,tags:String(data.tags||'').split(',').map(s=>s.trim()).filter(Boolean),repeat:data.repeat,status:data.status||'completed',quotes:normalizeQuotes(data.quotes||[]),edition:data.type==='Book'?normalizeEdition(data.edition):null});const w=workFor(e.workId);if(e.edition?.cover&&w)w.cover=e.edition.cover;toast('Saving changes…')}
+  else{addExperience(data);toast('Saving experience…')}$('entryDialog').close();saveDb();
+});
+$('deleteBtn').onclick=()=>{if(!window.pathosCanEdit)return;if(!editingExperienceId)return;if(confirm('Delete this experience?')){const e=db.experiences.find(x=>x.id===editingExperienceId);db.experiences=db.experiences.filter(x=>x.id!==editingExperienceId);if(e&&!db.experiences.some(x=>x.workId===e.workId))db.works=db.works.filter(w=>w.id!==e.workId);$('entryDialog').close();saveDb();toast('Deleting online…')}};
+$('addQuoteBtn').onclick=()=>appendQuoteRow();$('addBtn').onclick=()=>openEntryDialog();if($('heroAddBtn'))$('heroAddBtn').onclick=()=>openEntryDialog();$('closeDialog').onclick=$('cancelBtn').onclick=()=>$('entryDialog').close();$('closeWorkDialog').onclick=()=>$('workDialog').close();
+$('searchInput').addEventListener('input',renderLibrary);['typeFilter','statusFilter','libraryContentFilter','librarySort'].forEach(id=>{const el=$(id);if(el)el.addEventListener('change',renderLibrary)});
+['reviewSearch','reviewTypeFilter','reviewRatingFilter','reviewYearFilter','reviewSourceFilter','reviewSort'].forEach(id=>{const el=$(id);if(el)el.addEventListener(id==='reviewSearch'?'input':'change',renderReviews)});['passageSearch','passageTypeFilter','passageYearFilter','passageFeaturedFilter','passageSort'].forEach(id=>{const el=$(id);if(el)el.addEventListener(id==='passageSearch'?'input':'change',renderPassages)});
+let activeReviewMode='reviews';
+function setReviewMode(mode){
+  activeReviewMode=mode==='passages'?'passages':'reviews';
+  $('reviewContentPane').classList.toggle('hidden',activeReviewMode!=='reviews');
+  $('passagesPane').classList.toggle('hidden',activeReviewMode!=='passages');
+  document.querySelectorAll('[data-review-mode]').forEach(button=>{
+    const active=button.dataset.reviewMode===activeReviewMode;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-selected',String(active));
+  });
+}
+document.querySelectorAll('[data-review-mode]').forEach(button=>button.addEventListener('click',()=>setReviewMode(button.dataset.reviewMode)));
+function showView(name){
+  if(name==='passages'){name='reviews';setReviewMode('passages')}
+  else if(name==='reviews'){setReviewMode('reviews')}
+  document.querySelectorAll('.tab[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view===name));
+  document.querySelectorAll('.menu-view').forEach(x=>x.classList.toggle('active',x.dataset.view===name));
+  $('moreMenuLabel')?.classList.toggle('active',['timeline','metadata','import'].includes(name));
+  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===name));
+  if($('moreMenu'))$('moreMenu').open=false;
+  if($('mobileMore'))$('mobileMore').value=['insights','timeline','metadata','import'].includes(name)?name:'';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('.tab[data-view],.menu-view').forEach(t=>t.onclick=()=>showView(t.dataset.view));if($('mobileMore'))$('mobileMore').onchange=e=>{if(e.target.value)showView(e.target.value)};if($('viewAllReviewsBtn'))$('viewAllReviewsBtn').onclick=()=>showView('reviews');if($('viewFullTimelineBtn'))$('viewFullTimelineBtn').onclick=()=>showView('timeline');if($('homeTimelinePrev'))$('homeTimelinePrev').onclick=()=>scrollHomeTimeline(-1);if($('homeTimelineNext'))$('homeTimelineNext').onclick=()=>scrollHomeTimeline(1);if($('homeTimelineScroll')){
+  const rail=$('homeTimelineScroll');
+  const zone=document.querySelector('.home-timeline-section');
+  rail.addEventListener('scroll',updateHomeTimelineArrows,{passive:true});
+  // Capture over the entire timeline: card, heading, or whitespace all scroll horizontally.
+  // Avoid CSS scroll snapping, which could undo small wheel increments.
+  (zone||rail).addEventListener('wheel',event=>{
+    if(event.defaultPrevented||event.ctrlKey||event.metaKey||event.altKey)return;
+    // Trackpads already emit horizontal wheel deltas; let native scrolling handle those.
+    if(Math.abs(event.deltaX)>Math.abs(event.deltaY))return;
+    if(!event.deltaY)return;
+    const max=rail.scrollWidth-rail.clientWidth;
+    if(max<=1)return;
+    const factor=event.deltaMode===1?22:event.deltaMode===2?rail.clientWidth:1.45;
+    const distance=event.deltaY*factor;
+    if((distance>0&&rail.scrollLeft>=max-1)||(distance<0&&rail.scrollLeft<=1))return;
+    event.preventDefault();
+    rail.scrollLeft=Math.max(0,Math.min(max,rail.scrollLeft+distance));
+    updateHomeTimelineArrows();
+  },{passive:false,capture:true});
+}
+window.addEventListener('resize',updateHomeTimelineArrows);
+
+attachCatalogueSearch();
+document.querySelectorAll('[data-today]').forEach(b=>b.addEventListener('click',()=>{const input=$(b.dataset.today);if(!input)return;input.value=localToday();input.dispatchEvent(new Event('input',{bubbles:true}));}));
+$('addQuoteBtn')?.addEventListener('click',()=>setTimeout(updateFormSections,0));
+$('quoteEditorList')?.addEventListener('input',updateFormSections);
+$('quoteEditorList')?.addEventListener('click',()=>setTimeout(updateFormSections,0));
+$('editionPanel')?.addEventListener('input',updateFormSections);
+if($('startDateInput'))$('startDateInput').addEventListener('input',()=>validateDateOrder(false));
+if($('endDateInput'))$('endDateInput').addEventListener('input',()=>validateDateOrder(false));
+if($('editionLookupBtn'))$('editionLookupBtn').onclick=editionLookup;
+if($('editionSearch'))$('editionSearch').addEventListener('input',()=>{if(editionCandidates.length)renderEditionResults($('editionSearch').value)});
+if($('editionCoverInput'))$('editionCoverInput').addEventListener('input',renderEditionPreview);
+if($('editionCoverFile'))$('editionCoverFile').addEventListener('change',async ev=>{const file=ev.target.files?.[0];if(!file)return;try{$('editionCurrent').textContent='Compressing your cover…';const url=await compressCover(file);$('entryForm').elements.editionCover.value=url;renderEditionPreview();$('editionCurrent').textContent='Custom cover selected. It will be stored with this reading and included in backups.'}catch{$('editionCurrent').textContent='Could not read that image.'}ev.target.value=''});
+if($('saveTmdbBtn'))$('saveTmdbBtn').onclick=()=>{const v=$('tmdbTokenInput').value.trim();if(v)localStorage.setItem(TMDB_TOKEN_KEY,v);else localStorage.removeItem(TMDB_TOKEN_KEY);renderMetadataKpis();setCatalogHint();toast(v?'TMDB token saved':'TMDB token removed')};
+if($('enrichBooksBtn'))$('enrichBooksBtn').onclick=()=>enrichWorks('books');if($('enrichFilmsBtn'))$('enrichFilmsBtn').onclick=()=>enrichWorks('screen');if($('enrichAllBtn'))$('enrichAllBtn').onclick=enrichEverything;
+$('backupBtn').onclick=()=>{const blob=new Blob([JSON.stringify({...db,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});download(blob,`pathos-backup-${new Date().toISOString().slice(0,10)}.json`)};
+$('restoreInput').onchange=async ev=>{if(!window.pathosCanEdit){alert('Sign in to restore an archive.');ev.target.value='';return;}const file=ev.target.files[0];if(!file)return;try{const x=JSON.parse(await file.text());if(!Array.isArray(x.works)||!Array.isArray(x.experiences))throw new Error();db=migrateDatabase({...x,schemaVersion:x.schemaVersion||2}).database;saveDb();toast('Backup loaded; syncing online…')}catch{alert('That does not look like a valid archive backup.')}ev.target.value=''};
+
+function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+
+function parseCSV(text){
+  if(text.charCodeAt(0)===0xFEFF)text=text.slice(1);const rows=[];let row=[],cell='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i],n=text[i+1];if(q){if(c==='"'&&n==='"'){cell+='"';i++}else if(c==='"')q=false;else cell+=c}else{if(c==='"')q=true;else if(c===','){row.push(cell);cell=''}else if(c==='\n'){row.push(cell.replace(/\r$/,''));rows.push(row);row=[];cell=''}else cell+=c}}
+  if(cell.length||row.length){row.push(cell);rows.push(row)}if(!rows.length)return[];
+  const headers=rows[0].map(h=>h.trim());return rows.slice(1).filter(r=>r.some(Boolean)).map(r=>Object.fromEntries(headers.map((h,i)=>[h,r[i]??''])));
+}
+function value(row,names){const keys=Object.keys(row);for(const n of names){const k=keys.find(k=>norm(k)===norm(n));if(k&&String(row[k]).trim()!=='')return String(row[k]).trim()}return''}
+function parseDateLoose(s){if(!s)return'';const m=String(s).match(/(\d{4})[\/-](\d{2})[\/-](\d{2})/);return m?`${m[1]}-${m[2]}-${m[3]}`:''}
+function splitTags(s){return String(s||'').split(/[,;]/).map(x=>x.trim()).filter(Boolean)}
+function maybeRating(s){if(!s)return'';const n=Number(String(s).replace(',','.'));return Number.isFinite(n)?(n>5?n/2:n):''}
+function boolish(s){return /^(true|yes|1|y)$/i.test(String(s||'').trim())}
+function storyDates(r){
+  const last=parseDateLoose(value(r,['Last Date Read','Date Finished','Finished','Finish Date','Read Date']));
+  const raw=value(r,['Dates Read','Read Dates']);const hits=[...raw.matchAll(/\d{4}[\/-]\d{2}[\/-]\d{2}/g)].map(m=>parseDateLoose(m[0]));
+  if(hits.length>=2)return{startDate:hits[0],endDate:last||hits[hits.length-1]};
+  if(hits.length===1)return raw.trim().endsWith('-')?{startDate:hits[0],endDate:last}:{startDate:hits[0],endDate:last||hits[0]};
+  return{startDate:parseDateLoose(value(r,['Date Started','Started','Start Date','Started At'])),endDate:last};
+}
+function storyStatus(s){s=norm(s);if(s==='to-read')return'planned';if(s==='currently-reading')return'in-progress';if(s==='did-not-finish')return'dnf';return'completed'}
+function mapStoryGraph(r){
+  const dates=storyDates(r),uid=value(r,['ISBN/UID','ISBN','UID']),format=value(r,['Format']);
+  const numeric=/^\d{10}$|^\d{13}$/.test(uid);
+  return{title:value(r,['Title','Book Title']),type:'Book',creator:value(r,['Authors','Author']),year:'',cover:'',...dates,loggedDate:parseDateLoose(value(r,['Date Added'])),rating:maybeRating(value(r,['Star Rating','Rating','My Rating'])),review:cleanImportedReview(value(r,['Review','My Review'])),tags:[...new Set([...splitTags(value(r,['Tags'])),...splitTags(value(r,['Moods']))])],repeat:Number(value(r,['Read Count']))>1,status:storyStatus(value(r,['Read Status','Status'])),venue:format,source:'StoryGraph',external:{},sourceMetadata:{format,owned:value(r,['Owned?']),contributors:value(r,['Contributors'])},edition:uid||format?{isbn:cleanIsbn(uid),sourceId:uid,format,contributors:value(r,['Contributors']),cover:'',source:'StoryGraph'}:null,details:{owned:value(r,['Owned?']),contributors:value(r,['Contributors']),readCount:value(r,['Read Count'])}};
+}
+function mapGeneric(r){return{title:value(r,['Title','Name']),type:value(r,['Type','Medium'])||'Other',creator:value(r,['Creator','Author','Director','Artist']),year:value(r,['Year']),startDate:parseDateLoose(value(r,['StartDate','Start Date','Started'])),endDate:parseDateLoose(value(r,['EndDate','End Date','Finished','Date'])),loggedDate:'',rating:maybeRating(value(r,['Rating'])),review:value(r,['Review','Notes']),tags:splitTags(value(r,['Tags'])),repeat:boolish(value(r,['Repeat','Rewatch','Reread'])),status:storyStatus(value(r,['Status']))||'completed',venue:value(r,['Venue','Platform','Format']),sourceUrl:value(r,['Source URL','URL','Event URL','Reference URL']),source:'CSV'}}
+
+async function importRows(rows,mapper,label){
+  let added=0,skipped=0;for(const r of rows){const m=mapper(r);if(!m.title){skipped++;continue}if(duplicateExperience(m)){skipped++;continue}addExperience(m);added++}saveDb();reportImport(added,skipped,label)
+}
+function reportImport(added,skipped,label){const box=$('importReport');box.classList.remove('hidden');box.innerHTML=`<strong>Import complete.</strong> Added ${added} new experience${added===1?'':'s'} from ${esc(label)}; skipped ${skipped} empty or duplicate row${skipped===1?'':'s'}.`}
+$('storygraphInput').onchange=async e=>{const f=e.target.files[0];if(f)await importRows(parseCSV(await f.text()),mapStoryGraph,'StoryGraph');e.target.value=''}
+$('genericInput').onchange=async e=>{const f=e.target.files[0];if(f)await importRows(parseCSV(await f.text()),mapGeneric,'CSV');e.target.value=''}
+
+function filmKey(r){return `${norm(value(r,['Name','Title']))}||${value(r,['Year'])}`}
+async function unzipTextFiles(file){
+  const bytes=new Uint8Array(await file.arrayBuffer()),dv=new DataView(bytes.buffer);let eocd=-1;
+  for(let i=bytes.length-22;i>=Math.max(0,bytes.length-65557);i--){if(dv.getUint32(i,true)===0x06054b50){eocd=i;break}}
+  if(eocd<0)throw new Error('ZIP directory not found');
+  const total=dv.getUint16(eocd+10,true),cdOffset=dv.getUint32(eocd+16,true);let p=cdOffset;const out={};
+  for(let i=0;i<total;i++){
+    if(dv.getUint32(p,true)!==0x02014b50)throw new Error('Invalid ZIP directory');
+    const method=dv.getUint16(p+10,true),compSize=dv.getUint32(p+20,true),nameLen=dv.getUint16(p+28,true),extraLen=dv.getUint16(p+30,true),commentLen=dv.getUint16(p+32,true),localOffset=dv.getUint32(p+42,true);
+    const name=new TextDecoder().decode(bytes.slice(p+46,p+46+nameLen));
+    if(dv.getUint32(localOffset,true)!==0x04034b50)throw new Error('Invalid ZIP entry');
+    const localNameLen=dv.getUint16(localOffset+26,true),localExtraLen=dv.getUint16(localOffset+28,true),start=localOffset+30+localNameLen+localExtraLen,compressed=bytes.slice(start,start+compSize);
+    let raw;
+    if(method===0)raw=compressed;
+    else if(method===8){
+      if(typeof DecompressionStream==='undefined')throw new Error('This browser cannot unpack ZIP files. Unzip the Letterboxd export manually and use a newer browser.');
+      const ds=new DecompressionStream('deflate-raw');raw=new Uint8Array(await new Response(new Blob([compressed]).stream().pipeThrough(ds)).arrayBuffer());
+    }else throw new Error(`Unsupported ZIP compression method ${method}`);
+    if(name.toLowerCase().endsWith('.csv'))out[name]=new TextDecoder().decode(raw);
+    p+=46+nameLen+extraLen+commentLen;
+  }
+  return out;
+}
+async function importLetterboxdZip(file){
+  const files=await unzipTextFiles(file);
+  const required=['watched.csv','ratings.csv'];if(!required.every(n=>files[n]))throw new Error('This does not look like a Letterboxd export ZIP.');
+  const watched=parseCSV(files['watched.csv']),ratings=parseCSV(files['ratings.csv']),diary=parseCSV(files['diary.csv']||''),reviews=parseCSV(files['reviews.csv']||''),likes=parseCSV(files['likes/films.csv']||'');
+  const rMap=new Map(ratings.map(r=>[filmKey(r),r])),dMap=new Map(),rvMap=new Map();
+  diary.forEach(r=>{const k=filmKey(r);if(!dMap.has(k))dMap.set(k,[]);dMap.get(k).push(r)});
+  reviews.forEach(r=>{const k=filmKey(r);if(!rvMap.has(k))rvMap.set(k,[]);rvMap.get(k).push(r)});
+  const likedUris=new Set(likes.map(r=>value(r,['Letterboxd URI'])));
+  let added=0,skipped=0;
+  for(const wr of watched){
+    const k=filmKey(wr),uri=value(wr,['Letterboxd URI']),rat=rMap.get(k)||{},drs=dMap.get(k)||[],revs=rvMap.get(k)||[];
+    const base={title:value(wr,['Name']),type:'Film',creator:'',year:value(wr,['Year']),cover:'',liked:likedUris.has(uri),external:uri?{letterboxd:uri}:{},source:'Letterboxd',status:'completed'};
+    const items=drs.length?drs:[null];
+    for(const dr of items){
+      let rv={};if(dr){rv=revs.find(x=>value(x,['Watched Date'])===value(dr,['Watched Date']))||(revs.length===1?revs[0]:{})}else rv=revs[0]||{};
+      const m={...base,startDate:'',endDate:parseDateLoose(value(dr||rv,['Watched Date'])),loggedDate:parseDateLoose(value(dr||wr,['Date'])),rating:maybeRating(value(dr||rat,['Rating'])||value(rat,['Rating'])),review:value(rv,['Review']),tags:[...new Set([...splitTags(value(dr||{},['Tags'])),...splitTags(value(rv,['Tags']))])],repeat:boolish(value(dr||rv,['Rewatch'])),venue:'',details:{activityUri:value(dr||rv,['Letterboxd URI'])}};
+      if(duplicateExperience(m)){skipped++;continue}addExperience(m);added++;
+    }
+  }
+  saveDb();reportImport(added,skipped,'Letterboxd');
+}
+$('letterboxdZipInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{await importLetterboxdZip(f)}catch(err){alert('Could not import the Letterboxd ZIP: '+err.message)}e.target.value=''}
+
+renderAll();
+</script>
+<script src="/pathos/config.js"></script>
+<script type="module" src="/pathos/sync.js"></script>
+</body>
+</html>
