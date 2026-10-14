@@ -40,6 +40,11 @@ public/pathos/config.js                   # public Supabase config, no private k
 public/pathos/sync.js                     # Supabase auth, reads, owner saves
 src/app/api/pathos/page-images/route.ts   # same-origin online image suggestions
 src/lib/pathos-page-images.ts            # bounded public-page fetch and image extraction
+src/app/api/pathos/catalogue/route.ts      # authenticated owner-only catalogue/check API
+src/lib/pathos-catalogue.ts               # owner verification, bounded public metadata
+public/pathos/discover.js, discover.css  # hosted owner search/preview and match panel
+public/pathos/match-engine.mjs            # local matching and evidence assembly
+public/pathos/match-worker.js             # on-device multilingual embeddings
 
 src/app/pathos-personal/page.tsx          # /pathos-personal -> /pathos-personal/index.html
 public/pathos-personal/index.html         # interface + local-first storage
@@ -80,6 +85,18 @@ Release changes in PR #6 (`codex/pathos-reliability`):
 On phones, all four primary pages remain visible in a sticky navigation row; More opens the same secondary menu as desktop. Phone timelines scroll vertically, hide horizontal arrows/direction marks and keep covers visible. Only larger-screen timeline canvases may pan sideways; the whole page must fit the screen. Library uses two columns; filters and single-column entry forms fit narrow screens, inputs use 16px text to avoid automatic iOS zoom, and actions have larger touch targets. Personal still hides ready-status and Install controls in standalone mode while showing save errors. These are presentation changes: no storage, edition, publication or authentication behavior changes.
 
 Work details show each experience's review once, with no duplicate Latest review summary or experience/review count chips. A single experience is the standard display; repeat experiences retain their separate dates, editions and reviews. A discreet Log again action still opens the repeat-experience form. Library cards show an experience count only when there is more than one.
+
+### Owner-only discovery and free local matching
+
+The signed-in hosted owner has a **Find a work** action. Search books (Open Library) or films (TMDB), open a preview without adding anything, then optionally open **Add to Planned** or **Log experience**. Only the existing form's Save writes records. Book previews are work-level: their generic covers never fill an exact-edition cover. Logging opens the existing edition picker with the edition unselected. Existing works retain their recorded editions. Current remains above the Home timeline; public navigation and Personal are unchanged.
+
+`/api/pathos/catalogue` requires a bearer access token, verifies it through Supabase Auth's `/auth/v1/user` and compares the returned user ID to the fixed owner. The three public configuration identifiers match `public/pathos/config.js`; a test detects drift. Browser flags and publishable keys do not authorize calls. Cross-site requests are rejected. Searches and details fetch fixed Open Library/TMDB endpoints with bounded bodies/timeouts, no redirects and a two-lookup concurrency cap. Auth tokens go only to Supabase. The existing device-local TMDB read token is sent in `X-Pathos-TMDB` and forwarded only to TMDB; optionally configure `PATHOS_TMDB_TOKEN` on the server. No OpenAI key or paid AI endpoint is used. Film search still needs that free non-commercial TMDB token; missing setup is explained in the UI. No database/RLS/schema changes.
+
+The owner explicitly requested **free** matching, so the initial OpenAI API proposal was replaced with a local content-based recommender. Enabling matching downloads the pinned Transformers.js 3.8.1 runtime and `Xenova/paraphrase-multilingual-MiniLM-L12-v2` q8 weights, revision `2c4055b12046f11709e9df2c122e59ffbdc2f900` (about 118 MB weights, plus tokenizer/runtime). Model assets may be browser-cached. Inference runs in a Web Worker, without sending history to an AI service or incurring AI API charges. Searches still disclose the search query to their catalogue providers. Existing hosting/catalogue quotas remain applicable.
+
+Every eligible non-planned past experience contributes a local representation using metadata, tags and a bounded review excerpt. Target-work experiences are excluded to avoid scoring a book against its own review. Review excerpts are chunked for the small encoder context; all eligible experiences are considered, while very long reviews are truncated. Cosine/subject/creator similarity identifies related works across media, then explicit ratings relative to the owner's average inform fit. Favourites have a small weight boost; repeat experiences are preserved with reduced per-work influence. Unrated reviews can establish similarity, but are not guessed to be likes/dislikes. The evidence panel shows actual titles, ratings, shared catalogue subjects and review excerpts, including relevant negative evidence. It uses templates rather than generated literary analysis.
+
+**Strong / mixed / weaker match** and **Low / Moderate confidence** are experimental estimates, not calibrated probabilities. Sparse metadata or history produces Not enough evidence. Synthetic positive/negative tests establish functioning, not predictive accuracy on the owner's tastes; held-out-history evaluation and user feedback should precede stronger accuracy claims. The model can be slow or unavailable on some browsers/devices, and failures stay visible. Private embeddings/texts live only in worker memory (bounded session cache); sign-out hides/closes discovery, aborts lookups, clears results and terminates the worker. No private match cache is persisted. All server catalogue calls, including the pre-inference owner check, enforce owner access independently of UI visibility.
 
 ### Experience model
 

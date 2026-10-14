@@ -34,7 +34,7 @@ const server=http.createServer(async(req,res)=>{
       if(name==='index.html')source=source.replace('</head>','<meta name="pathos-test-release" content="'+release+'"></head>');
       bytes=Buffer.from(source);
     }
-    const type=name.endsWith('.html')?'text/html':name.endsWith('.js')?'text/javascript':name.endsWith('.png')?'image/png':'application/manifest+json';
+    const type=name.endsWith('.html')?'text/html':/\.m?js$/.test(name)?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.png')?'image/png':'application/manifest+json';
     res.writeHead(200,{'Content-Type':type,'Cache-Control':'no-store'}).end(bytes);
   }catch{res.writeHead(404).end();}
 });

@@ -25,8 +25,23 @@ else {
   function ownerMode(active){
     isOwner=active;window.pathosCanEdit=active;document.body.classList.toggle('pathos-owner',active);
     toggle.textContent=active?'Sign out':'Sign in';
+    window.dispatchEvent(new CustomEvent('pathos-owner-change',{detail:{active}}));
     if(!active)document.querySelectorAll('#metadata.active,#import.active').forEach(()=>document.querySelector('[data-view="home"]')?.click());
   }
+  // Session tokens only go to this same-origin, server-verified read endpoint.
+  window.pathosOwnerCatalogue=async(body,signal)=>{
+    if(!isOwner)throw new Error('Sign in as the archive owner.');
+    const {data,error}=await supabase.auth.getSession();
+    if(error||!data?.session?.access_token)throw new Error('Your session expired. Sign in again.');
+    const response=await fetch('/api/pathos/catalogue',{
+      method:'POST',signal,cache:'no-store',headers:{'Content-Type':'application/json',Authorization:'Bearer '+data.session.access_token,...(body.type==='Film'&&localStorage.getItem('culturalArchive.tmdbToken')?{'X-Pathos-TMDB':localStorage.getItem('culturalArchive.tmdbToken')}:{})},body:JSON.stringify(body)
+    });
+    const result=await response.json();
+    if(response.status===401||response.status===403)ownerMode(false);
+    if(!response.ok)throw new Error(result.error||'Catalogue lookup failed.');
+    if(!isOwner)throw new Error('Sign in as the archive owner.');
+    return result;
+  };
   async function loadArchive(){
     show('Loading…');ownerMode(false);
     const {data:userData,error:userError}=await supabase.auth.getUser();
