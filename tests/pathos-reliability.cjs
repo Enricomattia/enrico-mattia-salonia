@@ -10,6 +10,7 @@ const os=require('node:os');
 const path=require('node:path');
 const {execFileSync}=require('node:child_process');
 const {chromium}=require('playwright');
+const {checkTimeline}=require('./pathos-timeline.cjs');
 const root=path.resolve(__dirname,'..');
 const publicRoot=path.join(root,'public');
 const launch={headless:true,...(process.env.PATHOS_BROWSER==='chromium'?{}:{channel:process.env.PATHOS_BROWSER||'msedge'})};
@@ -126,6 +127,7 @@ async function checkArchiveViews(page){
   await page.locator('#reviewSort').selectOption('rating-desc');
   assert.equal(await page.locator('#reviewsList>.review-group>.review-card-full').first().getAttribute('data-exp'),'watch-2','Sort by the displayed latest review, not an earlier higher rating');
   await page.locator('#reviewSort').selectOption('newest');
+  await checkTimeline(page,process.env.PATHOS_UI_SCREENSHOTS||temporary);
   await page.evaluate(value=>{db=value;renderAll();showView('home');},before);
 }
 
@@ -253,7 +255,7 @@ async function checkArchiveViews(page){
     assert.equal((await archive(page)).experiences[0].edition.cover,pixel);
     await ctx.setOffline(false);
   });
-  await run('single-review default, accessible repeat reviews, no Home reviews and edition covers in full timeline',()=>checkArchiveViews(page));
+  await run('review defaults, winding timelines, mobile/touch navigation and exact-edition covers',()=>checkArchiveViews(page));
   await run('official-page image suggestions preserve records until Save, protect manual covers and fail safely offline',async()=>{
     const eventUrl='https://venue.example/events/ka-in/',image1='https://images.example/production-01.png',image2='https://images.example/production-02.png';
     const event={schemaVersion:6,works:[{id:'event-work',title:'KA-IN',type:'Theatre',cover:eventUrl,creator:'Test troupe'}],experiences:[{id:'event-experience',workId:'event-work',endDate:'2026-10-14',review:'Event review',rating:4,status:'completed',sourceUrl:eventUrl,isPublic:false,quotes:[]}]};

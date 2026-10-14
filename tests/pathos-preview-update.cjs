@@ -13,6 +13,8 @@ assert.match(target.hostname,/^deploy-preview-\d+--[a-z0-9-]+\.netlify\.app$/,'O
 const profile=path.resolve(process.env.PATHOS_PREVIEW_PROFILE||'');
 assert.ok(profile.startsWith(path.resolve(os.tmpdir())+path.sep)&&path.basename(profile).startsWith('pathos-preview-'),'Use a dedicated pathos-preview-* profile under the temporary directory');
 const stage=process.argv[2];assert.ok(['seed','verify','reopen'].includes(stage));
+const fromCache='pathos-personal-shell-v'+(process.env.PATHOS_PREVIEW_FROM_VERSION||'4');
+const toCache='pathos-personal-shell-v'+(process.env.PATHOS_PREVIEW_TO_VERSION||'5');
 const stateFile=profile+'.json';
 const pixel='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6v7sAAAAASUVORK5CYII=';
 const fixture={schemaVersion:6,works:[{id:'preview-book',title:'Πathos preview test book',type:'Book',creator:'Synthetic author',cover:pixel,aliases:[]}],experiences:[{id:'preview-reading',workId:'preview-book',status:'completed',startDate:'2026-10-14',endDate:'2026-10-14',rating:4,review:'Preview review',quotes:[{id:'preview-passage',text:'Preview passage',note:'p. 1',featured:true}],edition:{isbn:'9780140328721',sourceId:'synthetic-storygraph-uid',publisher:'Manual publisher',cover:pixel,contributors:'Synthetic translator',source:'manual'}}]};
@@ -44,7 +46,7 @@ async function start(){
     await app.waitForFunction(()=>!document.getElementById('restoreInput').value&&pendingWrites===0&&!archiveBusy);
     const state={origin:target.origin,archive:await getArchive(app),caches:await shellCaches(app)};
     await fs.writeFile(stateFile,JSON.stringify(state,null,2));
-    assert.deepEqual(state.caches,['pathos-personal-shell-v4']);
+    assert.deepEqual(state.caches,[fromCache]);
     console.log('PASS preview release A seeded and persisted: '+state.caches.join(', '));
     return;
   }
@@ -54,7 +56,7 @@ async function start(){
   const peer=await page();await peer.evaluate(()=>window.previewClientMarker='still-open');
   await app.evaluate(async()=>{const registration=await navigator.serviceWorker.getRegistration();await registration.update();});
   await app.locator('#pathosUpdateBanner').waitFor({state:'visible',timeout:45000});
-  assert.ok((await shellCaches(app)).includes('pathos-personal-shell-v4'));
+  assert.ok((await shellCaches(app)).includes(fromCache));
   await app.locator('#pathosUpdateLater').click();
   assert.equal(await app.locator('#pathosUpdateBanner').isVisible(),false);
   assert.deepEqual(await getArchive(app),state.archive);
@@ -66,7 +68,7 @@ async function start(){
   await app.locator('#cancelBtn').click();
   const reload=app.waitForEvent('load');await app.locator('#pathosUpdateNow').click();await reload;
   await app.waitForFunction(()=>window.pathosPersonalReady);
-  assert.deepEqual(await shellCaches(app),['pathos-personal-shell-v5']);
+  assert.deepEqual(await shellCaches(app),[toCache]);
   assert.deepEqual(await getArchive(app),state.archive);
   assert.equal(await peer.evaluate(()=>window.previewClientMarker),'still-open');
   await peer.close();
@@ -88,6 +90,6 @@ async function start(){
   await app.setViewportSize({width:390,height:844});
   await app.screenshot({path:profile+'-mobile.png',fullPage:true});
   assert.deepEqual(errors,[]);
-  console.log(stage==='verify'?'PASS real Netlify preview v4 → v5: Later, update re-offer, open-entry guard, two clients, cache cleanup, preserved archive, offline edit and browser restart':'PASS preview offline restart: saved review, every recorded edition field, uploaded cover and passage preserved');
+  console.log(stage==='verify'?'PASS real Netlify preview '+fromCache+' → '+toCache+': Later, update re-offer, open-entry guard, two clients, cache cleanup, preserved archive, offline edit and browser restart':'PASS preview offline restart: saved review, every recorded edition field, uploaded cover and passage preserved');
   console.log('Screenshots: '+profile+'-desktop.png and '+profile+'-mobile.png');
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(async()=>{await context?.close();});

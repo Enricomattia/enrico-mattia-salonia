@@ -362,6 +362,124 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
 .page-image-choice span {display:block;padding:7px 9px;font-size:12px}
 .page-image-choice[aria-pressed="true"] {border:2px solid #64afb3}
 .page-image-choice:disabled {opacity:.5;cursor:default}
+/* Winding timelines: chronological DOM order, alternating visual rows. */
+#home #currentSection .section-head {margin-top:0}
+#currentSection:not(.hidden) {margin-bottom:34px}
+.serpent-viewport {max-width:100%;overflow:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#91bcb7 transparent;padding:5px 0 16px;touch-action:pan-x pan-y}
+.serpent-track {position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:72px 42px;width:100%;min-width:960px;padding:12px 36px 24px;isolation:isolate}
+.serpent-track.is-empty {display:block;min-width:0;padding:4px 0}
+.serpent-path {position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;overflow:visible}
+.serpent-path path {fill:none;stroke:#9ec8c3;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.serpent-path circle {fill:var(--bg);stroke:#709e99;stroke-width:2}
+.serpent-stop {position:relative;min-width:0}
+.serpent-date {display:flex;justify-content:space-between;gap:8px;margin:0 0 10px;font-size:11px;font-weight:650;letter-spacing:.04em;color:#58736f}
+.serpent-direction {color:#82aaa5;font-size:15px;line-height:1}
+.serpent-card {position:relative;display:flex;flex-direction:column;gap:14px;width:100%;height:218px;padding:18px;border:1px solid var(--line);border-radius:5px;background:var(--paper);color:inherit;text-align:left;cursor:pointer;transition:border-color .15s,background .15s}
+.serpent-card:hover {border-color:#80b6b1;background:#fcfefd}
+.serpent-card:focus-visible {outline:2px solid #397e7a;outline-offset:4px}
+.serpent-card:before {content:none}
+.serpent-card {scroll-margin:66px 8px}
+.serpent-card-top {display:grid;grid-template-columns:76px minmax(0,1fr);gap:15px;align-items:start}
+.serpent-cover {width:76px;height:108px;border-radius:2px;overflow:hidden;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:30px}
+.serpent-cover img {width:100%;height:100%;object-fit:cover}
+.serpent-type {font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.serpent-title {font-size:16px;font-weight:650;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.serpent-creator {font-size:12px;color:var(--muted);margin-top:6px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.serpent-rating {font-size:12px;margin-top:8px}
+.serpent-excerpt {margin:0;font:13px/1.5 Georgia,serif;color:#68716f;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.serpent-venue {font-family:inherit;font-size:12px}
+#timeline>.section-head {margin-top:0}
+.timeline.serpent-track {border:0;margin:0;padding:12px 36px 24px}
+.timeline.serpent-track.is-empty {padding:4px 0}
+.timeline .timeline-item:before {content:none}
+.timeline .timeline-item {display:flex;cursor:pointer}
+.timeline-pan {display:flex;gap:8px}
+.serpent-viewport:focus-visible {outline:2px solid #397e7a;outline-offset:3px}
+.tabs {position:sticky;top:0;z-index:65;background:var(--bg)}
+.btn,.pathos-auth-control,.menu-view {min-height:44px}
+.icon-btn {min-width:44px;min-height:44px}
+.rail-arrow {width:40px;height:40px}
+.field,.token-row,.edition-search-row,.work-detail-top>div {min-width:0}
+.source-link,.experience-edition,.experience-source,.review-body-full {overflow-wrap:anywhere}
+@media(max-width:850px) {
+ .serpent-track {min-width:850px;gap:64px 34px}
+ .serpent-card {padding:15px;height:214px}
+ .serpent-card-top {grid-template-columns:64px minmax(0,1fr);gap:12px}
+ .serpent-cover {width:64px;height:92px}
+ .section-head.stack-mobile {flex-direction:column;align-items:stretch}
+ .section-head .filters {width:100%}
+}
+@media(max-width:600px) {
+ .topbar {display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px;padding:18px 16px 14px}
+ .topbar h1 {font-size:32px}
+ .top-actions {display:flex;justify-content:flex-end;gap:8px;min-width:0}
+ .top-actions #addBtn {font-size:12px;padding:10px 12px;white-space:nowrap}
+ .top-actions:has(.personal-status),body.pathos-owner .top-actions {display:contents}
+ .top-actions:has(.personal-status) #addBtn,body.pathos-owner #addBtn {grid-column:2;grid-row:1;justify-self:end}
+ .top-actions .personal-status {grid-column:1;grid-row:2;white-space:normal;overflow-wrap:anywhere}
+ .top-actions .personal-install {grid-column:2;grid-row:2;justify-self:end}
+ body.pathos-owner .top-actions>div {grid-column:1/-1;min-width:0}
+ .pathos-sync-status {white-space:normal;overflow-wrap:anywhere;flex:1;min-width:0}
+ .tabs {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;padding:0 10px;overflow:visible}
+ .tabs>.tab[data-view] {display:block;min-width:0;min-height:50px;padding:15px 0 12px;font-size:10px;letter-spacing:.045em}
+ .tabs .more-menu {display:block;min-width:0;margin:0}
+ .more-menu>summary {min-height:50px;justify-content:center;padding:15px 0 12px;font-size:10px;letter-spacing:.045em}
+ .more-menu-panel {top:calc(100% + 1px);max-width:calc(100vw - 24px)}
+ .mobile-more {display:none}
+ main {padding:24px 16px max(40px,env(safe-area-inset-bottom))}
+ .section-head {margin:24px 0 16px;gap:16px}
+ .section-head h2,.home-timeline-heading h2 {font-size:26px}
+ .home-timeline-heading {align-items:center;gap:10px;margin-bottom:16px}
+ .home-timeline-actions {gap:6px;max-width:none;flex-wrap:nowrap}
+ .home-timeline-actions .view-link {margin-left:4px;font-size:11px;min-height:44px;display:flex;align-items:center}
+ .rail-arrow {width:36px;height:44px}
+ .serpent-track {min-width:760px;gap:56px 30px;padding:8px 28px 20px}
+ .timeline.serpent-track {padding:8px 28px 20px}
+ .serpent-date {font-size:10px}
+ .serpent-card {height:212px;padding:14px;gap:12px}
+ .serpent-card-top {grid-template-columns:60px minmax(0,1fr);gap:11px}
+ .serpent-cover {width:60px;height:86px}
+ .serpent-title {font-size:14px}
+ .serpent-creator {font-size:11px}
+ .serpent-excerpt {font-size:13px;-webkit-line-clamp:3}
+ .filters,.review-mode-panel .section-head .filters {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .filters input,.filters #librarySort,.filters #reviewSort,.filters #passageSort {grid-column:1/-1}
+ .filters .input,.filters input,.filters select {min-width:0;width:100%;max-width:100%}
+ .filters .filter-details>summary {width:100%;text-align:center}
+ .filter-panel {width:min(280px,calc(100vw - 32px));min-width:0}
+ .input,input,select,textarea {font-size:16px;min-height:44px}
+ .library-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 14px}
+ .work-info {padding:11px 0 14px}
+ .work-card h3 {font-size:14px;overflow-wrap:anywhere}
+ .work-card .meta {font-size:11px}
+ .cards {grid-template-columns:minmax(0,1fr)}
+ .card>div {min-width:0}
+ .review-card-head {gap:10px;flex-wrap:wrap}
+ .review-card-head h3 {font-size:22px}
+ .review-body-full {font-size:16px;line-height:1.7}
+ .review-history .review-card-full {margin-left:8px}
+ dialog,.insight-dialog {width:calc(100% - 16px);max-width:calc(100vw - 16px);max-height:calc(100dvh - 24px);padding:18px 16px;border-radius:8px;overscroll-behavior:contain}
+ .dialog-head {gap:8px}
+ .dialog-head h2 {font-size:25px}
+ .form-grid,.details-inner.form-grid {grid-template-columns:minmax(0,1fr)}
+ .field {min-width:0}
+ .dialog-actions {bottom:-18px;gap:8px;padding:12px 0 max(6px,env(safe-area-inset-bottom))}
+ .dialog-actions .btn {flex-shrink:0}
+ .dialog-actions .spacer {min-width:0}
+ .page-image-input,.token-row {flex-wrap:wrap}
+ .page-image-input input,.token-row .input {flex-basis:100%}
+ .edition-head,.quote-editor-head {flex-wrap:wrap}
+ .entry-details>summary {padding:12px}
+ .details-inner {padding:0 12px 12px}
+ .catalog-results {position:absolute;left:0;right:0;top:calc(100% + 5px);max-height:40dvh}
+ .work-detail-top {flex-direction:row;gap:14px}
+ .work-detail-cover {width:80px;min-width:80px;height:114px}
+ .work-actions {flex-direction:column;align-items:stretch}
+ .toast {left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));width:fit-content;max-width:calc(100vw - 24px);margin-left:auto}
+ .pathos-update-banner {bottom:max(12px,env(safe-area-inset-bottom))}
+}
+@media(prefers-reduced-motion:reduce) {.serpent-card {transition:none}}
+
 </style>
 </head>
 <body>
@@ -370,7 +488,7 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
   <div class="archive-heading"><h1 class="pathos-wordmark" aria-label="Πathos"><span class="pathos-pi" aria-hidden="true">Π</span><span>athos</span></h1></div>
   <div class="top-actions"><button class="btn primary" id="addBtn">+ Add experience</button></div>
 </header>
-<nav class="tabs">
+<nav class="tabs" aria-label="Πathos pages">
   <button data-view="home" class="tab active">Home</button>
   <button data-view="library" class="tab">Library</button>
   <button data-view="reviews" class="tab">Reviews</button>
@@ -387,6 +505,10 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
 </nav>
 <main>
 <section id="home" class="view active">
+  <section id="currentSection" class="hidden">
+    <div class="section-head"><div><h3>Current</h3></div></div>
+    <div id="currentList" class="cards"></div>
+  </section>
   <section class="home-timeline-section" aria-label="Recent cultural experiences">
     <div class="home-timeline-heading">
       <div>
@@ -395,18 +517,14 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
         
       </div>
       <div class="home-timeline-actions">
-        <button type="button" class="rail-arrow" id="homeTimelinePrev" aria-label="Scroll timeline to newer entries" title="Newer entries">←</button>
-        <button type="button" class="rail-arrow" id="homeTimelineNext" aria-label="Scroll timeline to older entries" title="Older entries">→</button>
+        <button type="button" class="rail-arrow" id="homeTimelinePrev" aria-label="Scroll recent timeline left" title="Scroll left">←</button>
+        <button type="button" class="rail-arrow" id="homeTimelineNext" aria-label="Scroll recent timeline right" title="Scroll right">→</button>
         <button type="button" class="view-link" id="viewFullTimelineBtn">Full timeline ↗</button>
       </div>
     </div>
-    <div id="homeTimelineScroll" class="home-rail-scroll" role="region" aria-label="Scroll horizontally through dated experiences" tabindex="0">
-      <div id="homeTimelineTrack" class="home-rail-track"></div>
+    <div id="homeTimelineScroll" class="serpent-viewport" role="region" aria-label="Recent experiences, winding timeline. Scroll down and sideways." tabindex="0">
+      <div id="homeTimelineTrack" class="serpent-track"></div>
     </div>
-  </section>
-  <section id="currentSection" class="hidden">
-    <div class="section-head"><div><h3>Current</h3></div></div>
-    <div id="currentList" class="cards"></div>
   </section>
 </section>
 
@@ -433,9 +551,9 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
 </section>
 
 <section id="timeline" class="view">
-  <div class="section-head"><div><h2>Timeline</h2></div></div>
+  <div class="section-head"><div><h2>Timeline</h2></div><div class="timeline-pan"><button type="button" class="rail-arrow" data-timeline-pan="-1" aria-label="Scroll full timeline left">←</button><button type="button" class="rail-arrow" data-timeline-pan="1" aria-label="Scroll full timeline right">→</button></div></div>
   
-  <div id="timelineList" class="timeline"></div>
+  <div class="serpent-viewport" id="fullTimelineScroll" role="region" aria-label="All experiences, winding timeline. Scroll down and sideways." tabindex="0"><div id="timelineList" class="timeline serpent-track"></div></div>
 </section>
 
 <section id="reviews" class="view">
@@ -1023,23 +1141,53 @@ function renderCurrent(){
   $('currentSection').classList.toggle('hidden',!arr.length);
   $('currentList').innerHTML=arr.map(experienceCard).join('');bindExperienceClicks($('currentList'));
 }
-function renderHomeTimeline(){
-  const viewport=$('homeTimelineScroll'),track=$('homeTimelineTrack');
-  if(!viewport||!track)return;
-  const arr=db.experiences.filter(e=>experienceDate(e)&&e.status!=='planned'&&workFor(e.workId))
+const timelineResizeObserver=new ResizeObserver(entries=>entries.forEach(({target})=>layoutSerpentineTimeline(target)));
+function datedExperiences(){
+  return db.experiences.filter(e=>experienceDate(e)&&e.status!=='planned'&&workFor(e.workId))
     .sort((a,b)=>experienceDate(b).localeCompare(experienceDate(a))||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
-  track.classList.toggle('is-empty',!arr.length);
-  if(!arr.length){track.innerHTML='<div class="home-timeline-empty">Your dated experiences will appear here as you add them.</div>';updateHomeTimelineArrows();return}
-  track.innerHTML=arr.map(e=>{
-    const w=workFor(e.workId),cover=editionCover(e)||w.cover||'';
-    const image=cover?`<img src="${esc(cover)}" alt="" loading="lazy" onerror="this.style.display='none';this.parentElement.textContent='${mediumIcon(w.type)}'">`:mediumIcon(w.type);
+}
+function renderSerpentineTimeline(track,experiences){
+  track.classList.toggle('is-empty',!experiences.length);
+  if(!experiences.length){track.innerHTML='<div class="empty">Your dated experiences will appear here as you add them.</div>';return;}
+  track.innerHTML='<svg class="serpent-path" aria-hidden="true" focusable="false"><path></path><circle r="4"></circle><circle r="4"></circle></svg>'+experiences.map((e,i)=>{
+    const w=workFor(e.workId),row=Math.floor(i/3),column=row%2?3-i%3:i%3+1;
     const excerpt=String(e.review||'').trim();
-    return `<div class="home-rail-item"><div class="home-rail-date">${esc(dateLabel(experienceDate(e)))}</div><div class="home-rail-dot" aria-hidden="true"></div><button class="home-rail-card" type="button" data-exp="${esc(e.id)}" aria-label="Open ${esc(w.title)}, ${esc(dateLabel(experienceDate(e)))}"><div class="home-rail-card-top"><div class="home-rail-cover">${image}</div><div style="min-width:0"><div class="home-rail-type">${esc(w.type)}</div><div class="home-rail-title">${esc(w.title)}</div><div class="home-rail-creator">${esc(w.creator||'')}</div>${e.rating!==''&&e.rating!=null?`<div class="home-rail-rating">★ ${esc(formatRating(e.rating))}/5</div>`:''}</div></div>${excerpt?`<p class="home-rail-snippet">${esc(excerpt)}</p>`:e.venue?`<div class="home-rail-venue">${esc(e.venue)}</div>`:''}</button></div>`;
+    return `<div class="serpent-stop" style="grid-row:${row+1};grid-column:${column}"><div class="serpent-date"><time datetime="${esc(experienceDate(e))}">${esc(dateLabel(experienceDate(e)))}</time><span class="serpent-direction" aria-hidden="true">${row%2?'←':'→'}</span></div><button type="button" class="serpent-card timeline-item" data-exp="${esc(e.id)}" aria-label="Open ${esc(w.title)}, ${esc(dateLabel(experienceDate(e)))}"><div class="serpent-card-top">${coverHTML(w,'serpent-cover timeline-cover',e)}<div style="min-width:0"><div class="serpent-type">${esc(w.type)}</div><div class="serpent-title">${esc(w.title)}</div><div class="serpent-creator">${esc(w.creator||'')}</div>${e.rating!==''&&e.rating!=null?`<div class="serpent-rating">★ ${esc(formatRating(e.rating))}/5</div>`:''}</div></div>${excerpt?`<p class="serpent-excerpt">${esc(excerpt)}</p>`:e.venue?`<p class="serpent-excerpt serpent-venue">${esc(e.venue)}</p>`:''}</button></div>`;
   }).join('');
   bindExperienceClicks(track);
-  viewport.scrollLeft=0;
+  // Reversed visual rows retain chronological keyboard and screen-reader order.
+  track.querySelectorAll('[data-exp]').forEach(button=>button.addEventListener('focus',()=>button.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'})));
+  timelineResizeObserver.observe(track);
+  requestAnimationFrame(()=>layoutSerpentineTimeline(track));
+}
+function layoutSerpentineTimeline(track){
+  if(!track.offsetWidth)return;
+  const stops=[...track.querySelectorAll('.serpent-stop')],svg=track.querySelector('svg');
+  if(!stops.length||!svg)return;
+  const point=stop=>({x:stop.offsetLeft+stop.offsetWidth/2,y:stop.offsetTop+stop.querySelector('button').offsetTop+stop.querySelector('button').offsetHeight/2});
+  const first=point(stops[0]),startX=stops[0].offsetLeft-16;
+  let path=`M ${startX} ${first.y} H ${first.x}`;
+  for(let row=0;row<Math.ceil(stops.length/3);row++){
+    const lastIndex=Math.min(row*3+2,stops.length-1),last=point(stops[lastIndex]),right=row%2===0;
+    path+=` H ${last.x}`;
+    if(lastIndex+1<stops.length){
+      const next=point(stops[lastIndex+1]),edge=right?track.clientWidth-36:36,outer=right?track.clientWidth-7:7;
+      path+=` H ${edge} Q ${outer} ${last.y} ${outer} ${last.y+29} V ${next.y-29} Q ${outer} ${next.y} ${edge} ${next.y} H ${next.x}`;
+    }
+  }
+  const lastStop=stops[stops.length-1],end=point(lastStop),right=Math.floor((stops.length-1)/3)%2===0;
+  const endX=lastStop.offsetLeft+(right?lastStop.offsetWidth+16:-16);
+  path+=` H ${endX}`;
+  svg.setAttribute('viewBox',`0 0 ${track.clientWidth} ${track.clientHeight}`);
+  svg.querySelector('path').setAttribute('d',path);
+  svg.querySelectorAll('circle').forEach((circle,i)=>{circle.setAttribute('cx',i?endX:startX);circle.setAttribute('cy',i?end.y:first.y);});
   updateHomeTimelineArrows();
 }
+function renderHomeTimeline(){
+  renderSerpentineTimeline($('homeTimelineTrack'),datedExperiences().slice(0,12));
+  updateHomeTimelineArrows();
+}
+
 function updateHomeTimelineArrows(){
   const scroller=$('homeTimelineScroll');if(!scroller)return;
   const prev=$('homeTimelinePrev'),next=$('homeTimelineNext');
@@ -1048,7 +1196,7 @@ function updateHomeTimelineArrows(){
 }
 function scrollHomeTimeline(direction){
   const viewport=$('homeTimelineScroll');if(!viewport)return;
-  viewport.scrollBy({left:direction*Math.max(210,Math.round(viewport.clientWidth*.76)),behavior:'smooth'});
+  viewport.scrollBy({left:direction*Math.max(210,Math.round(viewport.clientWidth*.76)),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
 }
 function renderRecent(){
   const arr=db.experiences.filter(e=>experienceDate(e)&&e.status!=='planned').sort((a,b)=>experienceDate(b).localeCompare(experienceDate(a))).slice(0,9);
@@ -1087,13 +1235,7 @@ function renderLibrary(){
   }).join(''):`<div class="empty">No matching works.</div>`;
   document.querySelectorAll('[data-work]').forEach(el=>el.onclick=()=>openWork(el.dataset.work));
 }
-function renderTimeline(){
-  const arr=db.experiences.filter(e=>experienceDate(e)&&e.status!=='planned').sort((a,b)=>experienceDate(b).localeCompare(experienceDate(a)));
-  if(!arr.length){$('timelineList').innerHTML='<div class="empty">Your timeline will appear here.</div>';return}
-  const groups={};arr.forEach(e=>{const d=experienceDate(e);const key=new Date(d+'T12:00:00').toLocaleDateString(undefined,{month:'long',year:'numeric'});(groups[key]||=[]).push(e)});
-  $('timelineList').innerHTML=Object.entries(groups).map(([month,es])=>`<section class="timeline-group"><h3>${esc(month)}</h3>${es.map(e=>{const w=workFor(e.workId);return `<div class="timeline-item" data-exp="${e.id}">${w?coverHTML(w,'timeline-cover',e):'<div class="timeline-cover">✦</div>'}<div class="timeline-content"><div class="small muted">${esc(dateLabel(experienceDate(e)))} · ${esc(w?.type||'')} · ${esc(e.source||'manual')}</div><div class="timeline-title">${esc(w?.title||'Untitled')}</div><div class="meta">${esc(w?.creator||'')}${e.rating!==''?` · ${stars(e.rating)}`:''}</div></div></div>`}).join('')}</section>`).join('');
-  bindExperienceClicks($('timelineList'));
-}
+function renderTimeline(){renderSerpentineTimeline($('timelineList'),datedExperiences());}
 function bindExperienceClicks(root){root.querySelectorAll('[data-exp]').forEach(el=>el.onclick=()=>openExperience(el.dataset.exp))}
 function externalLinks(w){
   const parts=[];if(w.external?.letterboxd)parts.push(`<a class="source-link" href="${esc(w.external.letterboxd)}" target="_blank" rel="noopener">Open on Letterboxd ↗</a>`);if(w.external?.openlibraryKey)parts.push(`<a class="source-link" href="https://openlibrary.org${esc(w.external.openlibraryKey.startsWith('/')?w.external.openlibraryKey:'/'+w.external.openlibraryKey)}" target="_blank" rel="noopener">Open Library work ↗</a>`);if(w.external?.tmdb)parts.push(`<a class="source-link" href="https://www.themoviedb.org/${w.type==='TV'?'tv':'movie'}/${esc(w.external.tmdb)}" target="_blank" rel="noopener">TMDB ↗</a>`);return parts.join('')
@@ -1333,30 +1475,19 @@ function showView(name){
   document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===name));
   if($('moreMenu'))$('moreMenu').open=false;
   if($('mobileMore'))$('mobileMore').value=['insights','timeline','metadata','import'].includes(name)?name:'';
-  window.scrollTo({top:0,behavior:'smooth'});
+  requestAnimationFrame(()=>{document.querySelectorAll('.view.active .serpent-track').forEach(layoutSerpentineTimeline);});
+  window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
 }
 document.querySelectorAll('.tab[data-view],.menu-view').forEach(t=>t.onclick=()=>showView(t.dataset.view));if($('mobileMore'))$('mobileMore').onchange=e=>{if(e.target.value)showView(e.target.value)};if($('viewFullTimelineBtn'))$('viewFullTimelineBtn').onclick=()=>showView('timeline');if($('homeTimelinePrev'))$('homeTimelinePrev').onclick=()=>scrollHomeTimeline(-1);if($('homeTimelineNext'))$('homeTimelineNext').onclick=()=>scrollHomeTimeline(1);if($('homeTimelineScroll')){
   const rail=$('homeTimelineScroll');
-  const zone=document.querySelector('.home-timeline-section');
   rail.addEventListener('scroll',updateHomeTimelineArrows,{passive:true});
-  // Capture over the entire timeline: card, heading, or whitespace all scroll horizontally.
-  // Avoid CSS scroll snapping, which could undo small wheel increments.
-  (zone||rail).addEventListener('wheel',event=>{
-    if(event.defaultPrevented||event.ctrlKey||event.metaKey||event.altKey)return;
-    // Trackpads already emit horizontal wheel deltas; let native scrolling handle those.
-    if(Math.abs(event.deltaX)>Math.abs(event.deltaY))return;
-    if(!event.deltaY)return;
-    const max=rail.scrollWidth-rail.clientWidth;
-    if(max<=1)return;
-    const factor=event.deltaMode===1?22:event.deltaMode===2?rail.clientWidth:1.45;
-    const distance=event.deltaY*factor;
-    if((distance>0&&rail.scrollLeft>=max-1)||(distance<0&&rail.scrollLeft<=1))return;
-    event.preventDefault();
-    rail.scrollLeft=Math.max(0,Math.min(max,rail.scrollLeft+distance));
-    updateHomeTimelineArrows();
-  },{passive:false,capture:true});
 }
 window.addEventListener('resize',updateHomeTimelineArrows);
+const fullTimelineScroll=$('fullTimelineScroll');
+function updateFullTimelineArrows(){document.querySelectorAll('[data-timeline-pan]').forEach(button=>{button.disabled=Number(button.dataset.timelinePan)<0?fullTimelineScroll.scrollLeft<=2:fullTimelineScroll.scrollLeft+fullTimelineScroll.clientWidth>=fullTimelineScroll.scrollWidth-3;});}
+fullTimelineScroll.addEventListener('scroll',updateFullTimelineArrows,{passive:true});
+new ResizeObserver(updateFullTimelineArrows).observe(fullTimelineScroll);
+document.querySelectorAll('[data-timeline-pan]').forEach(button=>button.onclick=()=>fullTimelineScroll.scrollBy({left:Number(button.dataset.timelinePan)*Math.max(210,fullTimelineScroll.clientWidth*.76),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}));
 
 attachCatalogueSearch();
 document.querySelectorAll('[data-today]').forEach(b=>b.addEventListener('click',()=>{const input=$(b.dataset.today);if(!input)return;input.value=localToday();input.dispatchEvent(new Event('input',{bubbles:true}));}));
