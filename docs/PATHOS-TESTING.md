@@ -25,6 +25,8 @@ On 14 October 2026 this was exercised on `https://deploy-preview-6--astonishing-
 
 Coverage: form create/edit/delete/reload; JSON export/restore/cancellation/undo; invalid/future-schema backups, duplicate IDs, dangling references and malformed editions/passages; aborted transactions; failed-save recovery; stale and simultaneous windows; ISBN enrichment preservation; offline reload/edit/reopen; sequential staged updates (Later, two clients, open entry, failed/pending saves, versioned-cache cleanup); offline browser restart; and hosted guest/owner flows with a stubbed Supabase client.
 
+Interface checks additionally cover single-review work details, one review per work with accessible earlier reviews for repeats, searching older reviews, removal of Home's Recent reviews section, and exact-edition images in the full Timeline at narrow widths. These checks run in both Personal and the hosted signed-out UI and assert that changing views does not rewrite records. To verify the Next.js iframe/header integration too, build and start the site locally, set `PATHOS_SITE_URL` to its local URL, and run the suite. It checks the full desktop/mobile iframe viewport, retained `noindex`, and unchanged header/navigation on Research and Home.
+
 The optional live command `node tests/pathos-public-boundary.cjs` performs **read-only anonymous** table/RPC requests using the public config. It prints only statuses/counts and rejects unexpected public experience fields. It does not test authenticated owner writes.
 
 ## Live privacy inspection — 14 October 2026

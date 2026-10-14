@@ -77,6 +77,57 @@ async function backup(page){
   return JSON.parse(Buffer.concat(chunks).toString());
 }
 async function run(name,fn){await fn();console.log('PASS '+name);}
+async function checkArchiveViews(page){
+  const before=await archive(page);
+  await page.evaluate(value=>{db=value;renderAll();showView('home');},fixture);
+  assert.equal(await page.locator('#stats .stat').nth(2).locator('strong').textContent(),'1');
+  assert.equal(await page.locator('#homeLatestReviews').count(),0);
+  assert.equal(await page.locator('#home').getByText('Recent reviews',{exact:true}).count(),0);
+  await page.evaluate(()=>showView('library'));
+  assert.equal((await page.locator('#libraryGrid').innerText()).includes('1 experience'),false);
+  await page.locator('.work-card[data-work="book-1"]').click();
+  assert.equal(await page.locator('#workDialogBody .experience-review').count(),1);
+  assert.equal(await page.locator('#workDialogBody .work-summary-review,#workDialogBody .work-metrics').count(),0);
+  assert.equal((await page.locator('#workDialogBody').innerText()).includes('LATEST REVIEW'),false);
+  await page.locator('#closeWorkDialog').click();
+  await page.evaluate(()=>showView('reviews'));
+  assert.equal(await page.locator('#reviewsList .review-card-full').count(),1);
+  assert.equal(await page.locator('#reviewsList .review-history').count(),0);
+  const repeated=copy(fixture);
+  repeated.experiences.push({...copy(repeated.experiences[0]),id:'reading-2',endDate:'2026-10-14',rating:3,repeat:true,review:'Second reading review',edition:{...repeated.experiences[0].edition,cover:pixel+'#second-edition'}});
+  await page.evaluate(value=>{db=value;renderAll();},repeated);
+  assert.equal(await page.locator('#reviewsList>.review-group').count(),1);
+  assert.equal(await page.locator('#reviewsList>.review-group>.review-card-full').getAttribute('data-exp'),'reading-2');
+  const older=page.locator('#reviewsList details .review-card-full');
+  assert.equal(await older.isVisible(),false);
+  await page.locator('#reviewsList summary').click();assert.equal(await older.isVisible(),true);
+  await page.locator('#reviewSearch').fill('paragraphs');
+  assert.equal(await page.locator('#reviewsList .review-card-full').getAttribute('data-exp'),'reading-1');
+  assert.equal(await page.locator('#reviewsList .review-history').count(),0);
+  await page.locator('#reviewSearch').fill('');
+  await page.evaluate(()=>openWork('book-1'));
+  assert.equal(await page.locator('#workDialogBody .experience-review').count(),2);
+  assert.equal(await page.locator('#workDialogBody .experience-review').first().innerText(),'Second reading review');
+  await page.locator('#closeWorkDialog').click();
+  await page.evaluate(()=>showView('timeline'));
+  assert.equal(await page.locator('#timelineList .timeline-cover img').count(),2);
+  assert.equal(await page.locator('#timelineList [data-exp="reading-2"] img').getAttribute('src'),pixel+'#second-edition');
+  await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.locator('#timelineList .timeline-cover img').first().isVisible(),true);
+  await page.screenshot({path:path.join(temporary,(await page.url()).includes('personal')?'personal-timeline-mobile.png':'hosted-timeline-mobile.png'),fullPage:true});
+  await page.setViewportSize({width:1280,height:800});
+  await page.evaluate(()=>showView('reviews'));
+  await page.screenshot({path:path.join(temporary,(await page.url()).includes('personal')?'personal-reviews.png':'hosted-reviews.png'),fullPage:true});
+  assert.deepEqual(await archive(page),repeated,'Changing views must never rewrite records');
+  const sorted=copy(repeated);
+  sorted.works.push({id:'film-2',title:'Another reviewed work',type:'Film',creator:'Test director'});
+  sorted.experiences.push({id:'watch-2',workId:'film-2',endDate:'2026-10-10',review:'Film review',rating:4,status:'completed'});
+  await page.evaluate(value=>{db=value;renderAll();},sorted);
+  await page.locator('#reviewSort').selectOption('rating-desc');
+  assert.equal(await page.locator('#reviewsList>.review-group>.review-card-full').first().getAttribute('data-exp'),'watch-2','Sort by the displayed latest review, not an earlier higher rating');
+  await page.locator('#reviewSort').selectOption('newest');
+  await page.evaluate(value=>{db=value;renderAll();showView('home');},before);
+}
 
 (async()=>{
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -202,6 +253,7 @@ async function run(name,fn){await fn();console.log('PASS '+name);}
     assert.equal((await archive(page)).experiences[0].edition.cover,pixel);
     await ctx.setOffline(false);
   });
+  await run('single-review default, accessible repeat reviews, no Home reviews and edition covers in full timeline',()=>checkArchiveViews(page));
   await ctx.close();
 
   await run('two staged releases: Later, two clients, pending/failed writes, open form, offline browser restart',async()=>{
@@ -268,6 +320,7 @@ async function run(name,fn){await fn();console.log('PASS '+name);}
     assert.equal(await guest.evaluate(()=>window.pathosCanEdit),false);
     assert.equal(await guest.locator('#addBtn').isVisible(),false);
     assert.deepEqual(await guest.evaluate(()=>window.mockCalls),['pathos_get_public_archive']);
+    await checkArchiveViews(guest);
     await hosted.addInitScript(()=>{window.mockOwner=true;});
     const owner=await observe(await hosted.newPage());await owner.goto(origin+'/pathos/app.html');
     await owner.waitForFunction(()=>window.pathosCanEdit);
@@ -293,6 +346,29 @@ async function run(name,fn){await fn();console.log('PASS '+name);}
     await failed.waitForFunction(()=>document.querySelector('.pathos-sync-status').textContent.startsWith('Load failed'));
     assert.equal(await failed.evaluate(()=>window.pathosCanEdit),false);
     await hosted.close();
+  });
+  if(process.env.PATHOS_SITE_URL)await run('hosted route uses the full viewport while academic pages retain their header',async()=>{
+    const siteOrigin=new URL(process.env.PATHOS_SITE_URL).origin;
+    const site=await browser.newContext();
+    await site.route('**/*',route=>route.request().url().startsWith(siteOrigin)?route.continue():route.abort());
+    await site.route('https://cdn.jsdelivr.net/**',route=>route.fulfill({contentType:'text/javascript',body:`export const createClient=()=>({auth:{getUser:async()=>({data:{user:null}})},rpc:async()=>({data:${JSON.stringify(fixture)}})});`}));
+    const p=await observe(await site.newPage());
+    await p.goto(siteOrigin+'/pathos');
+    await p.frameLocator('iframe[title="Πathos"]').locator('.pathos-wordmark').waitFor();
+    assert.equal(await p.locator('body>header').count(),0);
+    let box=await p.locator('iframe[title="Πathos"]').boundingBox();
+    assert.equal(box.y,0);assert.equal(box.height,p.viewportSize().height);
+    assert.match(await p.locator('meta[name="robots"]').getAttribute('content'),/noindex/);
+    await p.screenshot({path:path.join(temporary,'hosted-route.png'),fullPage:true});
+    await p.setViewportSize({width:390,height:844});
+    box=await p.locator('iframe[title="Πathos"]').boundingBox();
+    assert.equal(box.y,0);assert.equal(box.height,844);
+    await p.goto(siteOrigin+'/research');
+    assert.equal(await p.locator('body>header').isVisible(),true);
+    await p.locator('body>header nav').getByRole('link',{name:'Home',exact:true}).click();
+    await p.waitForURL(siteOrigin+'/');
+    assert.equal(await p.locator('body>header').isVisible(),true);
+    await site.close();
   });
   assert.deepEqual(errors,[],'Unexpected browser JavaScript errors');
   console.log('All Πathos browser checks passed. Screenshot: '+path.join(temporary,'personal.png'));

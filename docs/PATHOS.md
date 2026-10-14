@@ -49,7 +49,7 @@ public/pathos-personal/icon-512.png
 
 Current layout notes:
 
-- Owner route uses a same-origin `iframe`. Review interaction between iframe height, mobile viewport and the site layout before changing it.
+- Owner route uses a same-origin `iframe` occupying the full dynamic viewport (`100dvh`). The academic-site header is hidden only on `/pathos`; the site's other pages retain their header and navigation. The Πathos header remains inside its app.
 - Hosted `sync.js` uses the Supabase JS browser client and a public `PATHOS_CONFIG`. Check the actual auth and save flow before any changes.
 - The personal app opens the IndexedDB database `pathos-personal`, stores the archive in an `archives` object store under the key `personal`, and maintains an in-memory copy while queuing writes. **Do not rename or clear this storage without a tested migration.** The source includes a `schemaVersion` field for the archive.
 - The PWA manifest uses `display: standalone`. The personal service worker caches the offline app shell and eligible remote cover images; remote metadata requests are still network-dependent.
@@ -63,17 +63,19 @@ Reliability changes prepared on `codex/pathos-reliability` (not yet a production
 - Hosted saves use a fresh owner-session check, an archive comparison against the latest cloud read, and a same-origin Web Lock where available. This rejects previously saved changes from other windows/devices, but **is not an atomic cross-device conditional write**. A simultaneous save on another device (or from an old client) can still race the preflight read; resolving that needs a separately reviewed server-side revision check.
 - Automatic ISBN enrichment fills missing edition fields and preserves recorded metadata, identifiers and uploaded/manual covers. Editing an edition also preserves its contributors.
 - Save errors remain visible and block Personal updates; a later successful write clears the failure. Personal refuses updates/restores while an entry dialog, import or metadata operation is open/running, and prevents new edits while preparing an update. Unsaved form entries are not auto-saved.
-- The service worker uses shell cache `pathos-personal-shell-v5` and looks up shell assets in its own versioned cache, so a waiting release's cache cannot be served prematurely. Cover-cache behavior and the standalone manifest are unchanged. Preview v4 is the first reliability deployment; v5 provides the second deployment for a real update-cycle check.
+- The service worker uses shell cache `pathos-personal-shell-v6` and looks up shell assets in its own versioned cache, so a waiting release's cache cannot be served prematurely. Cover-cache behavior and the standalone manifest are unchanged. Preview v4/v5 provided the real reliability update-cycle check; v6 stages the subsequent interface simplifications.
 
 ## 4. What the user wants the experience to feel like
 
 ### Core areas
 
-- **Home:** concise view, including the **horizontal, scrollable timeline** of recent experiences and the currently experienced works. Do not reintroduce removed headings or long introductory copy. Wheel/trackpad scrolling of the horizontal timeline was a specific request. An empty timeline must not display a decorative line running through the empty-state message.
+- **Home:** concise view, including the **horizontal, scrollable timeline** of recent experiences and the currently experienced works. There is no Recent reviews section. Do not reintroduce removed headings or long introductory copy. Wheel/trackpad scrolling of the horizontal timeline was a specific request. An empty timeline must not display a decorative line running through the empty-state message.
 - **Library:** all works, filters by media/status and other useful criteria, simple manual addition and editing.
-- **Reviews:** one browseable collection of written reviews and a **Passages** area within Reviews (rather than a disconnected home-page section).
+- **Reviews:** one browseable collection of written reviews and a **Passages** area within Reviews (rather than a disconnected home-page section). Show the latest matching review per work by default; an Earlier review(s) disclosure appears only when more than one written review matches the filters for that work. Filters search all experience reviews, so an older matching review remains findable. Sorting orders works by their currently shown review. All experience reviews stay in storage and exports.
 - **Insights:** statistics and charts that are **interactive**. Clicking a distribution bar, e.g. a rating, should reveal the corresponding experiences. Avoid explanatory filler text that was intentionally removed.
-- **More:** secondary features such as full Timeline, metadata and covers, import and backups.
+- **More:** secondary features such as full Timeline, metadata and covers, import and backups. The full Timeline retains cover/poster images on desktop and mobile, preferring each experience's exact edition cover.
+
+Work details show each experience's review once, with no duplicate Latest review summary or experience/review count chips. A single experience is the standard display; repeat experiences retain their separate dates, editions and reviews. A discreet Log again action still opens the repeat-experience form. Library cards show an experience count only when there is more than one.
 
 ### Experience model
 

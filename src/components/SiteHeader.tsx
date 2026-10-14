@@ -13,6 +13,8 @@ const NAV = [
 export default function SiteHeader() {
   const pathname = usePathname();
 
+  if (pathname === "/pathos" || pathname === "/pathos/") return null;
+
   return (
     <header
       style={{
