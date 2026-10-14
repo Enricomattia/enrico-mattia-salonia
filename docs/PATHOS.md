@@ -63,7 +63,7 @@ Reliability changes prepared on `codex/pathos-reliability` (not yet a production
 - Hosted saves use a fresh owner-session check, an archive comparison against the latest cloud read, and a same-origin Web Lock where available. This rejects previously saved changes from other windows/devices, but **is not an atomic cross-device conditional write**. A simultaneous save on another device (or from an old client) can still race the preflight read; resolving that needs a separately reviewed server-side revision check.
 - Automatic ISBN enrichment fills missing edition fields and preserves recorded metadata, identifiers and uploaded/manual covers. Editing an edition also preserves its contributors.
 - Save errors remain visible and block Personal updates; a later successful write clears the failure. Personal refuses updates/restores while an entry dialog, import or metadata operation is open/running, and prevents new edits while preparing an update. Unsaved form entries are not auto-saved.
-- The service worker uses shell cache `pathos-personal-shell-v4` and looks up shell assets in its own versioned cache, so a waiting release's cache cannot be served prematurely. Cover-cache behavior and the standalone manifest are unchanged.
+- The service worker uses shell cache `pathos-personal-shell-v5` and looks up shell assets in its own versioned cache, so a waiting release's cache cannot be served prematurely. Cover-cache behavior and the standalone manifest are unchanged. Preview v4 is the first reliability deployment; v5 provides the second deployment for a real update-cycle check.
 
 ## 4. What the user wants the experience to feel like
 
