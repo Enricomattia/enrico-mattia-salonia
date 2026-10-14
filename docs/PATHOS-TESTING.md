@@ -1,0 +1,54 @@
+# Πathos reliability checks
+
+## Automated checks
+
+```powershell
+npm ci
+npm run build
+npm run test:pathos
+```
+
+The browser suite uses Playwright and an installed Microsoft Edge by default. To use Chrome, set `$env:PATHOS_BROWSER='chrome'`. Alternatively install Playwright Chromium with `npx playwright install chromium` and set `$env:PATHOS_BROWSER='chromium'`.
+
+To start the update test from the released v3 app rather than a test version of the current app:
+
+```powershell
+$env:PATHOS_UPDATE_BASELINE_REF='9bbad84'
+npm run test:pathos
+```
+
+All archives are synthetic. The suite runs a temporary local HTTP server, isolated browser contexts and a temporary persistent profile. It never imports an owner's archive or writes to live Supabase. External requests in the ordinary test contexts are blocked or stubbed. The persistent update profile only uses synthetic local data. The test output includes the path to a screenshot for layout inspection.
+
+Coverage: form create/edit/delete/reload; JSON export/restore/cancellation/undo; invalid/future-schema backups, duplicate IDs, dangling references and malformed editions/passages; aborted transactions; failed-save recovery; stale and simultaneous windows; ISBN enrichment preservation; offline reload/edit/reopen; sequential staged updates (Later, two clients, open entry, failed/pending saves, versioned-cache cleanup); offline browser restart; and hosted guest/owner flows with a stubbed Supabase client.
+
+The optional live command `node tests/pathos-public-boundary.cjs` performs **read-only anonymous** table/RPC requests using the public config. It prints only statuses/counts and rejects unexpected public experience fields. It does not test authenticated owner writes.
+
+## Live privacy inspection — 14 October 2026
+
+Read-only inspection of current Supabase function definitions and policies confirmed:
+
+- `pathos_works` and `pathos_experiences` have RLS, with authenticated owner checks on reads/writes (`auth.uid() = owner_id`).
+- `pathos_get_my_archive` and `pathos_replace_my_archive` are invoker functions, executable by authenticated users, not anonymous visitors. Replacement validates IDs/references and scopes changes to the signed-in owner.
+- `pathos_get_public_archive` is intentionally public and `SECURITY DEFINER`, has an empty `search_path`, filters `is_public = true` and constructs its public documents from selected fields. Only works associated with those visible experiences are returned.
+- There were 169 works/experiences and 167 published experiences. The anonymous HTTP check returned the same 167 public experiences; direct table reads and the private RPC returned HTTP 401.
+- No live records, policies, functions or auth settings were changed. Actual owner sign-in/write and another authenticated account's access were not exercised against production.
+
+Supabase advisors flag the public definer RPC as executable by anonymous/authenticated users; that is intentional for this archive and is constrained by its publication filter. Advisors also report disabled leaked-password protection. That is a separate auth-setting review, not changed here. References: [public definer RPC advisor](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable), [authenticated definer RPC advisor](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable), [password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
+
+## Netlify and installed-window release gate
+
+Use a stable PR deploy-preview hostname across both deployments. Production and preview browser storage are distinct. Export a JSON backup before switching origins; use synthetic test data for release validation.
+
+1. Install/open preview release A. Add a book with an exact edition, uploaded cover, review and passage. Export JSON, reload and compare. Keep a second window open.
+2. Deploy release B to the same preview hostname, with a distinct service-worker shell cache version. Existing windows should keep A until Update is accepted. Check Later, app relaunch and update re-offering.
+3. Open an entry and leave changes unsaved. Finish/save or explicitly close it before updating. The new client should refuse update while the entry is open. Update waits for queued writes and refuses after a failed save; retrying a successful save must unblock it.
+4. Accept Update in one window. Verify B's worker/cache, unchanged IDs/editions/passages and no forced reload of the other window. Close/reload the older window before further editing; older releases do not have the new concurrency guard.
+5. Disconnect, reload, edit/save, close all app/browser windows, restart the installed app offline and verify records and uploaded covers. Remote catalogue searches and uncached artwork may remain unavailable. Reconnect and recheck update delivery.
+6. Confirm native standalone styling: no browser navigation chrome, redundant ready-status or Install button; save errors and update prompts remain available. Check at least desktop and one mobile browser. Validate manifest scope/start URL and icons.
+7. On hosted preview, sign out and check public-only reads; sign in as owner and use explicitly approved test data for create/edit/delete/reload. Check a second account cannot read/write the owner's rows. Do not overwrite production with fixtures.
+
+Never mark these steps passed from a production build alone. Do not merge automatically.
+
+## Small friend pilot, after approval
+
+Use two or three volunteers: one StoryGraph import, one Letterboxd import and one manual/mobile user. Have each start with an empty Personal archive, add/edit an entry and passage, export a backup, restore with confirmation, use Undo, reopen offline and try an update. Explain that each browser/device has its own archive and that clearing site data removes its local copies. Record confusing steps and failed tasks before adding onboarding UI or new features. Invitations require the user's chosen recipients and explicit sending authorization.

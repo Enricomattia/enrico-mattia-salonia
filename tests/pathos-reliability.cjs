@@ -1,0 +1,302 @@
+/* Browser regression tests. Uses synthetic archives and an isolated local origin.
+ * npm run test:pathos (Edge by default; PATHOS_BROWSER=chrome or chromium).
+ * Optional PATHOS_UPDATE_BASELINE_REF tests an older checked-in PWA release.
+ */
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const fsp=require('node:fs/promises');
+const http=require('node:http');
+const os=require('node:os');
+const path=require('node:path');
+const {execFileSync}=require('node:child_process');
+const {chromium}=require('playwright');
+const root=path.resolve(__dirname,'..');
+const publicRoot=path.join(root,'public');
+const launch={headless:true,...(process.env.PATHOS_BROWSER==='chromium'?{}:{channel:process.env.PATHOS_BROWSER||'msedge'})};
+let release='current';
+const copy=x=>JSON.parse(JSON.stringify(x));
+const pixel='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6v7sAAAAASUVORK5CYII=';
+const fixture={schemaVersion:6,works:[{id:'book-1',title:'Synthetic book',type:'Book',creator:'Test author',cover:pixel,aliases:[],liked:true,external:{isbn:'9780140328721'},sourceMetadata:{}}],experiences:[{id:'reading-1',workId:'book-1',startDate:'2026-10-01',endDate:'2026-10-01',status:'completed',rating:4.5,review:'A review\nwith paragraphs.',quotes:[{id:'quote-1',text:'A saved passage',note:'p. 12',featured:true}],tags:['test'],isPublic:true,edition:{isbn:'9780140328721',ean:'9780140328721',identifierType:'catalogue',identifierValue:'custom-1',sourceId:'storygraph-test-uid',publisher:'Manual publisher',publishYear:'2020',language:'Italian',format:'Paperback',pages:'123',contributors:'Test translator',cover:pixel,source:'manual'}}]};
+const baseline={};
+if(process.env.PATHOS_UPDATE_BASELINE_REF){
+  for(const name of ['index.html','sw.js'])baseline[name]=execFileSync('git',['show',process.env.PATHOS_UPDATE_BASELINE_REF+':public/pathos-personal/'+name],{cwd:root,encoding:'utf8'});
+}
+const server=http.createServer(async(req,res)=>{
+  try{
+    const pathname=new URL(req.url,'http://localhost').pathname;
+    if(!/^\/(pathos|pathos-personal)\/[a-z0-9.-]+$/i.test(pathname)){res.writeHead(404).end();return;}
+    const name=path.basename(pathname);
+    let bytes=await fsp.readFile(path.join(publicRoot,pathname));
+    if(pathname.startsWith('/pathos-personal/')&&['index.html','sw.js'].includes(name)){
+      let source=release==='before'&&baseline[name]?baseline[name]:bytes.toString();
+      if(name==='sw.js'&&!(release==='before'&&baseline[name]))source=source.replace(/pathos-personal-shell-v\d+/g,'pathos-personal-shell-test-'+release);
+      if(name==='index.html')source=source.replace('</head>','<meta name="pathos-test-release" content="'+release+'"></head>');
+      bytes=Buffer.from(source);
+    }
+    const type=name.endsWith('.html')?'text/html':name.endsWith('.js')?'text/javascript':name.endsWith('.png')?'image/png':'application/manifest+json';
+    res.writeHead(200,{'Content-Type':type,'Cache-Control':'no-store'}).end(bytes);
+  }catch{res.writeHead(404).end();}
+});
+let origin,browser,temporary;
+const persistentContexts=[];
+const errors=[];
+async function observe(page){
+  page.dialogs=[];page.confirmRestore=true;
+  page.on('pageerror',e=>errors.push(e.message));
+  page.on('dialog',async dialog=>{
+    page.dialogs.push(dialog.message());
+    if(dialog.type()==='confirm'&&!page.confirmRestore)await dialog.dismiss();else await dialog.accept();
+  });
+  return page;
+}
+async function context(){
+  const ctx=await browser.newContext({acceptDownloads:true});
+  await ctx.route('**/*',route=>route.request().url().startsWith(origin)||route.request().url().startsWith('data:')?route.continue():route.abort());
+  return ctx;
+}
+async function personal(ctx){
+  const page=await observe(await ctx.newPage());
+  await page.goto(origin+'/pathos-personal/index.html');
+  await page.waitForFunction(()=>window.pathosPersonalReady);
+  await page.evaluate(()=>navigator.serviceWorker.ready);
+  await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
+  return page;
+}
+async function saved(page){await page.waitForFunction(()=>pendingWrites===0&&!archiveBusy);}
+async function archive(page){return page.evaluate(()=>JSON.parse(JSON.stringify(db)));}
+async function disk(page){return page.evaluate(()=>readLocalArchive());}
+async function restore(page,value){
+  await page.locator('#restoreInput').setInputFiles({name:'fixture.json',mimeType:'application/json',buffer:Buffer.from(typeof value==='string'?value:JSON.stringify(value))});
+  await page.waitForFunction(()=>!document.getElementById('restoreInput').value);
+  await saved(page);
+}
+async function backup(page){
+  const download=page.waitForEvent('download');
+  await page.evaluate(()=>document.getElementById('backupBtn').click());
+  const chunks=[];for await(const chunk of await(await download).createReadStream())chunks.push(chunk);
+  return JSON.parse(Buffer.concat(chunks).toString());
+}
+async function run(name,fn){await fn();console.log('PASS '+name);}
+
+(async()=>{
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  origin='http://127.0.0.1:'+server.address().port;
+  temporary=await fsp.mkdtemp(path.join(os.tmpdir(),'pathos-tests-'));
+  browser=await chromium.launch(launch);
+  const ctx=await context();
+  let page=await personal(ctx);
+  await run('create, edit, delete and reload through the personal form',async()=>{
+    assert.equal((await archive(page)).works.length,0);
+    await page.locator('#addBtn').click();
+    await page.locator('[name="type"]').selectOption('Film');
+    await page.locator('[name="title"]').fill('Synthetic film');
+    await page.locator('[name="endDate"]').fill('2026-10-14');
+    await page.locator('#entryForm button[type="submit"]').click();await saved(page);
+    let data=await archive(page);assert.equal(data.experiences.length,1);
+    const id=data.experiences[0].id;
+    await page.reload();await page.waitForFunction(()=>window.pathosPersonalReady);
+    await page.evaluate(id=>openExperience(id),id);
+    assert.equal(await page.locator('#entryDialog').evaluate(el=>el.open),true);
+    await page.locator('[name="review"]').fill('Edited review');
+    await page.locator('#entryForm button[type="submit"]').click();await saved(page);
+    assert.equal((await disk(page)).experiences[0].review,'Edited review');
+    await page.evaluate(id=>openExperience(id),id);
+    await page.locator('#deleteBtn').click();await saved(page);
+    assert.equal((await disk(page)).experiences.length,0);
+  });
+  await run('restore/export round trip, preserved edition and passage IDs, cancellation and durable undo',async()=>{
+    await restore(page,fixture);assert.deepEqual((await archive(page)).experiences,fixture.experiences);
+    const exported=await backup(page);assert.deepEqual(exported.experiences,fixture.experiences);
+    const replacement={schemaVersion:6,works:[],experiences:[]};
+    page.confirmRestore=false;await restore(page,replacement);page.confirmRestore=true;
+    assert.equal((await disk(page)).works.length,1);
+    await restore(page,replacement);assert.equal((await disk(page)).works.length,0);
+    await page.reload();await page.waitForFunction(()=>window.pathosPersonalReady);
+    assert.equal(await page.locator('#undoRestoreBtn').evaluate(el=>el.hidden),false);
+    await page.evaluate(()=>document.getElementById('undoRestoreBtn').click());await saved(page);
+    await page.waitForFunction(()=>db.works.length===1);
+    assert.deepEqual((await disk(page)).experiences,fixture.experiences);
+    await page.evaluate(()=>openExperience('reading-1'));
+    await page.locator('#entryForm button[type="submit"]').click();await saved(page);
+    const edited=(await archive(page)).experiences[0];
+    assert.equal(edited.edition.contributors,'Test translator');assert.equal(edited.edition.cover,pixel);
+    assert.equal(edited.isPublic,true);assert.equal(edited.quotes[0].id,'quote-1');
+  });
+  await run('malformed, duplicate, dangling-reference and future-schema restores do not touch disk or recovery',async()=>{
+    const before=await disk(page),recovery=await page.evaluate(()=>readLocalArchive('before-restore'));
+    const duplicate=copy(fixture);duplicate.works.push(copy(duplicate.works[0]));
+    const missing=copy(fixture);missing.experiences[0].workId='missing';
+    const badPassage=copy(fixture);badPassage.experiences[0].quotes=[{text:42}];
+    const badEdition=copy(fixture);badEdition.experiences[0].edition.cover={url:'invalid'};
+    const duplicatePassage=copy(fixture);duplicatePassage.experiences[0].quotes.push(copy(duplicatePassage.experiences[0].quotes[0]));
+    for(const value of ['{bad json',duplicate,missing,badPassage,badEdition,duplicatePassage,{...fixture,schemaVersion:99}]){
+      await restore(page,value);assert.deepEqual(await disk(page),before);
+      assert.deepEqual(await page.evaluate(()=>readLocalArchive('before-restore')),recovery);
+    }
+  });
+  await run('aborted restore rolls back both archive and recovery copy',async()=>{
+    const before=await disk(page),recovery=await page.evaluate(()=>readLocalArchive('before-restore'));
+    await page.evaluate(()=>{
+      window.originalPut=IDBObjectStore.prototype.put;
+      IDBObjectStore.prototype.put=function(value,key){const result=window.originalPut.call(this,value,key);if(key==='personal')this.transaction.abort();return result;};
+    });
+    await restore(page,{schemaVersion:6,works:[],experiences:[]});
+    assert.deepEqual(await disk(page),before);
+    assert.deepEqual(await page.evaluate(()=>readLocalArchive('before-restore')),recovery);
+    assert.deepEqual(await archive(page),before);
+    await page.evaluate(()=>{IDBObjectStore.prototype.put=window.originalPut;return saveDb();});
+  });
+  await run('failed writes retain exportable memory; later successful saves clear the failure',async()=>{
+    const before=await disk(page);
+    await page.evaluate(()=>{window.originalWrite=writeLocalArchive;writeLocalArchive=()=>Promise.reject(new Error('Simulated quota failure'));db.experiences[0].review='Unsaved recovery review';return saveDb();});
+    assert.deepEqual(await disk(page),before);
+    assert.equal((await backup(page)).experiences[0].review,'Unsaved recovery review');
+    await restore(page,{schemaVersion:6,works:[],experiences:[]});
+    assert.equal((await archive(page)).experiences[0].review,'Unsaved recovery review');
+    await page.evaluate(()=>{writeLocalArchive=window.originalWrite;return saveDb();});
+    assert.equal(await page.evaluate(()=>lastSaveFailed),false);
+    assert.equal((await disk(page)).experiences[0].review,'Unsaved recovery review');
+  });
+  await run('stale and simultaneous windows cannot overwrite each other',async()=>{
+    const peer=await personal(ctx);
+    assert.equal(await page.evaluate(()=>{db.experiences[0].review='First window';return saveDb();}),true);
+    assert.equal(await peer.evaluate(()=>{db.experiences[0].review='Stale window';return saveDb();}),false);
+    assert.equal((await disk(peer)).experiences[0].review,'First window');
+    assert.equal((await backup(peer)).experiences[0].review,'Stale window');
+    await peer.close();
+    const other=await personal(ctx);
+    const writes=await Promise.all([page.evaluate(()=>{db.experiences[0].review='Concurrent A';return saveDb();}),other.evaluate(()=>{db.experiences[0].review='Concurrent B';return saveDb();})]);
+    assert.equal(writes.filter(Boolean).length,1);
+    await other.close();await page.close();page=await personal(ctx);
+  });
+  await run('ISBN enrichment fills gaps without replacing manual edition metadata or uploaded covers',async()=>{
+    await restore(page,fixture);
+    await page.route('https://openlibrary.org/isbn/**',route=>route.fulfill({json:{key:'/books/OL123M',isbn_13:['9780140328721'],publishers:['Fetched publisher'],publish_date:'1990',covers:[123],works:[{key:'/works/OL123W'}]}}));
+    await page.evaluate(()=>enrichBook(db.works[0]));
+    const enriched=(await archive(page)).experiences[0].edition;
+    assert.equal(enriched.publisher,'Manual publisher');assert.equal(enriched.sourceId,'storygraph-test-uid');
+    assert.equal(enriched.cover,pixel);assert.equal(enriched.olid,'/books/OL123M');
+    await page.evaluate(()=>saveDb());
+  });
+  await run('StoryGraph and generic CSV imports preserve the existing archive and deduplicate repeat imports',async()=>{
+    const initial=(await archive(page)).experiences[0];
+    const csv='Title,Authors,ISBN/UID,Format,Read Status,Star Rating,Review\nCSV book,CSV author,storygraph-csv-uid,Paperback,read,4,Imported review';
+    for(let i=0;i<2;i++){
+      await page.locator('#storygraphInput').setInputFiles({name:'storygraph.csv',mimeType:'text/csv',buffer:Buffer.from(csv)});
+      await page.waitForFunction(()=>!document.getElementById('storygraphInput').value&&backgroundTasks===0);await saved(page);
+    }
+    assert.equal((await archive(page)).experiences.length,2);
+    assert.deepEqual((await archive(page)).experiences[0],initial);
+    assert.equal((await archive(page)).experiences[1].edition.sourceId,'storygraph-csv-uid');
+    await page.locator('#genericInput').setInputFiles({name:'events.csv',mimeType:'text/csv',buffer:Buffer.from('Title,Type,EndDate,Review\nCSV concert,Concert,2026-10-14,Concert review')});
+    await page.waitForFunction(()=>backgroundTasks===0&&!document.getElementById('genericInput').value);await saved(page);
+    assert.equal((await disk(page)).experiences.length,3);
+  });
+  await run('offline reload, editing, uploaded cover and reopen',async()=>{
+    await ctx.setOffline(true);await page.reload();await page.waitForFunction(()=>window.pathosPersonalReady);
+    await page.evaluate(()=>openExperience('reading-1'));
+    await page.locator('[name="review"]').fill('Offline edit');
+    await page.locator('#entryForm button[type="submit"]').click();await saved(page);
+    await page.close();page=await personal(ctx);
+    assert.equal((await archive(page)).experiences[0].review,'Offline edit');
+    assert.equal((await archive(page)).experiences[0].edition.cover,pixel);
+    await ctx.setOffline(false);
+  });
+  await ctx.close();
+
+  await run('two staged releases: Later, two clients, pending/failed writes, open form, offline browser restart',async()=>{
+    release='before';
+    const profile=path.join(temporary,'profile');
+    let installed=await chromium.launchPersistentContext(profile,launch);persistentContexts.push(installed);
+    let app=await personal(installed);
+    // Seed the old release using its own persistence path; no real user data.
+    await app.evaluate(value=>{db=value;saveDb();},fixture);
+    await app.waitForFunction(()=>pendingWrites===0);
+    const peer=await personal(installed);
+    release='current';
+    await app.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();await r.update();});
+    await app.locator('#pathosUpdateBanner').waitFor({state:'visible'});
+    await app.locator('#pathosUpdateLater').click();assert.equal(await app.locator('#pathosUpdateBanner').isVisible(),false);
+    assert.equal(await app.locator('meta[name="pathos-test-release"]').getAttribute('content'),'before');
+    await app.reload();await app.waitForFunction(()=>window.pathosPersonalReady);
+    await app.locator('#pathosUpdateBanner').waitFor({state:'visible'});
+    await app.locator('#pathosUpdateNow').click();
+    await app.waitForFunction(()=>document.querySelector('meta[name="pathos-test-release"]').content==='current');
+    await app.waitForFunction(()=>window.pathosPersonalReady);
+    assert.deepEqual((await archive(app)).experiences,fixture.experiences);
+    assert.equal(await peer.locator('meta[name="pathos-test-release"]').getAttribute('content'),'before');
+    await peer.close();
+    release='next';
+    await app.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();await r.update();});
+    await app.locator('#pathosUpdateBanner').waitFor({state:'visible'});
+    await app.locator('#addBtn').click();await app.locator('[name="title"]').fill('Unfinished draft');
+    await app.evaluate(()=>document.getElementById('pathosUpdateNow').click());
+    assert.equal(await app.locator('#entryDialog').evaluate(el=>el.open),true);
+    assert.equal(await app.locator('meta[name="pathos-test-release"]').getAttribute('content'),'current');
+    await app.locator('#cancelBtn').click();
+    await app.evaluate(()=>{window.originalWrite=writeLocalArchive;writeLocalArchive=()=>Promise.reject(new Error('Simulated failure'));return saveDb();});
+    await app.locator('#pathosUpdateNow').click();
+    assert.equal(await app.evaluate(()=>archiveBusy),false);
+    assert.equal(await app.locator('meta[name="pathos-test-release"]').getAttribute('content'),'current');
+    await app.evaluate(()=>{writeLocalArchive=window.originalWrite;return saveDb();});
+    await app.evaluate(()=>{writeLocalArchive=value=>new Promise((resolve,reject)=>setTimeout(()=>window.originalWrite(value).then(resolve,reject),500));db.experiences[0].review='Saved before update';saveDb();});
+    await app.locator('#pathosUpdateNow').click();
+    assert.equal(await app.locator('meta[name="pathos-test-release"]').getAttribute('content'),'current');
+    await app.waitForFunction(()=>document.querySelector('meta[name="pathos-test-release"]').content==='next');
+    await app.waitForFunction(()=>window.pathosPersonalReady);
+    assert.equal((await archive(app)).experiences[0].review,'Saved before update');
+    assert.deepEqual((await app.evaluate(()=>caches.keys())).filter(x=>x.startsWith('pathos-personal-shell-')),['pathos-personal-shell-test-next']);
+    await installed.close();
+    installed=await chromium.launchPersistentContext(profile,launch);persistentContexts.push(installed);await installed.setOffline(true);
+    app=await personal(installed);
+    assert.equal((await archive(app)).experiences[0].review,'Saved before update');
+    assert.equal((await archive(app)).experiences[0].edition.cover,pixel);
+    assert.equal(await app.locator('link[rel="manifest"]').getAttribute('href'),'/pathos-personal/manifest.webmanifest');
+    await app.screenshot({path:path.join(temporary,'personal.png'),fullPage:true});
+    await installed.close();
+  });
+
+  await run('hosted public/owner UI, ordered saves, stale-window refusal, failed-load editing guard and restore',async()=>{
+    release='current';
+    const hosted=await context();
+    // Substitute only the Supabase browser module; never contact the live archive.
+    const module=`export function createClient(){return {auth:{getUser:async()=>({data:{user:window.mockOwner?{id:window.PATHOS_CONFIG.ownerUserId}:null}}),signOut:async()=>({}),signInWithPassword:async()=>({})},rpc:async(name,args)=>{window.mockCalls.push(name);if(window.mockLoadError)return{error:{message:'Simulated load error'}};if(name==='pathos_replace_my_archive'){if(window.mockSaveError)return{error:{message:'Simulated save error'}};window.mockCloud=JSON.parse(JSON.stringify(args.p_archive));return{};}return{data:JSON.parse(JSON.stringify(window.mockCloud))};}}}`;
+    await hosted.route('https://cdn.jsdelivr.net/**',route=>route.fulfill({contentType:'text/javascript',body:module}));
+    await hosted.addInitScript(value=>{window.mockOwner=false;window.mockCloud=value;window.mockCalls=[];},fixture);
+    const guest=await observe(await hosted.newPage());await guest.goto(origin+'/pathos/app.html');
+    await guest.waitForFunction(()=>document.querySelector('.pathos-sync-status').textContent==='Public archive');
+    assert.equal(await guest.evaluate(()=>window.pathosCanEdit),false);
+    assert.equal(await guest.locator('#addBtn').isVisible(),false);
+    assert.deepEqual(await guest.evaluate(()=>window.mockCalls),['pathos_get_public_archive']);
+    await hosted.addInitScript(()=>{window.mockOwner=true;});
+    const owner=await observe(await hosted.newPage());await owner.goto(origin+'/pathos/app.html');
+    await owner.waitForFunction(()=>window.pathosCanEdit);
+    await owner.evaluate(()=>{db.experiences[0].review='Cloud edit';return saveDb();});
+    assert.equal(await owner.evaluate(()=>window.mockCloud.experiences[0].review),'Cloud edit');
+    assert.deepEqual(await owner.evaluate(()=>{db.experiences[0].review='Queued A';const a=saveDb();db.experiences[0].review='Queued B';return Promise.all([a,saveDb()]);}),[true,true]);
+    assert.equal(await owner.evaluate(()=>window.mockCloud.experiences[0].review),'Queued B');
+    await owner.evaluate(()=>{window.mockCloud.experiences[0].review='Other device';});
+    assert.equal(await owner.evaluate(()=>{db.experiences[0].review='Stale cloud edit';return saveDb();}),false);
+    assert.equal(await owner.evaluate(()=>window.mockCloud.experiences[0].review),'Other device');
+    assert.equal((await backup(owner)).experiences[0].review,'Stale cloud edit');
+    await owner.reload();await owner.waitForFunction(()=>window.pathosCanEdit);
+    await owner.evaluate(()=>{window.mockSaveError=true;db.experiences[0].review='Retry';});
+    assert.equal(await owner.evaluate(()=>saveDb()),false);
+    await owner.evaluate(()=>{window.mockSaveError=false;});assert.equal(await owner.evaluate(()=>saveDb()),true);
+    const download=owner.waitForEvent('download');
+    await owner.locator('#restoreInput').setInputFiles({name:'fixture.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(fixture))});
+    assert.match((await download).suggestedFilename(),/^pathos-before-restore-/);
+    await owner.waitForFunction(()=>!document.getElementById('restoreInput').value);
+    assert.deepEqual(await owner.evaluate(()=>window.mockCloud.experiences),fixture.experiences);
+    const failed=await observe(await hosted.newPage());
+    await failed.addInitScript(()=>{window.mockLoadError=true;});await failed.goto(origin+'/pathos/app.html');
+    await failed.waitForFunction(()=>document.querySelector('.pathos-sync-status').textContent.startsWith('Load failed'));
+    assert.equal(await failed.evaluate(()=>window.pathosCanEdit),false);
+    await hosted.close();
+  });
+  assert.deepEqual(errors,[],'Unexpected browser JavaScript errors');
+  console.log('All Πathos browser checks passed. Screenshot: '+path.join(temporary,'personal.png'));
+})().catch(error=>{console.error(error);process.exitCode=1;}).finally(async()=>{
+  await Promise.allSettled(persistentContexts.map(ctx=>ctx.close()));
+  await browser?.close();await new Promise(resolve=>server.close(resolve));
+});

@@ -16,6 +16,8 @@ The route is **not linked from the site's main navigation**. It is publicly acce
 
 ## Maintenance
 
-Export a JSON backup periodically. Be careful with whole-archive imports and full-archive saves: use the latest cloud data when editing; do not overwrite from a stale browser tab. Supabase records are the source of truth after migration.
+Export a JSON backup periodically. Hosted saves compare against the latest cloud archive and use a same-origin Web Lock where available. If another window/device has saved newer data, export the current tab's changes and reload. Simultaneous cross-device saves still require a database-side conditional-write improvement. Supabase records remain the source of truth.
 
-Future enhancement: installable, offline-first PWA with a separate local archive for other users. This is **not** part of the current launch.
+Restore validates IDs, references, editions and passages, downloads a recovery JSON backup, and asks before replacing the online archive (including publication settings). Keep that recovery file.
+
+The independent, account-free Personal PWA is available at `/pathos-personal/`. It uses IndexedDB, JSON export/restore with a device-local Undo copy, and staged service-worker updates. It never loads the owner's Supabase archive. See [the project handoff](../../../docs/PATHOS.md) and [reliability checks](../../../docs/PATHOS-TESTING.md).
