@@ -16,42 +16,66 @@ else {
  try{
   const {createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
   const supabase=createClient(config.supabaseUrl,config.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
-  let isOwner=false,queue=Promise.resolve(),revision=0,savePending=false,saveFailed=false;
+  let isOwner=false,queue=Promise.resolve(),revision=0,savePending=false,saveFailed=false,cloudBaseline=null;
+  // RPC reads order rows by ID; object key order is not significant in JSONB.
+  function archiveFingerprint(archive){
+    const canonical=value=>Array.isArray(value)?value.map(canonical):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,canonical(value[key])])):value;
+    return JSON.stringify(canonical({schemaVersion:6,works:[...(archive?.works||[])].sort((a,b)=>a.id.localeCompare(b.id)),experiences:[...(archive?.experiences||[])].sort((a,b)=>a.id.localeCompare(b.id))}));
+  }
   function ownerMode(active){
     isOwner=active;window.pathosCanEdit=active;document.body.classList.toggle('pathos-owner',active);
     toggle.textContent=active?'Sign out':'Sign in';
     if(!active)document.querySelectorAll('#metadata.active,#import.active').forEach(()=>document.querySelector('[data-view="home"]')?.click());
   }
   async function loadArchive(){
-    show('Loading…');
+    show('Loading…');ownerMode(false);
     const {data:userData,error:userError}=await supabase.auth.getUser();
     if(userError&&userError.message!=='Auth session missing!')console.warn('Authentication:',userError.message);
     const owner=!!(userData?.user&&userData.user.id===config.ownerUserId);
-    ownerMode(owner);
     const {data,error}=await supabase.rpc(owner?'pathos_get_my_archive':'pathos_get_public_archive',owner?{}:{p_owner_id:config.ownerUserId});
     if(error){show('Load failed — '+error.message);return;}
     bridge.setArchive(data||{schemaVersion:6,works:[],experiences:[]});
+    cloudBaseline=archiveFingerprint(data);
+    ownerMode(owner);
     show(owner?'Private archive · Saved online':'Public archive');
   }
   window.pathosHostedSave=archive=>{
-    if(!isOwner){show('Sign in to save');return;}
-    const number=++revision;savePending=true;saveFailed=false;show('Saving…');
+    if(!isOwner){show('Sign in to save');return Promise.resolve(false);}
+    const snapshot=JSON.parse(JSON.stringify(archive));
+    const number=++revision;savePending=true;show('Saving…');
+    const write=async()=>{
+      const {data:userData,error:authError}=await supabase.auth.getUser();
+      if(authError||userData?.user?.id!==config.ownerUserId)throw new Error('The owner session expired. Export a backup and sign in again.');
+      const {data:latest,error:readError}=await supabase.rpc('pathos_get_my_archive');
+      if(readError)throw readError;
+      if(archiveFingerprint(latest)!==cloudBaseline)throw new Error('The online archive changed in another window or device. Export this tab’s changes, then reload before editing again.');
+      const {error}=await supabase.rpc('pathos_replace_my_archive',{p_archive:snapshot});
+      if(error)throw error;
+      cloudBaseline=archiveFingerprint(snapshot);
+    };
     queue=queue.catch(()=>{}).then(async()=>{
-      const {error}=await supabase.rpc('pathos_replace_my_archive',{p_archive:archive});
-      if(error){
+      try{
+        // Serialize cooperating windows on this origin. The preflight read also
+        // detects earlier saves from other devices; server-side CAS is future work.
+        if(navigator.locks)await navigator.locks.request('pathos-hosted-save',write);
+        else await write();
+        if(number===revision){savePending=false;saveFailed=false;show('Saved online');}
+        return true;
+      }catch(error){
         saveFailed=true;
         show('Save failed — export a backup · '+error.message);
         console.error('Πathos remote save failed:',error);
         alert('Πathos could not save to Supabase. Your changes are still visible in this tab, but NOT backed up online. Export a JSON backup now before closing or reloading.');
-        return;
+        return false;
       }
-      if(number===revision){savePending=false;show('Saved online');}
     });
+    return queue;
   };
   toggle.onclick=async()=>{
     if(isOwner){
+      if(window.pathosArchiveBusy?.()){alert('Wait for the archive operation to finish before signing out.');return;}
       if(!confirm('Sign out of the private editor?'))return;
-      if(savePending){await queue.catch(()=>{});if(saveFailed){alert('The latest save failed. Export a backup before signing out.');return;}}
+      if(savePending||saveFailed){await queue.catch(()=>{});if(saveFailed){alert('The latest save failed. Export a backup before signing out.');return;}}
       const {error}=await supabase.auth.signOut();
       if(error){show('Sign-out failed');return;}
       await loadArchive();

@@ -1,5 +1,5 @@
 /* Πathos Personal offline application shell. No access to /pathos or Supabase. */
-const CACHE='pathos-personal-shell-v3';
+const CACHE='pathos-personal-shell-v8';
 const COVERS='pathos-personal-covers-v1';
 const SHELL=[
  '/pathos-personal/index.html',
@@ -28,7 +28,7 @@ self.addEventListener('fetch',event=>{
    if(!url.pathname.startsWith('/pathos-personal/'))return;
    if(url.pathname==='/pathos-personal/sw.js')return;
    if(req.mode==='navigate'||SHELL.includes(url.pathname)){
-     event.respondWith(caches.match(req,{ignoreSearch:true}).then(hit=>hit||fetch(req).then(response=>{
+     event.respondWith(caches.open(CACHE).then(cache=>cache.match(req,{ignoreSearch:true})).then(hit=>hit||fetch(req).then(response=>{
         if(response.ok){const copy=response.clone();event.waitUntil(caches.open(CACHE).then(c=>c.put(req,copy)));}
         return response;
      }).catch(()=>caches.match('/pathos-personal/index.html'))));

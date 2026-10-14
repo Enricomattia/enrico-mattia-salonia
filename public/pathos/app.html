@@ -345,6 +345,141 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
 .pathos-signin-dialog form{display:grid;gap:12px}
 .pathos-signin-dialog input{min-width:0;padding:10px;border:1px solid #ddd}
 .pathos-signin-dialog menu{display:flex;gap:8px;justify-content:end}
+.timeline-item {display:grid;grid-template-columns:64px minmax(0,1fr);gap:16px;align-items:start}
+.timeline-cover {width:64px;height:92px;background:var(--soft);border-radius:2px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:28px}
+.timeline-cover img {width:100%;height:100%;object-fit:cover}
+.timeline-content {min-width:0}
+.review-history>summary {cursor:pointer;color:var(--muted);font-size:12px;padding:10px 0}
+.review-history .review-card-full {margin-left:16px}
+@media(max-width:560px){.timeline-item{grid-template-columns:52px minmax(0,1fr);gap:12px}.timeline-cover{width:52px;height:76px}}
+.page-image-input {display:flex;gap:8px;align-items:center}
+.page-image-input input {min-width:0;flex:1}
+.page-image-input button {white-space:nowrap}
+.page-image-results[hidden],#findPageImageBtn[hidden] {display:none!important}
+.page-image-results {display:flex;gap:10px;overflow-x:auto;padding:4px 0}
+.page-image-choice {flex:0 0 115px;padding:0;border:1px solid var(--line);background:var(--paper);cursor:pointer;text-align:left}
+.page-image-choice img {display:block;width:113px;height:135px;object-fit:contain;background:var(--soft)}
+.page-image-choice span {display:block;padding:7px 9px;font-size:12px}
+.page-image-choice[aria-pressed="true"] {border:2px solid #64afb3}
+.page-image-choice:disabled {opacity:.5;cursor:default}
+/* Winding timelines: chronological DOM order, alternating visual rows. */
+#home #currentSection .section-head {margin-top:0}
+#currentSection:not(.hidden) {margin-bottom:34px}
+.serpent-viewport {max-width:100%;overflow:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#91bcb7 transparent;padding:5px 0 16px;touch-action:pan-x pan-y}
+.serpent-track {position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:72px 42px;width:100%;min-width:960px;padding:12px 36px 24px;isolation:isolate}
+.serpent-track.is-empty {display:block;min-width:0;padding:4px 0}
+.serpent-path {position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;overflow:visible}
+.serpent-path path {fill:none;stroke:#9ec8c3;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.serpent-path circle {fill:var(--bg);stroke:#709e99;stroke-width:2}
+.serpent-stop {position:relative;min-width:0}
+.serpent-date {display:flex;justify-content:space-between;gap:8px;margin:0 0 10px;font-size:11px;font-weight:650;letter-spacing:.04em;color:#58736f}
+.serpent-direction {color:#82aaa5;font-size:15px;line-height:1}
+.serpent-card {position:relative;display:flex;flex-direction:column;gap:14px;width:100%;height:218px;padding:18px;border:1px solid var(--line);border-radius:5px;background:var(--paper);color:inherit;text-align:left;cursor:pointer;transition:border-color .15s,background .15s}
+.serpent-card:hover {border-color:#80b6b1;background:#fcfefd}
+.serpent-card:focus-visible {outline:2px solid #397e7a;outline-offset:4px}
+.serpent-card:before {content:none}
+.serpent-card {scroll-margin:66px 8px}
+.serpent-card-top {display:grid;grid-template-columns:76px minmax(0,1fr);gap:15px;align-items:start}
+.serpent-cover {width:76px;height:108px;border-radius:2px;overflow:hidden;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:30px}
+.serpent-cover img {width:100%;height:100%;object-fit:cover}
+.serpent-type {font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.serpent-title {font-size:16px;font-weight:650;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.serpent-creator {font-size:12px;color:var(--muted);margin-top:6px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.serpent-rating {font-size:12px;margin-top:8px}
+.serpent-excerpt {margin:0;font:13px/1.5 Georgia,serif;color:#68716f;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.serpent-venue {font-family:inherit;font-size:12px}
+#timeline>.section-head {margin-top:0}
+.timeline.serpent-track {border:0;margin:0;padding:12px 36px 24px}
+.timeline.serpent-track.is-empty {padding:4px 0}
+.timeline .timeline-item:before {content:none}
+.timeline .timeline-item {display:flex;cursor:pointer}
+.timeline-pan {display:flex;gap:8px}
+.serpent-viewport:focus-visible {outline:2px solid #397e7a;outline-offset:3px}
+.tabs {position:sticky;top:0;z-index:65;background:var(--bg)}
+.btn,.pathos-auth-control,.menu-view {min-height:44px}
+.icon-btn {min-width:44px;min-height:44px}
+.rail-arrow {width:40px;height:40px}
+.field,.token-row,.edition-search-row,.work-detail-top>div {min-width:0}
+.source-link,.experience-edition,.experience-source,.review-body-full {overflow-wrap:anywhere}
+@media(max-width:850px) {
+ .serpent-track {min-width:850px;gap:64px 34px}
+ .serpent-card {padding:15px;height:214px}
+ .serpent-card-top {grid-template-columns:64px minmax(0,1fr);gap:12px}
+ .serpent-cover {width:64px;height:92px}
+ .section-head.stack-mobile {flex-direction:column;align-items:stretch}
+ .section-head .filters {width:100%}
+}
+@media(max-width:600px) {
+ .topbar {display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px;padding:18px 16px 14px}
+ .topbar h1 {font-size:32px}
+ .top-actions {display:flex;justify-content:flex-end;gap:8px;min-width:0}
+ .top-actions #addBtn {font-size:12px;padding:10px 12px;white-space:nowrap}
+ .top-actions:has(.personal-status),body.pathos-owner .top-actions {display:contents}
+ .top-actions:has(.personal-status) #addBtn,body.pathos-owner #addBtn {grid-column:2;grid-row:1;justify-self:end}
+ .top-actions .personal-status {grid-column:1;grid-row:2;white-space:normal;overflow-wrap:anywhere}
+ .top-actions .personal-install {grid-column:2;grid-row:2;justify-self:end}
+ body.pathos-owner .top-actions>div {grid-column:1/-1;min-width:0}
+ .pathos-sync-status {white-space:normal;overflow-wrap:anywhere;flex:1;min-width:0}
+ .tabs {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;padding:0 10px;overflow:visible}
+ .tabs>.tab[data-view] {display:block;min-width:0;min-height:50px;padding:15px 0 12px;font-size:10px;letter-spacing:.045em}
+ .tabs .more-menu {display:block;min-width:0;margin:0}
+ .more-menu>summary {min-height:50px;justify-content:center;padding:15px 0 12px;font-size:10px;letter-spacing:.045em}
+ .more-menu-panel {top:calc(100% + 1px);max-width:calc(100vw - 24px)}
+ .mobile-more {display:none}
+ main {padding:24px 16px max(40px,env(safe-area-inset-bottom))}
+ .section-head {margin:24px 0 16px;gap:16px}
+ .section-head h2,.home-timeline-heading h2 {font-size:26px}
+ .home-timeline-heading {align-items:center;gap:10px;margin-bottom:16px}
+ .home-timeline-actions {gap:6px;max-width:none;flex-wrap:nowrap}
+ .home-timeline-actions .view-link {margin-left:4px;font-size:11px;min-height:44px;display:flex;align-items:center}
+ .rail-arrow {width:36px;height:44px}
+ .serpent-track {min-width:760px;gap:56px 30px;padding:8px 28px 20px}
+ .timeline.serpent-track {padding:8px 28px 20px}
+ .serpent-date {font-size:10px}
+ .serpent-card {height:212px;padding:14px;gap:12px}
+ .serpent-card-top {grid-template-columns:60px minmax(0,1fr);gap:11px}
+ .serpent-cover {width:60px;height:86px}
+ .serpent-title {font-size:14px}
+ .serpent-creator {font-size:11px}
+ .serpent-excerpt {font-size:13px;-webkit-line-clamp:3}
+ .filters,.review-mode-panel .section-head .filters {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .filters input,.filters #librarySort,.filters #reviewSort,.filters #passageSort {grid-column:1/-1}
+ .filters .input,.filters input,.filters select {min-width:0;width:100%;max-width:100%}
+ .filters .filter-details>summary {width:100%;text-align:center}
+ .filter-panel {width:min(280px,calc(100vw - 32px));min-width:0}
+ .input,input,select,textarea {font-size:16px;min-height:44px}
+ .library-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 14px}
+ .work-info {padding:11px 0 14px}
+ .work-card h3 {font-size:14px;overflow-wrap:anywhere}
+ .work-card .meta {font-size:11px}
+ .cards {grid-template-columns:minmax(0,1fr)}
+ .card>div {min-width:0}
+ .review-card-head {gap:10px;flex-wrap:wrap}
+ .review-card-head h3 {font-size:22px}
+ .review-body-full {font-size:16px;line-height:1.7}
+ .review-history .review-card-full {margin-left:8px}
+ dialog,.insight-dialog {width:calc(100% - 16px);max-width:calc(100vw - 16px);max-height:calc(100dvh - 24px);padding:18px 16px;border-radius:8px;overscroll-behavior:contain}
+ .dialog-head {gap:8px}
+ .dialog-head h2 {font-size:25px}
+ .form-grid,.details-inner.form-grid {grid-template-columns:minmax(0,1fr)}
+ .field {min-width:0}
+ .dialog-actions {bottom:-18px;gap:8px;padding:12px 0 max(6px,env(safe-area-inset-bottom))}
+ .dialog-actions .btn {flex-shrink:0}
+ .dialog-actions .spacer {min-width:0}
+ .page-image-input,.token-row {flex-wrap:wrap}
+ .page-image-input input,.token-row .input {flex-basis:100%}
+ .edition-head,.quote-editor-head {flex-wrap:wrap}
+ .entry-details>summary {padding:12px}
+ .details-inner {padding:0 12px 12px}
+ .catalog-results {position:absolute;left:0;right:0;top:calc(100% + 5px);max-height:40dvh}
+ .work-detail-top {flex-direction:row;gap:14px}
+ .work-detail-cover {width:80px;min-width:80px;height:114px}
+ .work-actions {flex-direction:column;align-items:stretch}
+ .toast {left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));width:fit-content;max-width:calc(100vw - 24px);margin-left:auto}
+ .pathos-update-banner {bottom:max(12px,env(safe-area-inset-bottom))}
+}
+@media(prefers-reduced-motion:reduce) {.serpent-card {transition:none}}
+
 </style>
 </head>
 <body>
@@ -353,7 +488,7 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
   <div class="archive-heading"><h1 class="pathos-wordmark" aria-label="Πathos"><span class="pathos-pi" aria-hidden="true">Π</span><span>athos</span></h1></div>
   <div class="top-actions"><button class="btn primary" id="addBtn">+ Add experience</button></div>
 </header>
-<nav class="tabs">
+<nav class="tabs" aria-label="Πathos pages">
   <button data-view="home" class="tab active">Home</button>
   <button data-view="library" class="tab">Library</button>
   <button data-view="reviews" class="tab">Reviews</button>
@@ -370,6 +505,10 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
 </nav>
 <main>
 <section id="home" class="view active">
+  <section id="currentSection" class="hidden">
+    <div class="section-head"><div><h3>Current</h3></div></div>
+    <div id="currentList" class="cards"></div>
+  </section>
   <section class="home-timeline-section" aria-label="Recent cultural experiences">
     <div class="home-timeline-heading">
       <div>
@@ -378,22 +517,14 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
         
       </div>
       <div class="home-timeline-actions">
-        <button type="button" class="rail-arrow" id="homeTimelinePrev" aria-label="Scroll timeline to newer entries" title="Newer entries">←</button>
-        <button type="button" class="rail-arrow" id="homeTimelineNext" aria-label="Scroll timeline to older entries" title="Older entries">→</button>
+        <button type="button" class="rail-arrow" id="homeTimelinePrev" aria-label="Scroll recent timeline left" title="Scroll left">←</button>
+        <button type="button" class="rail-arrow" id="homeTimelineNext" aria-label="Scroll recent timeline right" title="Scroll right">→</button>
         <button type="button" class="view-link" id="viewFullTimelineBtn">Full timeline ↗</button>
       </div>
     </div>
-    <div id="homeTimelineScroll" class="home-rail-scroll" role="region" aria-label="Scroll horizontally through dated experiences" tabindex="0">
-      <div id="homeTimelineTrack" class="home-rail-track"></div>
+    <div id="homeTimelineScroll" class="serpent-viewport" role="region" aria-label="Recent experiences, winding timeline. Scroll down and sideways." tabindex="0">
+      <div id="homeTimelineTrack" class="serpent-track"></div>
     </div>
-  </section>
-  <section id="currentSection" class="hidden">
-    <div class="section-head"><div><h3>Current</h3></div></div>
-    <div id="currentList" class="cards"></div>
-  </section>
-  <section class="home-writing-section">
-    <div class="section-head"><div><h2>Recent reviews</h2></div><button class="view-link" id="viewAllReviewsBtn">View all reviews ↗</button></div>
-    <div id="homeLatestReviews" class="home-review-list"></div>
   </section>
 </section>
 
@@ -420,9 +551,9 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
 </section>
 
 <section id="timeline" class="view">
-  <div class="section-head"><div><h2>Timeline</h2></div></div>
+  <div class="section-head"><div><h2>Timeline</h2></div><div class="timeline-pan"><button type="button" class="rail-arrow" data-timeline-pan="-1" aria-label="Scroll full timeline left">←</button><button type="button" class="rail-arrow" data-timeline-pan="1" aria-label="Scroll full timeline right">→</button></div></div>
   
-  <div id="timelineList" class="timeline"></div>
+  <div class="serpent-viewport" id="fullTimelineScroll" role="region" aria-label="All experiences, winding timeline. Scroll down and sideways." tabindex="0"><div id="timelineList" class="timeline serpent-track"></div></div>
 </section>
 
 <section id="reviews" class="view">
@@ -554,15 +685,12 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
   </div>
   <div class="panel compact data-panel">
     <h3>Backups & data safety</h3>
-    <p class="muted">This version still stores your changes in the browser. Export a backup periodically — especially before switching computers or browsers.</p>
+    <p class="muted">Your archive is saved online in Supabase. Export JSON backups regularly. Restoring replaces your online archive, including publication settings.</p>
     <div class="backup-actions">
       <button class="btn primary" id="backupBtn">Export backup</button>
       <label class="btn file-btn">Restore backup<input id="restoreInput" type="file" accept="application/json,.json" hidden></label>
     </div>
-    <details class="danger-details"><summary>Reset archive to original imported snapshot</summary>
-      <p class="metadata-note">Only use this if you want to discard all changes made in your browser since the original import.</p>
-      
-    </details>
+
   </div>
 </section>
 </main>
@@ -619,7 +747,7 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
         <div class="details-inner form-grid">
           <label class="field">Creator / author / director<input class="input" name="creator"></label>
           <label class="field">Original year<input class="input" name="year" inputmode="numeric"></label>
-          <label class="field span-2"><span id="sourceUrlLabel">Reference / event page</span><input class="input" type="url" name="sourceUrl" placeholder="https://…"><span class="catalog-hint">Keep a link to the official event, production or reference page.</span></label>
+          <div class="field span-2"><label for="sourceUrlInput" id="sourceUrlLabel">Reference / event page</label><div class="page-image-input"><input class="input" id="sourceUrlInput" type="url" name="sourceUrl" placeholder="https://…"><button type="button" class="btn" id="findPageImageBtn" hidden>Find image</button></div><span class="catalog-hint" id="pageImageStatus" role="status" aria-live="polite"></span><div id="pageImageResults" class="page-image-results" hidden></div></div>
           <label class="field span-2">Tags<input class="input" name="tags" placeholder="e.g. sci-fi, Rome, theatre"></label>
           <label class="field span-2">Work cover / poster URL<input class="input" name="cover"></label>
           <label class="check span-2"><input type="checkbox" name="repeat"> Reread / rewatch / replay</label><label class="check span-2"><input type="checkbox" name="isPublic"> Publish this experience (including its review and saved passages)</label>
@@ -720,16 +848,68 @@ function migrateDatabase(database){
   if((database.schemaVersion||0)<6){database.schemaVersion=6;changed=true}
   return {database,changed};
 }
+function prepareBackup(value){
+  const object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
+  if(!object(value)||!Array.isArray(value.works)||!Array.isArray(value.experiences))throw new Error('A backup must contain works and experiences arrays.');
+  if(value.schemaVersion!=null&&(!Number.isInteger(value.schemaVersion)||value.schemaVersion<1||value.schemaVersion>6))throw new Error('This backup uses an unsupported archive version. Keep the file and update Πathos first.');
+  if(value.works.length>50000||value.experiences.length>100000)throw new Error('This backup is too large.');
+  const ids=new Set(),experiences=new Set();
+  const textFields=(row,fields)=>{for(const key of fields)if(row[key]!=null&&typeof row[key]!=='string')throw new Error('Invalid '+key+' field in backup.');};
+  for(const w of value.works){
+    if(!object(w)||typeof w.id!=='string'||!w.id.trim()||ids.has(w.id))throw new Error('Every work needs a unique ID.');
+    ids.add(w.id);
+    if(typeof w.title!=='string'||!w.title.trim())throw new Error('Every work needs a title.');
+    textFields(w,['type','creator','cover']);
+    if(w.aliases!=null&&(!Array.isArray(w.aliases)||w.aliases.some(x=>typeof x!=='string')))throw new Error('Invalid work aliases.');
+    for(const key of ['external','sourceMetadata'])if(w[key]!=null&&!object(w[key]))throw new Error('Invalid work metadata.');
+  }
+  for(const e of value.experiences){
+    if(!object(e)||typeof e.id!=='string'||!e.id.trim()||experiences.has(e.id))throw new Error('Every experience needs a unique ID.');
+    experiences.add(e.id);
+    if(typeof e.workId!=='string'||!ids.has(e.workId))throw new Error('An experience references a missing work.');
+    textFields(e,['startDate','endDate','loggedDate','review','venue','sourceUrl','status','source']);
+    if(e.isPublic!=null&&typeof e.isPublic!=='boolean')throw new Error('Invalid publication setting.');
+    if(e.rating!=null&&e.rating!==''&&(!Number.isFinite(Number(e.rating))||Number(e.rating)<0||Number(e.rating)>5))throw new Error('Invalid rating.');
+    if(e.tags!=null&&(!Array.isArray(e.tags)||e.tags.some(x=>typeof x!=='string')))throw new Error('Invalid tags.');
+    if(e.edition!=null){
+      if(!object(e.edition))throw new Error('Invalid edition.');
+      textFields(e.edition,['isbn','ean','identifierType','identifierValue','sourceId','storygraphUid','publisher','language','format','cover','olid','workKey','contributors','source']);
+    }
+    if(e.quotes!=null){
+      if(!Array.isArray(e.quotes))throw new Error('Invalid passages.');
+      const quotes=new Set();
+      for(const q of e.quotes){
+        if(typeof q==='string')continue;
+        if(!object(q)||typeof(q.text??q.quote)!=='string')throw new Error('Invalid passage text.');
+        textFields(q,['id','note','location','context']);
+        if(q.id!=null){if(!q.id.trim()||quotes.has(q.id))throw new Error('Passage IDs must be unique within an experience.');quotes.add(q.id);}
+      }
+    }
+  }
+  // Validate before migrating a clone, so a rejected file never mutates the archive.
+  return migrateDatabase(clone(value)).database;
+}
+function exportArchive(archive,prefix='pathos-backup'){
+  download(new Blob([JSON.stringify({...archive,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),prefix+'-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json');
+}
+function mergeEditionMetadata(existing,incoming){
+  const result={...existing};
+  for(const [key,value] of Object.entries(incoming||{}))if((result[key]==null||result[key]==='')&&value!=null&&value!=='')result[key]=value;
+  return result;
+}
 function loadDb(){return migrateDatabase(clone(PRELOADED_DB)).database;}
 let db=loadDb();
 let editingExperienceId=null;
+let archiveBusy=false;
+let backgroundTasks=0;
+window.pathosArchiveBusy=()=>archiveBusy||backgroundTasks||$('entryDialog').open;
 window.pathosCanEdit=false;
 window.pathosBridge={
   getArchive:()=>clone(db),
   setArchive:archive=>{db=migrateDatabase(clone(archive)).database;renderAll();},
   notify:msg=>toast(msg)
 };
-function saveDb(){renderAll(); if(window.pathosCanEdit&&window.pathosHostedSave)window.pathosHostedSave(clone(db));else alert('Sign in to save changes.');}
+function saveDb(){renderAll(); if(window.pathosCanEdit&&window.pathosHostedSave)return window.pathosHostedSave(clone(db));alert('Sign in to save changes.');return Promise.resolve(false);}
 function toast(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
 function dateLabel(s){if(!s)return'';const d=new Date(s+'T12:00:00');return d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}
 function experienceDate(e){return e.endDate||e.startDate||''}
@@ -793,8 +973,6 @@ function renderHomeExtras(){
   const words=reviewed.reduce((a,e)=>a+reviewWords(e),0);
   const byType={};arr.forEach(e=>{const w=workFor(e.workId);if(w)byType[w.type]=(byType[w.type]||0)+1});
   if($('homeYearSummary'))$('homeYearSummary').innerHTML=`<div class="year-numbers"><div class="year-number"><strong>${arr.length}</strong><span>experiences</span></div><div class="year-number"><strong>${avg}</strong><span>average rating</span></div><div class="year-number"><strong>${reviewed.length}</strong><span>written reviews</span></div><div class="year-number"><strong>${words.toLocaleString()}</strong><span>review words</span></div></div><div class="media-breakdown">${Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`<span class="media-chip">${esc(t)} ${n}</span>`).join('')||'<span class="meta">No dated experiences this year yet.</span>'}</div>`;
-  const reviews=db.experiences.filter(e=>String(e.review||'').trim()).sort((a,b)=>(reviewDate(b)||'').localeCompare(reviewDate(a)||'')||String(b.createdAt||'').localeCompare(String(a.createdAt||''))).slice(0,4);
-  if($('homeLatestReviews')){$('homeLatestReviews').innerHTML=reviews.length?reviews.map(e=>{const w=workFor(e.workId);const cover=editionCover(e)||w?.cover||'';return `<article class="mini-review" data-exp="${e.id}"><div class="mini-cover">${cover?`<img src="${esc(cover)}" alt="" onerror="this.style.display='none'">`:mediumIcon(w?.type||'Other')}</div><div><h4>${esc(w?.title||'Untitled')}</h4><div class="meta">${esc(w?.type||'')}${e.rating!==''?` · ${stars(e.rating)}`:''}${reviewDate(e)?` · ${esc(dateLabel(reviewDate(e)))}`:''}</div><div class="mini-review-text">${esc(e.review)}</div></div><div class="meta">${reviewWords(e)}w</div></article>`}).join(''):'<div class="meta">No written reviews yet.</div>';bindExperienceClicks($('homeLatestReviews'))}
 }
 function workAverageRating(wid){const a=experiencesFor(wid).filter(e=>e.rating!==''&&e.rating!=null).map(e=>Number(e.rating));return a.length?a.reduce((s,x)=>s+x,0)/a.length:null}
 function workLatestDate(wid){return experiencesFor(wid).map(experienceDate).filter(Boolean).sort().pop()||''}
@@ -827,6 +1005,10 @@ function renderReviews(){
     if(q&&!([w.title,w.creator,e.review,e.source,...(e.tags||[])].some(x=>norm(x).includes(q))))return false;return true;
   });
   const dateVal=e=>reviewDate(e)||'';const ratingVal=e=>(e.rating===''||e.rating==null)?-1:Number(e.rating);
+  const groups=new Map();
+  for(const e of arr){if(!groups.has(e.workId))groups.set(e.workId,[]);groups.get(e.workId).push(e);}
+  for(const reviews of groups.values())reviews.sort((a,b)=>dateVal(b).localeCompare(dateVal(a))||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+  arr=[...groups.values()].map(reviews=>reviews[0]);
   if(sort==='newest')arr.sort((a,b)=>dateVal(b).localeCompare(dateVal(a))||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
   else if(sort==='oldest')arr.sort((a,b)=>(dateVal(a)||'9999').localeCompare(dateVal(b)||'9999')||String(a.createdAt||'').localeCompare(String(b.createdAt||'')));
   else if(sort==='rating-desc')arr.sort((a,b)=>ratingVal(b)-ratingVal(a)||reviewWords(b)-reviewWords(a));
@@ -834,8 +1016,10 @@ function renderReviews(){
   else if(sort==='longest')arr.sort((a,b)=>reviewWords(b)-reviewWords(a));
   else if(sort==='shortest')arr.sort((a,b)=>reviewWords(a)-reviewWords(b));
   else if(sort==='title')arr.sort((a,b)=>(workFor(a.workId)?.title||'').localeCompare(workFor(b.workId)?.title||''));
-  const total=db.experiences.filter(e=>String(e.review||'').trim()).length;$('reviewsCount').textContent=`Showing ${arr.length} of ${total} written review${total===1?'':'s'}`;
-  $('reviewsList').innerHTML=arr.length?arr.map(e=>{const w=workFor(e.workId),d=reviewDate(e),cover=editionCover(e)||w?.cover||'';const bits=[w?.type,w?.creator,dateLabel(d),e.source,`${reviewWords(e)} words`].filter(Boolean);return `<article class="review-card-full" data-exp="${e.id}"><div class="review-list-cover">${cover?`<img src="${esc(cover)}" alt="" onerror="this.style.display='none';this.parentElement.textContent='${mediumIcon(w?.type||'Other')}'">`:mediumIcon(w?.type||'Other')}</div><div class="review-card-content"><div class="review-card-head"><div><div class="eyebrow">${esc((w?.type||'OTHER').toUpperCase())}</div><h3>${esc(w?.title||'Untitled')}</h3><div class="review-card-meta">${bits.map(esc).join(' · ')}</div></div><div class="review-rating-big">${e.rating!==''?stars(e.rating):'<span class="muted">Unrated</span>'}</div></div>${presentationQuoteForExperience(e)?`<div class="review-presentation-quote">${esc(presentationQuoteForExperience(e).text).replace(/\n/g,'<br>')}${presentationQuoteForExperience(e).note?`<small>${esc(presentationQuoteForExperience(e).note)}</small>`:''}</div>`:''}<div class="review-body-full">${esc(e.review).replace(/\n/g,'<br>')}</div>${e.tags?.length?`<div class="review-tags">${e.tags.map(t=>`<span class="pill">${esc(t)}</span>`).join('')}</div>`:''}</div></article>`}).join(''):'<div class="empty">No reviews match these filters.</div>';
+  const total=new Set(db.experiences.filter(e=>String(e.review||'').trim()).map(e=>e.workId)).size;
+  $('reviewsCount').textContent=`Showing ${groups.size} of ${total} reviewed works`;
+  const reviewCard=e=>{const w=workFor(e.workId),d=reviewDate(e),cover=editionCover(e)||w?.cover||'';const bits=[w?.type,w?.creator,dateLabel(d),e.source,`${reviewWords(e)} words`].filter(Boolean);return `<article class="review-card-full" data-exp="${e.id}"><div class="review-list-cover">${cover?`<img src="${esc(cover)}" alt="" onerror="this.style.display='none';this.parentElement.textContent='${mediumIcon(w?.type||'Other')}'">`:mediumIcon(w?.type||'Other')}</div><div class="review-card-content"><div class="review-card-head"><div><div class="eyebrow">${esc((w?.type||'OTHER').toUpperCase())}</div><h3>${esc(w?.title||'Untitled')}</h3><div class="review-card-meta">${bits.map(esc).join(' · ')}</div></div><div class="review-rating-big">${e.rating!==''?stars(e.rating):'<span class="muted">Unrated</span>'}</div></div>${presentationQuoteForExperience(e)?`<div class="review-presentation-quote">${esc(presentationQuoteForExperience(e).text).replace(/\n/g,'<br>')}${presentationQuoteForExperience(e).note?`<small>${esc(presentationQuoteForExperience(e).note)}</small>`:''}</div>`:''}<div class="review-body-full">${esc(e.review).replace(/\n/g,'<br>')}</div>${e.tags?.length?`<div class="review-tags">${e.tags.map(t=>`<span class="pill">${esc(t)}</span>`).join('')}</div>`:''}</div></article>`};
+  $('reviewsList').innerHTML=groups.size?arr.map(e=>groups.get(e.workId)).map(reviews=>`<section class="review-group">${reviewCard(reviews[0])}${reviews.length>1?`<details class="review-history"><summary>Earlier review${reviews.length>2?'s':''}</summary>${reviews.slice(1).map(reviewCard).join('')}</details>`:''}</section>`).join(''):'<div class="empty">No reviews match these filters.</div>';
   bindExperienceClicks($('reviewsList'));
 }
 function renderPassageFilters(){
@@ -957,23 +1141,53 @@ function renderCurrent(){
   $('currentSection').classList.toggle('hidden',!arr.length);
   $('currentList').innerHTML=arr.map(experienceCard).join('');bindExperienceClicks($('currentList'));
 }
-function renderHomeTimeline(){
-  const viewport=$('homeTimelineScroll'),track=$('homeTimelineTrack');
-  if(!viewport||!track)return;
-  const arr=db.experiences.filter(e=>experienceDate(e)&&e.status!=='planned'&&workFor(e.workId))
+const timelineResizeObserver=new ResizeObserver(entries=>entries.forEach(({target})=>layoutSerpentineTimeline(target)));
+function datedExperiences(){
+  return db.experiences.filter(e=>experienceDate(e)&&e.status!=='planned'&&workFor(e.workId))
     .sort((a,b)=>experienceDate(b).localeCompare(experienceDate(a))||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
-  track.classList.toggle('is-empty',!arr.length);
-  if(!arr.length){track.innerHTML='<div class="home-timeline-empty">Your dated experiences will appear here as you add them.</div>';updateHomeTimelineArrows();return}
-  track.innerHTML=arr.map(e=>{
-    const w=workFor(e.workId),cover=editionCover(e)||w.cover||'';
-    const image=cover?`<img src="${esc(cover)}" alt="" loading="lazy" onerror="this.style.display='none';this.parentElement.textContent='${mediumIcon(w.type)}'">`:mediumIcon(w.type);
+}
+function renderSerpentineTimeline(track,experiences){
+  track.classList.toggle('is-empty',!experiences.length);
+  if(!experiences.length){track.innerHTML='<div class="empty">Your dated experiences will appear here as you add them.</div>';return;}
+  track.innerHTML='<svg class="serpent-path" aria-hidden="true" focusable="false"><path></path><circle r="4"></circle><circle r="4"></circle></svg>'+experiences.map((e,i)=>{
+    const w=workFor(e.workId),row=Math.floor(i/3),column=row%2?3-i%3:i%3+1;
     const excerpt=String(e.review||'').trim();
-    return `<div class="home-rail-item"><div class="home-rail-date">${esc(dateLabel(experienceDate(e)))}</div><div class="home-rail-dot" aria-hidden="true"></div><button class="home-rail-card" type="button" data-exp="${esc(e.id)}" aria-label="Open ${esc(w.title)}, ${esc(dateLabel(experienceDate(e)))}"><div class="home-rail-card-top"><div class="home-rail-cover">${image}</div><div style="min-width:0"><div class="home-rail-type">${esc(w.type)}</div><div class="home-rail-title">${esc(w.title)}</div><div class="home-rail-creator">${esc(w.creator||'')}</div>${e.rating!==''&&e.rating!=null?`<div class="home-rail-rating">★ ${esc(formatRating(e.rating))}/5</div>`:''}</div></div>${excerpt?`<p class="home-rail-snippet">${esc(excerpt)}</p>`:e.venue?`<div class="home-rail-venue">${esc(e.venue)}</div>`:''}</button></div>`;
+    return `<div class="serpent-stop" style="grid-row:${row+1};grid-column:${column}"><div class="serpent-date"><time datetime="${esc(experienceDate(e))}">${esc(dateLabel(experienceDate(e)))}</time><span class="serpent-direction" aria-hidden="true">${row%2?'←':'→'}</span></div><button type="button" class="serpent-card timeline-item" data-exp="${esc(e.id)}" aria-label="Open ${esc(w.title)}, ${esc(dateLabel(experienceDate(e)))}"><div class="serpent-card-top">${coverHTML(w,'serpent-cover timeline-cover',e)}<div style="min-width:0"><div class="serpent-type">${esc(w.type)}</div><div class="serpent-title">${esc(w.title)}</div><div class="serpent-creator">${esc(w.creator||'')}</div>${e.rating!==''&&e.rating!=null?`<div class="serpent-rating">★ ${esc(formatRating(e.rating))}/5</div>`:''}</div></div>${excerpt?`<p class="serpent-excerpt">${esc(excerpt)}</p>`:e.venue?`<p class="serpent-excerpt serpent-venue">${esc(e.venue)}</p>`:''}</button></div>`;
   }).join('');
   bindExperienceClicks(track);
-  viewport.scrollLeft=0;
+  // Reversed visual rows retain chronological keyboard and screen-reader order.
+  track.querySelectorAll('[data-exp]').forEach(button=>button.addEventListener('focus',()=>button.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'})));
+  timelineResizeObserver.observe(track);
+  requestAnimationFrame(()=>layoutSerpentineTimeline(track));
+}
+function layoutSerpentineTimeline(track){
+  if(!track.offsetWidth)return;
+  const stops=[...track.querySelectorAll('.serpent-stop')],svg=track.querySelector('svg');
+  if(!stops.length||!svg)return;
+  const point=stop=>({x:stop.offsetLeft+stop.offsetWidth/2,y:stop.offsetTop+stop.querySelector('button').offsetTop+stop.querySelector('button').offsetHeight/2});
+  const first=point(stops[0]),startX=stops[0].offsetLeft-16;
+  let path=`M ${startX} ${first.y} H ${first.x}`;
+  for(let row=0;row<Math.ceil(stops.length/3);row++){
+    const lastIndex=Math.min(row*3+2,stops.length-1),last=point(stops[lastIndex]),right=row%2===0;
+    path+=` H ${last.x}`;
+    if(lastIndex+1<stops.length){
+      const next=point(stops[lastIndex+1]),edge=right?track.clientWidth-36:36,outer=right?track.clientWidth-7:7;
+      path+=` H ${edge} Q ${outer} ${last.y} ${outer} ${last.y+29} V ${next.y-29} Q ${outer} ${next.y} ${edge} ${next.y} H ${next.x}`;
+    }
+  }
+  const lastStop=stops[stops.length-1],end=point(lastStop),right=Math.floor((stops.length-1)/3)%2===0;
+  const endX=lastStop.offsetLeft+(right?lastStop.offsetWidth+16:-16);
+  path+=` H ${endX}`;
+  svg.setAttribute('viewBox',`0 0 ${track.clientWidth} ${track.clientHeight}`);
+  svg.querySelector('path').setAttribute('d',path);
+  svg.querySelectorAll('circle').forEach((circle,i)=>{circle.setAttribute('cx',i?endX:startX);circle.setAttribute('cy',i?end.y:first.y);});
   updateHomeTimelineArrows();
 }
+function renderHomeTimeline(){
+  renderSerpentineTimeline($('homeTimelineTrack'),datedExperiences().slice(0,12));
+  updateHomeTimelineArrows();
+}
+
 function updateHomeTimelineArrows(){
   const scroller=$('homeTimelineScroll');if(!scroller)return;
   const prev=$('homeTimelinePrev'),next=$('homeTimelineNext');
@@ -982,7 +1196,7 @@ function updateHomeTimelineArrows(){
 }
 function scrollHomeTimeline(direction){
   const viewport=$('homeTimelineScroll');if(!viewport)return;
-  viewport.scrollBy({left:direction*Math.max(210,Math.round(viewport.clientWidth*.76)),behavior:'smooth'});
+  viewport.scrollBy({left:direction*Math.max(210,Math.round(viewport.clientWidth*.76)),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
 }
 function renderRecent(){
   const arr=db.experiences.filter(e=>experienceDate(e)&&e.status!=='planned').sort((a,b)=>experienceDate(b).localeCompare(experienceDate(a))).slice(0,9);
@@ -1017,17 +1231,11 @@ function renderLibrary(){
   if($('libraryCount'))$('libraryCount').textContent=`Showing ${works.length} of ${db.works.length} works`;
   $('libraryGrid').innerHTML=works.length?works.map(w=>{
     const ex=experiencesFor(w.id),latest=ex[0],st=workStatus(w.id),avg=workAverageRating(w.id);
-    return `<article class="work-card" data-work="${w.id}">${coverHTML(w,'work-cover',latest)}<div class="work-info"><div class="eyebrow">${esc(w.type.toUpperCase())}${w.liked?' <span class="liked">♥</span>':''}</div><h3>${esc(w.title)}</h3><div class="meta">${esc(w.creator)}${w.creator&&w.year?' · ':''}${esc(w.year)}</div><div>${statusPill(st)}</div><div class="meta">${ex.length} experience${ex.length===1?'':'s'}${avg!=null?` · ★ ${formatRating(avg)}/5`:''}</div></div></article>`;
+    return `<article class="work-card" data-work="${w.id}">${coverHTML(w,'work-cover',latest)}<div class="work-info"><div class="eyebrow">${esc(w.type.toUpperCase())}${w.liked?' <span class="liked">♥</span>':''}</div><h3>${esc(w.title)}</h3><div class="meta">${esc(w.creator)}${w.creator&&w.year?' · ':''}${esc(w.year)}</div><div>${statusPill(st)}</div><div class="meta">${ex.length>1?`${ex.length} experiences`:""}${avg!=null?`${ex.length>1?' · ':''}★ ${formatRating(avg)}/5`:''}</div></div></article>`;
   }).join(''):`<div class="empty">No matching works.</div>`;
   document.querySelectorAll('[data-work]').forEach(el=>el.onclick=()=>openWork(el.dataset.work));
 }
-function renderTimeline(){
-  const arr=db.experiences.filter(e=>experienceDate(e)&&e.status!=='planned').sort((a,b)=>experienceDate(b).localeCompare(experienceDate(a)));
-  if(!arr.length){$('timelineList').innerHTML='<div class="empty">Your timeline will appear here.</div>';return}
-  const groups={};arr.forEach(e=>{const d=experienceDate(e);const key=new Date(d+'T12:00:00').toLocaleDateString(undefined,{month:'long',year:'numeric'});(groups[key]||=[]).push(e)});
-  $('timelineList').innerHTML=Object.entries(groups).map(([month,es])=>`<section class="timeline-group"><h3>${esc(month)}</h3>${es.map(e=>{const w=workFor(e.workId);return `<div class="timeline-item" data-exp="${e.id}"><div class="small muted">${esc(dateLabel(experienceDate(e)))} · ${esc(w?.type||'')} · ${esc(e.source||'manual')}</div><div class="timeline-title">${esc(w?.title||'Untitled')}</div><div class="meta">${esc(w?.creator||'')}${e.rating!==''?` · ${stars(e.rating)}`:''}</div></div>`}).join('')}</section>`).join('');
-  bindExperienceClicks($('timelineList'));
-}
+function renderTimeline(){renderSerpentineTimeline($('timelineList'),datedExperiences());}
 function bindExperienceClicks(root){root.querySelectorAll('[data-exp]').forEach(el=>el.onclick=()=>openExperience(el.dataset.exp))}
 function externalLinks(w){
   const parts=[];if(w.external?.letterboxd)parts.push(`<a class="source-link" href="${esc(w.external.letterboxd)}" target="_blank" rel="noopener">Open on Letterboxd ↗</a>`);if(w.external?.openlibraryKey)parts.push(`<a class="source-link" href="https://openlibrary.org${esc(w.external.openlibraryKey.startsWith('/')?w.external.openlibraryKey:'/'+w.external.openlibraryKey)}" target="_blank" rel="noopener">Open Library work ↗</a>`);if(w.external?.tmdb)parts.push(`<a class="source-link" href="https://www.themoviedb.org/${w.type==='TV'?'tv':'movie'}/${esc(w.external.tmdb)}" target="_blank" rel="noopener">TMDB ↗</a>`);return parts.join('')
@@ -1037,10 +1245,9 @@ function editionLinks(ed){if(!ed)return'';const links=[];if(ed.olid)links.push(`
 function openWork(id){
   const w=workFor(id);if(!w)return;const ex=experiencesFor(id),latest=ex[0];$('workDialogTitle').innerHTML=`<div class="eyebrow">${esc(w.type.toUpperCase())}${w.liked?' <span class="liked">♥</span>':''}</div><h2>${esc(w.title)}</h2>`;
   const runtime=w.sourceMetadata?.runtime?`${w.sourceMetadata.runtime} min`:'';const genres=Array.isArray(w.sourceMetadata?.genres)?w.sourceMetadata.genres.slice(0,4).join(', '):'';const metaBits=[w.creator,w.year,runtime,genres].filter(Boolean).join(' · ');
-  const rated=ex.filter(e=>e.rating!==''&&e.rating!=null),reviewed=ex.filter(e=>String(e.review||'').trim()),avg=rated.length?rated.reduce((a,e)=>a+Number(e.rating),0)/rated.length:null;const passageCount=quoteCountForWork(id),presentation= presentationQuoteForWork(id);
-  const dates=ex.map(experienceDate).filter(Boolean).sort(),first=dates[0]||'',last=dates.at(-1)||'';const latestReview=reviewed.slice().sort((a,b)=>(reviewDate(b)||'').localeCompare(reviewDate(a)||''))[0];
-  $('workDialogBody').innerHTML=`<div class="work-detail-top">${coverHTML(w,'work-detail-cover',latest)}<div style="min-width:0;flex:1"><div class="meta">${esc(metaBits)}</div>${w.aliases?.length?`<div class="meta" style="margin-top:5px">Also known as: ${esc(w.aliases.slice(0,6).join(' · '))}</div>`:''}${externalLinks(w)}<div class="work-metrics"><span class="work-metric">${ex.length} experience${ex.length===1?'':'s'}</span>${avg!=null?`<span class="work-metric">★ ${formatRating(avg)} average</span>`:''}<span class="work-metric">${reviewed.length} review${reviewed.length===1?'':'s'}</span>${passageCount?`<span class="work-metric">${passageCount} passage${passageCount===1?'':'s'}</span>`:''}${first?`<span class="work-metric">${first===last?esc(dateLabel(first)):esc(dateLabel(first))+' → '+esc(dateLabel(last))}</span>`:''}</div><div class="work-actions"><button class="btn primary" id="addAgain">+ Add another experience</button><button class="btn favorite-btn ${w.liked?'active':''}" id="favoriteWorkBtn">${w.liked?'♥ Favorite':'♡ Mark favorite'}</button></div>${presentation?`<blockquote class="presentation-quote"><p>${esc(presentation.quote.text).replace(/\n/g,'<br>')}</p>${presentation.quote.note?`<footer>${esc(presentation.quote.note)}</footer>`:''}</blockquote>`:''}${latestReview?`<div class="work-summary-review"><div class="eyebrow">LATEST REVIEW</div><p>${esc(latestReview.review).replace(/\n/g,'<br>')}</p></div>`:''}</div></div><div class="work-detail-body"><div class="experience-list">${ex.length?ex.map(e=>`<article class="experience" data-exp="${e.id}"><div><strong>${esc(dateLabel(e.endDate||e.startDate)||STATUS_LABELS[e.status]||'Undated')}</strong> ${statusPill(e.status)}${e.repeat?' <span class="pill">repeat</span>':''}</div><div class="meta">${e.startDate&&e.endDate&&e.startDate!==e.endDate?`${esc(dateLabel(e.startDate))} → ${esc(dateLabel(e.endDate))}`:''}${e.venue?` · ${esc(e.venue)}`:''}${e.source?` · imported from ${esc(e.source)}`:''}</div>${e.edition?`<div class="experience-edition"><strong>Edition:</strong> ${esc(editionSummary(e.edition)||'edition recorded')} ${editionLinks(e.edition)}</div>`:''}${e.sourceUrl?`<div class="experience-source">${sourcePageLink(e)}</div>`:''}${e.rating!==''?`<div class="rating">${stars(e.rating)}</div>`:''}${quotesForExperience(e).length?`<div class="experience-passages"><div class="eyebrow">PASSAGES</div>${quotesForExperience(e).map(q=>`<div class="saved-passage">${q.featured?'★ ':''}${esc(q.text).replace(/\n/g,'<br>')}${q.note?`<small>${esc(q.note)}</small>`:''}</div>`).join('')}</div>`:''}${e.review?`<p style="font-family:Georgia,serif;line-height:1.55">${esc(e.review).replace(/\n/g,'<br>')}</p>`:''}${e.tags?.length?`<div class="tag-row">${e.tags.map(t=>`<span class="pill">${esc(t)}</span>`).join('')}</div>`:''}${e.loggedDate?`<div class="meta small" style="margin-top:8px">Logged/added: ${esc(dateLabel(e.loggedDate))}</div>`:''}</article>`).join(''):'<div class="empty">No experiences yet.</div>'}</div></div>`;
-  $('workDialog').showModal();bindExperienceClicks($('workDialogBody'));$('addAgain').onclick=()=>{if(!window.pathosCanEdit){toast('Sign in to edit');return;}$('workDialog').close();openEntryDialog({work:w})};$('favoriteWorkBtn').onclick=()=>{if(!window.pathosCanEdit){toast('Sign in to edit');return;}w.liked=!w.liked;saveDb();renderAll();$('favoriteWorkBtn').classList.toggle('active',w.liked);$('favoriteWorkBtn').textContent=w.liked?'♥ Favorite':'♡ Mark favorite';$('workDialogTitle').innerHTML=`<div class="eyebrow">${esc(w.type.toUpperCase())}${w.liked?' <span class="liked">♥</span>':''}</div><h2>${esc(w.title)}</h2>`;toast(w.liked?'Added to favorites':'Removed from favorites')}
+
+  $('workDialogBody').innerHTML=`<div class="work-detail-top">${coverHTML(w,'work-detail-cover',latest)}<div style="min-width:0;flex:1"><div class="meta">${esc(metaBits)}</div>${w.aliases?.length?`<div class="meta" style="margin-top:5px">Also known as: ${esc(w.aliases.slice(0,6).join(' · '))}</div>`:''}${externalLinks(w)}<div class="work-actions"><button class="btn" id="addAgain">Log again</button><button class="btn favorite-btn ${w.liked?'active':''}" id="favoriteWorkBtn">${w.liked?'♥ Favorite':'♡ Mark favorite'}</button></div></div></div><div class="work-detail-body"><div class="experience-list">${ex.length?ex.map(e=>`<article class="experience" data-exp="${e.id}"><div><strong>${esc(dateLabel(e.endDate||e.startDate)||STATUS_LABELS[e.status]||'Undated')}</strong> ${statusPill(e.status)}${e.repeat?' <span class="pill">repeat</span>':''}</div><div class="meta">${e.startDate&&e.endDate&&e.startDate!==e.endDate?`${esc(dateLabel(e.startDate))} → ${esc(dateLabel(e.endDate))}`:''}${e.venue?` · ${esc(e.venue)}`:''}${e.source?` · imported from ${esc(e.source)}`:''}</div>${e.edition?`<div class="experience-edition"><strong>Edition:</strong> ${esc(editionSummary(e.edition)||'edition recorded')} ${editionLinks(e.edition)}</div>`:''}${e.sourceUrl?`<div class="experience-source">${sourcePageLink(e)}</div>`:''}${e.rating!==''?`<div class="rating">${stars(e.rating)}</div>`:''}${quotesForExperience(e).length?`<div class="experience-passages"><div class="eyebrow">PASSAGES</div>${quotesForExperience(e).map(q=>`<div class="saved-passage">${q.featured?'★ ':''}${esc(q.text).replace(/\n/g,'<br>')}${q.note?`<small>${esc(q.note)}</small>`:''}</div>`).join('')}</div>`:''}${e.review?`<p class="experience-review" style="font-family:Georgia,serif;line-height:1.55">${esc(e.review).replace(/\n/g,'<br>')}</p>`:''}${e.tags?.length?`<div class="tag-row">${e.tags.map(t=>`<span class="pill">${esc(t)}</span>`).join('')}</div>`:''}${e.loggedDate?`<div class="meta small" style="margin-top:8px">Logged/added: ${esc(dateLabel(e.loggedDate))}</div>`:''}</article>`).join(''):'<div class="empty">No experiences yet.</div>'}</div></div>`;
+  $('workDialog').showModal();bindExperienceClicks($('workDialogBody'));$('addAgain').onclick=()=>{if(!window.pathosCanEdit||archiveBusy){toast('The editor is unavailable');return;}$('workDialog').close();openEntryDialog({work:w})};$('favoriteWorkBtn').onclick=()=>{if(!window.pathosCanEdit||archiveBusy){toast('Sign in to edit');return;}w.liked=!w.liked;saveDb();renderAll();$('favoriteWorkBtn').classList.toggle('active',w.liked);$('favoriteWorkBtn').textContent=w.liked?'♥ Favorite':'♡ Mark favorite';$('workDialogTitle').innerHTML=`<div class="eyebrow">${esc(w.type.toUpperCase())}${w.liked?' <span class="liked">♥</span>':''}</div><h2>${esc(w.title)}</h2>`;toast(w.liked?'Added to favorites':'Removed from favorites')}
 }
 let selectedCatalogItem=null;
 let catalogTimer=null;
@@ -1090,9 +1297,61 @@ function mergeSelectedCatalog(data){if(!selectedCatalogItem)return data;data.ext
 let editionCandidates=[];
 let selectedEdition=null;
 function languageLabel(code){return ({ita:'Italian',eng:'English',fre:'French',fra:'French',spa:'Spanish',ger:'German',deu:'German',por:'Portuguese',rus:'Russian'})[String(code||'').toLowerCase()]||code||''}
+// Official-page lookup only suggests images; selecting one changes the form,
+// and the ordinary Save action remains the only archive write.
+let pageImageRequest=null,pageImageRevision=0;
+function pageImagesAllowed(){return !['Book','Film','TV'].includes($('entryForm').elements.type.value)}
+function resetPageImages(){
+  pageImageRevision++;pageImageRequest?.abort();pageImageRequest=null;
+  $('pageImageResults').innerHTML='';$('pageImageResults').hidden=true;
+  $('pageImageStatus').textContent='';$('findPageImageBtn').disabled=false;
+}
+function updatePageImageControls(){
+  const allowed=pageImagesAllowed();$('findPageImageBtn').hidden=!allowed;
+  if(!allowed)resetPageImages();
+}
+async function findPageImages(automatic=false){
+  const f=$('entryForm'),source=safeWebUrl(f.elements.sourceUrl.value)||safeWebUrl(f.elements.cover.value);
+  if(!window.pathosCanEdit||archiveBusy||!pageImagesAllowed())return;
+  if(!source){if(!automatic)$('pageImageStatus').textContent='Add a public event link first.';return;}
+  const current=f.elements.cover.value.trim();
+  if(automatic&&(!safeWebUrl(f.elements.sourceUrl.value)||current&&safeWebUrl(current)!==source))return;
+  resetPageImages();
+  if(!navigator.onLine){$('pageImageStatus').textContent='Image lookup needs a connection. Your current cover is unchanged.';return;}
+  const revision=pageImageRevision,controller=new AbortController();pageImageRequest=controller;
+  const timeout=setTimeout(()=>controller.abort(),12000);
+  $('findPageImageBtn').disabled=true;$('pageImageStatus').textContent='Looking for images…';
+  try{
+    const response=await fetch('/api/pathos/page-images',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:source}),signal:controller.signal});
+    const result=await response.json();if(!response.ok)throw new Error(result.error||'Image lookup failed.');
+    if(revision!==pageImageRevision||!$('entryDialog').open)return;
+    const images=(result.images||[]).filter(image=>safeWebUrl(image.url));
+    $('pageImageStatus').textContent=images.length?'Choose an image, then save the entry.':'No suitable images found. You can paste an image URL instead.';
+    $('pageImageResults').innerHTML=images.map((image,index)=>`<button type="button" class="page-image-choice" data-page-image="${index}"><img src="${esc(image.url)}" alt="Suggested cover ${index+1}" referrerpolicy="no-referrer"><span>Use image</span></button>`).join('');
+    $('pageImageResults').hidden=!images.length;
+    $('pageImageResults').querySelectorAll('[data-page-image]').forEach((button,index)=>{
+      button.querySelector('img').addEventListener('error',()=>{button.disabled=true;button.querySelector('span').textContent='Image unavailable';});
+      button.onclick=()=>{
+        const existing=f.elements.cover.value.trim(),chosen=images[index].url;
+        if(existing&&existing!==chosen&&safeWebUrl(existing)!==source&&!confirm('Replace the current cover with this image?'))return;
+        f.elements.cover.value=chosen;
+        $('pageImageResults').querySelectorAll('button').forEach(node=>node.setAttribute('aria-pressed',String(node===button)));
+        $('pageImageStatus').textContent='Image selected. Save the entry to keep it.';
+      };
+    });
+  }catch(error){
+    if(revision===pageImageRevision)$('pageImageStatus').textContent=error.name==='AbortError'?'Image lookup timed out. Your current cover is unchanged.':error instanceof SyntaxError||error instanceof TypeError?'Image lookup is unavailable. You can paste an image URL instead.':error.message||'Could not read that page. Your current cover is unchanged.';
+  }finally{
+    clearTimeout(timeout);if(revision===pageImageRevision){$('findPageImageBtn').disabled=false;pageImageRequest=null;}
+  }
+}
+$('findPageImageBtn').onclick=()=>findPageImages();
+$('entryForm').elements.sourceUrl.addEventListener('change',()=>findPageImages(true));
+$('entryForm').elements.sourceUrl.addEventListener('input',resetPageImages);
+$('entryDialog').addEventListener('close',()=>{if(!$('entryDialog').open)resetPageImages();});
 const SINGLE_DATE_MEDIA={Film:'Watched on',Theatre:'Attended on',Concert:'Attended on',Exhibition:'Visited on',Opera:'Attended on'};
 function updateDateFields(){
-  const f=$('entryForm');if(!f)return;const type=f.elements.type.value;const sourceLabel=$('sourceUrlLabel');if(sourceLabel)sourceLabel.textContent=['Theatre','Concert','Opera','Exhibition'].includes(type)?'Official event / production page':'Reference / source page';const startField=$('startDateField'),endField=$('endDateField'),start=f.elements.startDate,end=f.elements.endDate;const singleLabel=SINGLE_DATE_MEDIA[type]||'';
+  const f=$('entryForm');if(!f)return;const type=f.elements.type.value;const sourceLabel=$('sourceUrlLabel');if(sourceLabel)sourceLabel.textContent=['Theatre','Concert','Opera','Exhibition'].includes(type)?'Official event / production page':'Reference / source page';const startField=$('startDateField'),endField=$('endDateField'),start=f.elements.startDate,end=f.elements.endDate;const singleLabel=SINGLE_DATE_MEDIA[type]||'';updatePageImageControls();
   if(singleLabel){
     if(!end.value&&start.value)end.value=start.value;start.value='';startField?.classList.add('hidden');if($('endDateLabel'))$('endDateLabel').textContent=singleLabel;end.removeAttribute('min');
   }else{
@@ -1110,7 +1369,7 @@ function validateDateOrder(report=false){
 }
 function updateEditionPanel(){const f=$('entryForm');if(!f)return;const show=f.elements.type.value==='Book';$('bookEditionDetails')?.classList.toggle('hidden',!show);$('editionPanel')?.classList.toggle('hidden',!show);if(show)renderEditionPreview()}
 function clearEditionForm(){const f=$('entryForm');if(!f)return;['editionIsbn','editionEan','editionOtherType','editionOtherId','editionSourceId','editionPublisher','editionYear','editionLanguage','editionFormat','editionPages','editionCover','editionOlid','editionWorkKey'].forEach(k=>{if(f.elements[k])f.elements[k].value=''});selectedEdition=null;editionCandidates=[];$('editionResults')?.classList.add('hidden');if($('editionResults'))$('editionResults').innerHTML='';if($('editionCurrent'))$('editionCurrent').textContent='';renderEditionPreview()}
-function editionFromForm(){const f=$('entryForm');return normalizeEdition({isbn:f.elements.editionIsbn?.value,ean:f.elements.editionEan?.value,identifierType:f.elements.editionOtherType?.value,identifierValue:f.elements.editionOtherId?.value,sourceId:f.elements.editionSourceId?.value,publisher:f.elements.editionPublisher?.value,publishYear:f.elements.editionYear?.value,language:f.elements.editionLanguage?.value,format:f.elements.editionFormat?.value,pages:f.elements.editionPages?.value,cover:f.elements.editionCover?.value,olid:f.elements.editionOlid?.value,workKey:f.elements.editionWorkKey?.value,source:selectedEdition?.source||'manual'})}
+function editionFromForm(){const f=$('entryForm');return normalizeEdition({isbn:f.elements.editionIsbn?.value,ean:f.elements.editionEan?.value,identifierType:f.elements.editionOtherType?.value,identifierValue:f.elements.editionOtherId?.value,sourceId:f.elements.editionSourceId?.value,publisher:f.elements.editionPublisher?.value,publishYear:f.elements.editionYear?.value,language:f.elements.editionLanguage?.value,format:f.elements.editionFormat?.value,pages:f.elements.editionPages?.value,cover:f.elements.editionCover?.value,olid:f.elements.editionOlid?.value,workKey:f.elements.editionWorkKey?.value,contributors:selectedEdition?.contributors||'',source:selectedEdition?.source||'manual'})}
 function renderEditionPreview(){const box=$('editionCoverPreview');if(!box)return;const url=$('entryForm')?.elements?.editionCover?.value?.trim()||'';box.innerHTML=url?`<img src="${esc(url)}" alt="">`:'📚';const img=box.querySelector('img');if(img){img.onload=()=>{box.title='Exact edition cover'};img.onerror=()=>{box.textContent='📚';box.title='That cover URL did not return an image';const cur=$('editionCurrent');if(cur&&!/Loading|Looking up/.test(cur.textContent||''))cur.textContent='That cover URL does not return an image. You can choose your own cover below.'}}}
 function fillEditionForm(ed){ed=normalizeEdition(ed);if(!ed)return;selectedEdition=ed;const f=$('entryForm');const vals={editionIsbn:ed.isbn,editionEan:ed.ean,editionOtherType:ed.identifierType,editionOtherId:ed.identifierValue,editionSourceId:ed.sourceId,editionPublisher:ed.publisher,editionYear:ed.publishYear,editionLanguage:languageLabel(ed.language),editionFormat:ed.format,editionPages:ed.pages,editionCover:ed.cover,editionOlid:ed.olid,editionWorkKey:ed.workKey};Object.entries(vals).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v||''});$('editionCurrent').textContent=editionSummary(ed)||'Edition selected';renderEditionPreview()}
 function editionSearchText(ed){return norm([ed.isbn,ed.ean,ed.identifierType,ed.identifierValue,ed.sourceId,ed.publisher,ed.publishYear,ed.language,languageLabel(ed.language),ed.format,ed.pages,ed.olid].filter(Boolean).join(' '))}
@@ -1128,9 +1387,9 @@ async function enrichBook(w){
   for(const e of ex){
     if(e.source==='StoryGraph'&&e.edition?.sourceId&&!isValidIsbn(e.edition.sourceId))hasStoryGraphExactNonIsbn=true;
     const exactIsbn=cleanIsbn(e.edition?.isbn||e.edition?.sourceId||'');
-    if(exactIsbn){try{const oldEditionCover=e.edition.cover||'';const ed=await lookupEditionByIsbn(exactIsbn);if(ed){e.edition=Object.assign({},e.edition,ed,{isbn:exactIsbn,sourceId:e.edition.sourceId||exactIsbn,contributors:e.edition.contributors||w.sourceMetadata?.contributors||'',source:e.edition.source||'Open Library ISBN'});if(ed.cover){w.cover=ed.cover}else{if(generatedIsbnCover(oldEditionCover,exactIsbn))e.edition.cover='';if(generatedIsbnCover(w.cover,exactIsbn))w.cover=''}if(ed.workKey){w.external=w.external||{};w.external.openlibraryKey=ed.workKey}matched=true}}catch{}}
+    if(exactIsbn){try{const ed=await lookupEditionByIsbn(exactIsbn);if(ed){e.edition=mergeEditionMetadata(e.edition,ed);if(!w.cover&&e.edition.cover)w.cover=e.edition.cover;if(ed.workKey){w.external=w.external||{};w.external.openlibraryKey=w.external.openlibraryKey||ed.workKey}matched=true}}catch{}}
   }
-  if(matched){const exact=bestRecordedBookCover(w);if(exact)w.cover=exact;else if(ex.some(e=>generatedIsbnCover(w.cover,e.edition?.isbn)))w.cover='';return true;}
+  if(matched){const exact=bestRecordedBookCover(w);if(exact&&!w.cover)w.cover=exact;return true;}
   let params={limit:'5',fields:'key,title,author_name,first_publish_year,cover_i,subject'};params.title=w.title;if(w.creator)params.author=w.creator;const r=await fetch('https://openlibrary.org/search.json?'+new URLSearchParams(params));if(!r.ok)throw new Error('Open Library request failed');const j=await r.json();const d=bestBookDoc(w,j.docs||[]);if(!d||titleScore(d.title,w.title)<1)return false;w.external=w.external||{};if(d.key)w.external.openlibraryKey=d.key;if(!w.creator&&d.author_name?.[0])w.creator=d.author_name.join(', ');if(!w.year&&d.first_publish_year)w.year=String(d.first_publish_year);w.sourceMetadata=w.sourceMetadata||{};if(d.subject?.length)w.sourceMetadata.genres=d.subject.slice(0,6);
   // For a StoryGraph edition identified by a non-ISBN UID, a work-level cover is not edition-safe.
   if(!hasStoryGraphExactNonIsbn&&!w.cover&&d.cover_i)w.cover=`https://covers.openlibrary.org/b/id/${d.cover_i}-L.jpg`;
@@ -1146,8 +1405,9 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 function setMetadataBusy(active,kind=''){const ids=['enrichBooksBtn','enrichFilmsBtn','enrichAllBtn'];ids.forEach(id=>{const b=$(id);if(!b)return;b.disabled=active;b.classList.toggle('busy',active&&((kind==='books'&&id==='enrichBooksBtn')||(kind==='screen'&&id==='enrichFilmsBtn')||(kind==='all'&&id==='enrichAllBtn')))})}
 function progressHtml(label,done,total,matched,failed=0){const pct=total?Math.round(done/total*100):0;return `<div class="progress-line"><strong>${esc(label)}</strong><span>${done}/${total} · ${matched} matched${failed?` · ${failed} errors`:''}</span></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>`}
 async function enrichWorks(kind,manageBusy=true){
+  if(!window.pathosCanEdit||archiveBusy)return;
   let works=kind==='books'?db.works.filter(w=>w.type==='Book'):db.works.filter(w=>w.type==='Film'||w.type==='TV');if(kind!=='books'&&!tmdbToken()){toast('Add your TMDB token first');document.querySelector('[data-view="metadata"]')?.click();$('tmdbTokenInput')?.focus();return}
-  if(!works.length)return;if(manageBusy)setMetadataBusy(true,kind);const box=$('metadataProgress');let matched=0,failed=0;try{for(let i=0;i<works.length;i++){box.innerHTML=progressHtml(kind==='books'?'Enriching books':'Enriching films & TV',i,works.length,matched,failed)+`<div class="meta" style="margin-top:8px">${esc(works[i].title)}</div>`;try{const ok=kind==='books'?await enrichBook(works[i]):await enrichTmdbWork(works[i]);if(ok)matched++}catch{failed++}saveDb();await sleep(kind==='books'?140:100)}saveDb();box.innerHTML=progressHtml('Finished',works.length,works.length,matched,failed)+`<div class="meta" style="margin-top:8px">Matched ${matched} work${matched===1?'':'s'}. For books, StoryGraph edition IDs are preserved. Work-level covers are never substituted for an exact StoryGraph edition unless the edition can be verified by ISBN.</div>`;toast(`Metadata: ${matched} matched`)}finally{if(manageBusy)setMetadataBusy(false,kind)}
+  if(!works.length)return;backgroundTasks++;if(manageBusy)setMetadataBusy(true,kind);const box=$('metadataProgress');let matched=0,failed=0;try{for(let i=0;i<works.length;i++){box.innerHTML=progressHtml(kind==='books'?'Enriching books':'Enriching films & TV',i,works.length,matched,failed)+`<div class="meta" style="margin-top:8px">${esc(works[i].title)}</div>`;try{const ok=kind==='books'?await enrichBook(works[i]):await enrichTmdbWork(works[i]);if(ok)matched++}catch{failed++}saveDb();await sleep(kind==='books'?140:100)}saveDb();box.innerHTML=progressHtml('Finished',works.length,works.length,matched,failed)+`<div class="meta" style="margin-top:8px">Matched ${matched} work${matched===1?'':'s'}. For books, StoryGraph edition IDs are preserved. Work-level covers are never substituted for an exact StoryGraph edition unless the edition can be verified by ISBN.</div>`;toast(`Metadata: ${matched} matched`)}finally{backgroundTasks--;if(manageBusy)setMetadataBusy(false,kind)}
 }
 async function enrichEverything(){if(!tmdbToken()){toast('Add your TMDB token first');$('tmdbTokenInput')?.focus();return}setMetadataBusy(true,'all');try{await enrichWorks('books',false);await enrichWorks('screen',false)}finally{setMetadataBusy(false,'all')}}
 function renderMetadataKpis(){const box=$('metadataKpis');if(!box)return;const total=db.works.length,covers=db.works.filter(w=>w.cover).length,catalogued=db.works.filter(w=>w.external?.openlibraryKey||w.external?.tmdb).length;const bookEx=db.experiences.filter(e=>workFor(e.workId)?.type==='Book');const exactCovers=bookEx.filter(e=>e.edition?.cover).length;box.innerHTML=`<div class="metadata-kpi"><strong>${covers}</strong><span>with cover/poster</span></div><div class="metadata-kpi"><strong>${exactCovers}</strong><span>readings with exact cover</span></div><div class="metadata-kpi"><strong>${catalogued}</strong><span>catalogue matched</span></div>`;const st=$('tmdbTokenStatus');if(st)st.textContent=tmdbToken()?'TMDB token saved in this browser.':'No TMDB token saved yet.';const input=$('tmdbTokenInput');if(input&&document.activeElement!==input)input.value=tmdbToken()?tmdbToken():''}
@@ -1165,6 +1425,7 @@ function updateFormSections(){
   const ed=editionFromForm();if($('editionFormSummary'))$('editionFormSummary').textContent=ed?(ed.publisher||ed.isbn||ed.ean||ed.identifierValue||'Recorded'):'Optional · ISBN, EAN, cover';
 }
 function resetFormSections(existing=false){
+  resetPageImages();updatePageImageControls();
   ['passagesDetails','bookEditionDetails','moreEntryDetails'].forEach(id=>{if($(id))$(id).open=false});
   if(existing){
     const f=$('entryForm');
@@ -1174,21 +1435,22 @@ function resetFormSections(existing=false){
   updateFormSections();
 }
 function openEntryDialog(opts={}){
-  if(!window.pathosCanEdit){toast('Sign in to edit');return;}
+  if(!window.pathosCanEdit||archiveBusy){toast('Sign in to edit');return;}
   editingExperienceId=null;selectedCatalogItem=null;$('deleteBtn').classList.add('hidden');$('entryForm').reset();clearEditionForm();renderQuoteEditor([]);const w=opts.work;
   if(w){['title','type','creator','year','cover'].forEach(k=>{if($('entryForm').elements[k])$('entryForm').elements[k].value=w[k]||''});$('entryForm').elements.repeat.checked=true;selectedCatalogItem=localItemFromWork(w);const lastEd=experiencesFor(w.id).find(e=>e.edition)?.edition;if(lastEd)fillEditionForm(lastEd)}
   attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(false);$('entryDialog').showModal();
 }
 function openExperience(id){
+  if(archiveBusy)return;
   if(!window.pathosCanEdit){const item=db.experiences.find(x=>x.id===id);if(item)openWork(item.workId);return;}
-  const e=db.experiences.find(x=>x.id===id);if(!e)return;const w=workFor(e.workId);if(!w)return;editingExperienceId=id;const f=$('entryForm');f.reset();clearEditionForm();Object.entries({title:w.title,type:w.type,creator:w.creator,year:w.year,cover:w.cover,status:e.status||'completed',startDate:e.startDate,endDate:e.endDate,rating:e.rating,venue:e.venue,sourceUrl:e.sourceUrl||'',tags:(e.tags||[]).join(', '),review:e.review}).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??''});f.elements.repeat.checked=e.repeat;f.elements.isPublic.checked=!!e.isPublic;renderQuoteEditor(e.quotes||[]);if(e.edition)fillEditionForm(e.edition);selectedCatalogItem=localItemFromWork(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(true);$('deleteBtn').classList.remove('hidden');$('entryDialog').showModal();
+  const e=db.experiences.find(x=>x.id===id);if(!e)return;const w=workFor(e.workId);if(!w)return;editingExperienceId=id;const f=$('entryForm');f.reset();clearEditionForm();Object.entries({title:w.title,type:w.type,creator:w.creator,year:w.year,cover:w.cover,status:e.status||'completed',startDate:e.startDate,endDate:e.endDate,rating:e.rating,venue:e.venue,sourceUrl:e.sourceUrl||'',tags:(e.tags||[]).join(', '),review:e.review}).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??''});f.elements.repeat.checked=e.repeat;f.elements.isPublic.checked=!!e.isPublic;renderQuoteEditor(e.quotes||[]);if(e.edition)fillEditionForm(e.edition);selectedCatalogItem=localItemFromWork(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(true);$('deleteBtn').classList.remove('hidden');$('entryDialog').showModal();void findPageImages(true);
 }
-$('entryForm').addEventListener('submit',ev=>{if(!window.pathosCanEdit){ev.preventDefault();return;}
+$('entryForm').addEventListener('submit',ev=>{if(!window.pathosCanEdit||archiveBusy){ev.preventDefault();return;}
   ev.preventDefault();const f=new FormData(ev.currentTarget);let data=Object.fromEntries(f.entries());if(SINGLE_DATE_MEDIA[data.type])data.startDate='';if(!validateDateOrder(true))return;data.repeat=f.get('repeat')==='on';data.isPublic=f.get('isPublic')==='on';data.quotes=quotesFromEditor();data=mergeSelectedCatalog(data);if(data.type==='Book')data.edition=editionFromForm();
   if(editingExperienceId){const e=db.experiences.find(x=>x.id===editingExperienceId);const oldWork=workFor(e.workId);if(oldWork&&norm(oldWork.title)===norm(data.title)){Object.assign(oldWork,{title:data.title,type:data.type,creator:data.creator,year:data.year,cover:data.cover||oldWork.cover});oldWork.external=Object.assign(oldWork.external||{},data.external||{});oldWork.sourceMetadata=Object.assign(oldWork.sourceMetadata||{},data.sourceMetadata||{});oldWork.aliases=uniqueText([...(oldWork.aliases||[]),...(data.aliases||[])])}else e.workId=findOrCreateWork(data).id;Object.assign(e,{startDate:data.startDate,endDate:data.endDate,rating:data.rating===''?'':Number(data.rating),venue:data.venue,sourceUrl:safeWebUrl(data.sourceUrl||''),isPublic:!!data.isPublic,review:data.review,tags:String(data.tags||'').split(',').map(s=>s.trim()).filter(Boolean),repeat:data.repeat,status:data.status||'completed',quotes:normalizeQuotes(data.quotes||[]),edition:data.type==='Book'?normalizeEdition(data.edition):null});const w=workFor(e.workId);if(e.edition?.cover&&w)w.cover=e.edition.cover;toast('Saving changes…')}
   else{addExperience(data);toast('Saving experience…')}$('entryDialog').close();saveDb();
 });
-$('deleteBtn').onclick=()=>{if(!window.pathosCanEdit)return;if(!editingExperienceId)return;if(confirm('Delete this experience?')){const e=db.experiences.find(x=>x.id===editingExperienceId);db.experiences=db.experiences.filter(x=>x.id!==editingExperienceId);if(e&&!db.experiences.some(x=>x.workId===e.workId))db.works=db.works.filter(w=>w.id!==e.workId);$('entryDialog').close();saveDb();toast('Deleting online…')}};
+$('deleteBtn').onclick=()=>{if(!window.pathosCanEdit||archiveBusy)return;if(!editingExperienceId)return;if(confirm('Delete this experience?')){const e=db.experiences.find(x=>x.id===editingExperienceId);db.experiences=db.experiences.filter(x=>x.id!==editingExperienceId);if(e&&!db.experiences.some(x=>x.workId===e.workId))db.works=db.works.filter(w=>w.id!==e.workId);$('entryDialog').close();saveDb();toast('Deleting online…')}};
 $('addQuoteBtn').onclick=()=>appendQuoteRow();$('addBtn').onclick=()=>openEntryDialog();if($('heroAddBtn'))$('heroAddBtn').onclick=()=>openEntryDialog();$('closeDialog').onclick=$('cancelBtn').onclick=()=>$('entryDialog').close();$('closeWorkDialog').onclick=()=>$('workDialog').close();
 $('searchInput').addEventListener('input',renderLibrary);['typeFilter','statusFilter','libraryContentFilter','librarySort'].forEach(id=>{const el=$(id);if(el)el.addEventListener('change',renderLibrary)});
 ['reviewSearch','reviewTypeFilter','reviewRatingFilter','reviewYearFilter','reviewSourceFilter','reviewSort'].forEach(id=>{const el=$(id);if(el)el.addEventListener(id==='reviewSearch'?'input':'change',renderReviews)});['passageSearch','passageTypeFilter','passageYearFilter','passageFeaturedFilter','passageSort'].forEach(id=>{const el=$(id);if(el)el.addEventListener(id==='passageSearch'?'input':'change',renderPassages)});
@@ -1213,30 +1475,19 @@ function showView(name){
   document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===name));
   if($('moreMenu'))$('moreMenu').open=false;
   if($('mobileMore'))$('mobileMore').value=['insights','timeline','metadata','import'].includes(name)?name:'';
-  window.scrollTo({top:0,behavior:'smooth'});
+  requestAnimationFrame(()=>{document.querySelectorAll('.view.active .serpent-track').forEach(layoutSerpentineTimeline);});
+  window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
 }
-document.querySelectorAll('.tab[data-view],.menu-view').forEach(t=>t.onclick=()=>showView(t.dataset.view));if($('mobileMore'))$('mobileMore').onchange=e=>{if(e.target.value)showView(e.target.value)};if($('viewAllReviewsBtn'))$('viewAllReviewsBtn').onclick=()=>showView('reviews');if($('viewFullTimelineBtn'))$('viewFullTimelineBtn').onclick=()=>showView('timeline');if($('homeTimelinePrev'))$('homeTimelinePrev').onclick=()=>scrollHomeTimeline(-1);if($('homeTimelineNext'))$('homeTimelineNext').onclick=()=>scrollHomeTimeline(1);if($('homeTimelineScroll')){
+document.querySelectorAll('.tab[data-view],.menu-view').forEach(t=>t.onclick=()=>showView(t.dataset.view));if($('mobileMore'))$('mobileMore').onchange=e=>{if(e.target.value)showView(e.target.value)};if($('viewFullTimelineBtn'))$('viewFullTimelineBtn').onclick=()=>showView('timeline');if($('homeTimelinePrev'))$('homeTimelinePrev').onclick=()=>scrollHomeTimeline(-1);if($('homeTimelineNext'))$('homeTimelineNext').onclick=()=>scrollHomeTimeline(1);if($('homeTimelineScroll')){
   const rail=$('homeTimelineScroll');
-  const zone=document.querySelector('.home-timeline-section');
   rail.addEventListener('scroll',updateHomeTimelineArrows,{passive:true});
-  // Capture over the entire timeline: card, heading, or whitespace all scroll horizontally.
-  // Avoid CSS scroll snapping, which could undo small wheel increments.
-  (zone||rail).addEventListener('wheel',event=>{
-    if(event.defaultPrevented||event.ctrlKey||event.metaKey||event.altKey)return;
-    // Trackpads already emit horizontal wheel deltas; let native scrolling handle those.
-    if(Math.abs(event.deltaX)>Math.abs(event.deltaY))return;
-    if(!event.deltaY)return;
-    const max=rail.scrollWidth-rail.clientWidth;
-    if(max<=1)return;
-    const factor=event.deltaMode===1?22:event.deltaMode===2?rail.clientWidth:1.45;
-    const distance=event.deltaY*factor;
-    if((distance>0&&rail.scrollLeft>=max-1)||(distance<0&&rail.scrollLeft<=1))return;
-    event.preventDefault();
-    rail.scrollLeft=Math.max(0,Math.min(max,rail.scrollLeft+distance));
-    updateHomeTimelineArrows();
-  },{passive:false,capture:true});
 }
 window.addEventListener('resize',updateHomeTimelineArrows);
+const fullTimelineScroll=$('fullTimelineScroll');
+function updateFullTimelineArrows(){document.querySelectorAll('[data-timeline-pan]').forEach(button=>{button.disabled=Number(button.dataset.timelinePan)<0?fullTimelineScroll.scrollLeft<=2:fullTimelineScroll.scrollLeft+fullTimelineScroll.clientWidth>=fullTimelineScroll.scrollWidth-3;});}
+fullTimelineScroll.addEventListener('scroll',updateFullTimelineArrows,{passive:true});
+new ResizeObserver(updateFullTimelineArrows).observe(fullTimelineScroll);
+document.querySelectorAll('[data-timeline-pan]').forEach(button=>button.onclick=()=>fullTimelineScroll.scrollBy({left:Number(button.dataset.timelinePan)*Math.max(210,fullTimelineScroll.clientWidth*.76),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}));
 
 attachCatalogueSearch();
 document.querySelectorAll('[data-today]').forEach(b=>b.addEventListener('click',()=>{const input=$(b.dataset.today);if(!input)return;input.value=localToday();input.dispatchEvent(new Event('input',{bubbles:true}));}));
@@ -1252,8 +1503,21 @@ if($('editionCoverInput'))$('editionCoverInput').addEventListener('input',render
 if($('editionCoverFile'))$('editionCoverFile').addEventListener('change',async ev=>{const file=ev.target.files?.[0];if(!file)return;try{$('editionCurrent').textContent='Compressing your cover…';const url=await compressCover(file);$('entryForm').elements.editionCover.value=url;renderEditionPreview();$('editionCurrent').textContent='Custom cover selected. It will be stored with this reading and included in backups.'}catch{$('editionCurrent').textContent='Could not read that image.'}ev.target.value=''});
 if($('saveTmdbBtn'))$('saveTmdbBtn').onclick=()=>{const v=$('tmdbTokenInput').value.trim();if(v)localStorage.setItem(TMDB_TOKEN_KEY,v);else localStorage.removeItem(TMDB_TOKEN_KEY);renderMetadataKpis();setCatalogHint();toast(v?'TMDB token saved':'TMDB token removed')};
 if($('enrichBooksBtn'))$('enrichBooksBtn').onclick=()=>enrichWorks('books');if($('enrichFilmsBtn'))$('enrichFilmsBtn').onclick=()=>enrichWorks('screen');if($('enrichAllBtn'))$('enrichAllBtn').onclick=enrichEverything;
-$('backupBtn').onclick=()=>{const blob=new Blob([JSON.stringify({...db,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});download(blob,`pathos-backup-${new Date().toISOString().slice(0,10)}.json`)};
-$('restoreInput').onchange=async ev=>{if(!window.pathosCanEdit){alert('Sign in to restore an archive.');ev.target.value='';return;}const file=ev.target.files[0];if(!file)return;try{const x=JSON.parse(await file.text());if(!Array.isArray(x.works)||!Array.isArray(x.experiences))throw new Error();db=migrateDatabase({...x,schemaVersion:x.schemaVersion||2}).database;saveDb();toast('Backup loaded; syncing online…')}catch{alert('That does not look like a valid archive backup.')}ev.target.value=''};
+$('backupBtn').onclick=()=>exportArchive(db);
+$('restoreInput').onchange=async ev=>{
+  const file=ev.target.files[0];if(!file)return;
+  if(!window.pathosCanEdit||archiveBusy){ev.target.value='';return;}
+  try{
+    const next=prepareBackup(JSON.parse(await file.text()));
+    if($('entryDialog').open||backgroundTasks){alert('Save or close the open entry and wait for imports or metadata before restoring.');return;}
+    if(!confirm('Replace your online archive with '+next.works.length+' works and '+next.experiences.length+' experiences, including their publication settings? A recovery JSON backup of this tab’s current archive will download first. Keep it before proceeding.'))return;
+    archiveBusy=true;
+    exportArchive(db,'pathos-before-restore');
+    if(!confirm('Keep the downloaded recovery backup. Continue replacing the online archive?'))return;
+    if(await window.pathosHostedSave(clone(next))){db=next;renderAll();toast('Backup restored online');}
+  }catch(error){alert('Backup was not restored. '+error.message);}
+  finally{archiveBusy=false;ev.target.value='';}
+};
 
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 
@@ -1284,11 +1548,20 @@ function mapStoryGraph(r){
 function mapGeneric(r){return{title:value(r,['Title','Name']),type:value(r,['Type','Medium'])||'Other',creator:value(r,['Creator','Author','Director','Artist']),year:value(r,['Year']),startDate:parseDateLoose(value(r,['StartDate','Start Date','Started'])),endDate:parseDateLoose(value(r,['EndDate','End Date','Finished','Date'])),loggedDate:'',rating:maybeRating(value(r,['Rating'])),review:value(r,['Review','Notes']),tags:splitTags(value(r,['Tags'])),repeat:boolish(value(r,['Repeat','Rewatch','Reread'])),status:storyStatus(value(r,['Status']))||'completed',venue:value(r,['Venue','Platform','Format']),sourceUrl:value(r,['Source URL','URL','Event URL','Reference URL']),source:'CSV'}}
 
 async function importRows(rows,mapper,label){
+  if(!window.pathosCanEdit||archiveBusy)return;
   let added=0,skipped=0;for(const r of rows){const m=mapper(r);if(!m.title){skipped++;continue}if(duplicateExperience(m)){skipped++;continue}addExperience(m);added++}saveDb();reportImport(added,skipped,label)
 }
 function reportImport(added,skipped,label){const box=$('importReport');box.classList.remove('hidden');box.innerHTML=`<strong>Import complete.</strong> Added ${added} new experience${added===1?'':'s'} from ${esc(label)}; skipped ${skipped} empty or duplicate row${skipped===1?'':'s'}.`}
-$('storygraphInput').onchange=async e=>{const f=e.target.files[0];if(f)await importRows(parseCSV(await f.text()),mapStoryGraph,'StoryGraph');e.target.value=''}
-$('genericInput').onchange=async e=>{const f=e.target.files[0];if(f)await importRows(parseCSV(await f.text()),mapGeneric,'CSV');e.target.value=''}
+async function importCsvFile(input,mapper,label){
+  if(!window.pathosCanEdit||archiveBusy)return;
+  const file=input.files[0];if(!file)return;
+  backgroundTasks++;
+  try{await importRows(parseCSV(await file.text()),mapper,label);}
+  catch(error){alert('Could not import '+label+': '+error.message);}
+  finally{backgroundTasks--;input.value='';}
+}
+$('storygraphInput').onchange=e=>importCsvFile(e.target,mapStoryGraph,'StoryGraph');
+$('genericInput').onchange=e=>importCsvFile(e.target,mapGeneric,'CSV');
 
 function filmKey(r){return `${norm(value(r,['Name','Title']))}||${value(r,['Year'])}`}
 async function unzipTextFiles(file){
@@ -1314,6 +1587,9 @@ async function unzipTextFiles(file){
   return out;
 }
 async function importLetterboxdZip(file){
+  if(!window.pathosCanEdit||archiveBusy)return;
+  backgroundTasks++;
+  try{
   const files=await unzipTextFiles(file);
   const required=['watched.csv','ratings.csv'];if(!required.every(n=>files[n]))throw new Error('This does not look like a Letterboxd export ZIP.');
   const watched=parseCSV(files['watched.csv']),ratings=parseCSV(files['ratings.csv']),diary=parseCSV(files['diary.csv']||''),reviews=parseCSV(files['reviews.csv']||''),likes=parseCSV(files['likes/films.csv']||'');
@@ -1333,6 +1609,7 @@ async function importLetterboxdZip(file){
     }
   }
   saveDb();reportImport(added,skipped,'Letterboxd');
+  }finally{backgroundTasks--;}
 }
 $('letterboxdZipInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{await importLetterboxdZip(f)}catch(err){alert('Could not import the Letterboxd ZIP: '+err.message)}e.target.value=''}
 
