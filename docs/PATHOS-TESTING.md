@@ -21,6 +21,8 @@ All archives are synthetic. The suite runs a temporary local HTTP server, isolat
 
 For the actual preview v4 → v5 cycle, `tests/pathos-preview-update.cjs` has separate `seed` and `verify` stages. Set `PATHOS_PREVIEW_URL` to a stable Netlify PR hostname and `PATHOS_PREVIEW_PROFILE` to a dedicated `pathos-preview-*` directory under the OS temporary directory. Run `node tests/pathos-preview-update.cjs seed` while v4 is deployed, deploy v5 to the same hostname, then run `node tests/pathos-preview-update.cjs verify`. It refuses production URLs and normal browser profiles. It checks the actual waiting worker/banner and preserves the synthetic archive across activation and offline browser restart.
 
+On 14 October 2026 this was exercised on `https://deploy-preview-6--astonishing-choux-4647df.netlify.app`: v4 (`90837d5`) → v5 (`6165eba`). Update/Later, re-offering after reload, an open-entry guard, two clients (the peer was not reloaded), versioned-cache cleanup, archive continuity and offline editing passed. The initial final-restart assertion was too strict about optional empty edition fields added by the edit form; it was corrected to compare every originally recorded value. The `reopen` stage then confirmed the saved offline review, original edition values/uploaded cover and passage after a full browser restart. Desktop and 390px screenshots were inspected. This is a browser/PWA test, not a native installation or physical mobile-device test.
+
 Coverage: form create/edit/delete/reload; JSON export/restore/cancellation/undo; invalid/future-schema backups, duplicate IDs, dangling references and malformed editions/passages; aborted transactions; failed-save recovery; stale and simultaneous windows; ISBN enrichment preservation; offline reload/edit/reopen; sequential staged updates (Later, two clients, open entry, failed/pending saves, versioned-cache cleanup); offline browser restart; and hosted guest/owner flows with a stubbed Supabase client.
 
 The optional live command `node tests/pathos-public-boundary.cjs` performs **read-only anonymous** table/RPC requests using the public config. It prints only statuses/counts and rejects unexpected public experience fields. It does not test authenticated owner writes.
@@ -39,7 +41,7 @@ Supabase advisors flag the public definer RPC as executable by anonymous/authent
 
 ## Netlify and installed-window release gate
 
-Use a stable PR deploy-preview hostname across both deployments. Production and preview browser storage are distinct. Export a JSON backup before switching origins; use synthetic test data for release validation.
+Use a stable PR deploy-preview hostname across both deployments. Production and preview browser storage are distinct. Export a JSON backup before switching origins; use synthetic test data for release validation. Steps 1–5 were exercised on PR #6 as recorded above; native checks in step 6 and authenticated live checks in step 7 remain manual.
 
 1. Install/open preview release A. Add a book with an exact edition, uploaded cover, review and passage. Export JSON, reload and compare. Keep a second window open.
 2. Deploy release B to the same preview hostname, with a distinct service-worker shell cache version. Existing windows should keep A until Update is accepted. Check Later, app relaunch and update re-offering.
