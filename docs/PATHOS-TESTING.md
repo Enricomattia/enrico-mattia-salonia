@@ -6,6 +6,7 @@
 npm ci
 npm run build
 npm run test:pathos
+npm run test:pathos-images
 ```
 
 The browser suite uses Playwright and an installed Microsoft Edge by default. To use Chrome, set `$env:PATHOS_BROWSER='chrome'`. Alternatively install Playwright Chromium with `npx playwright install chromium` and set `$env:PATHOS_BROWSER='chromium'`.
@@ -26,6 +27,10 @@ On 14 October 2026 this was exercised on `https://deploy-preview-6--astonishing-
 Coverage: form create/edit/delete/reload; JSON export/restore/cancellation/undo; invalid/future-schema backups, duplicate IDs, dangling references and malformed editions/passages; aborted transactions; failed-save recovery; stale and simultaneous windows; ISBN enrichment preservation; offline reload/edit/reopen; sequential staged updates (Later, two clients, open entry, failed/pending saves, versioned-cache cleanup); offline browser restart; and hosted guest/owner flows with a stubbed Supabase client.
 
 Interface checks additionally cover single-review work details, one review per work with accessible earlier reviews for repeats, searching older reviews, removal of Home's Recent reviews section, and exact-edition images in the full Timeline at narrow widths. These checks run in both Personal and the hosted signed-out UI and assert that changing views does not rewrite records. To verify the Next.js iframe/header integration too, build and start the site locally, set `PATHOS_SITE_URL` to its local URL, and run the suite. It checks the full desktop/mobile iframe viewport, retained `noindex`, and unchanged header/navigation on Research and Home.
+
+Official-page artwork checks cover automatic suggestions for a webpage accidentally entered as its own cover, explicit image choice and Save, Cancel, preservation of existing manual covers and visibility/review fields, and graceful offline/blocked-site behavior in Personal and mocked hosted owner saves. `npm run test:pathos-images` exercises extraction (including the KA-IN-shaped organization-logo trap), relative URLs and final redirects, private IPv4/IPv6/encoded address rejection, mixed/private DNS answers, pinned connections without credentials, redirect revalidation, response/time bounds and direct-image/no-image cases. These server-module tests use the installed TypeScript compiler and Node's test runner; use Node 22.12+ or the bundled Node 24 runtime.
+
+On 14 October 2026 the built local endpoint was tested against the actual KA-IN official page and returned its two production PNGs. Browser testing loaded both real images, selected one, saved a synthetic event and reloaded successfully. Local endpoint checks returned HTTP 400 for loopback/metadata targets and HTTP 403 for an unrelated Origin. No production record was changed; the existing published KA-IN cover is still its event-page URL until its owner chooses an image and saves after deployment.
 
 The optional live command `node tests/pathos-public-boundary.cjs` performs **read-only anonymous** table/RPC requests using the public config. It prints only statuses/counts and rejects unexpected public experience fields. It does not test authenticated owner writes.
 

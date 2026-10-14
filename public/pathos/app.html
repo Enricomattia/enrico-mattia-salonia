@@ -352,6 +352,16 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
 .review-history>summary {cursor:pointer;color:var(--muted);font-size:12px;padding:10px 0}
 .review-history .review-card-full {margin-left:16px}
 @media(max-width:560px){.timeline-item{grid-template-columns:52px minmax(0,1fr);gap:12px}.timeline-cover{width:52px;height:76px}}
+.page-image-input {display:flex;gap:8px;align-items:center}
+.page-image-input input {min-width:0;flex:1}
+.page-image-input button {white-space:nowrap}
+.page-image-results[hidden],#findPageImageBtn[hidden] {display:none!important}
+.page-image-results {display:flex;gap:10px;overflow-x:auto;padding:4px 0}
+.page-image-choice {flex:0 0 115px;padding:0;border:1px solid var(--line);background:var(--paper);cursor:pointer;text-align:left}
+.page-image-choice img {display:block;width:113px;height:135px;object-fit:contain;background:var(--soft)}
+.page-image-choice span {display:block;padding:7px 9px;font-size:12px}
+.page-image-choice[aria-pressed="true"] {border:2px solid #64afb3}
+.page-image-choice:disabled {opacity:.5;cursor:default}
 </style>
 </head>
 <body>
@@ -619,7 +629,7 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
         <div class="details-inner form-grid">
           <label class="field">Creator / author / director<input class="input" name="creator"></label>
           <label class="field">Original year<input class="input" name="year" inputmode="numeric"></label>
-          <label class="field span-2"><span id="sourceUrlLabel">Reference / event page</span><input class="input" type="url" name="sourceUrl" placeholder="https://…"><span class="catalog-hint">Keep a link to the official event, production or reference page.</span></label>
+          <div class="field span-2"><label for="sourceUrlInput" id="sourceUrlLabel">Reference / event page</label><div class="page-image-input"><input class="input" id="sourceUrlInput" type="url" name="sourceUrl" placeholder="https://…"><button type="button" class="btn" id="findPageImageBtn" hidden>Find image</button></div><span class="catalog-hint" id="pageImageStatus" role="status" aria-live="polite"></span><div id="pageImageResults" class="page-image-results" hidden></div></div>
           <label class="field span-2">Tags<input class="input" name="tags" placeholder="e.g. sci-fi, Rome, theatre"></label>
           <label class="field span-2">Work cover / poster URL<input class="input" name="cover"></label>
           <label class="check span-2"><input type="checkbox" name="repeat"> Reread / rewatch / replay</label><label class="check span-2"><input type="checkbox" name="isPublic"> Publish this experience (including its review and saved passages)</label>
@@ -1145,9 +1155,61 @@ function mergeSelectedCatalog(data){if(!selectedCatalogItem)return data;data.ext
 let editionCandidates=[];
 let selectedEdition=null;
 function languageLabel(code){return ({ita:'Italian',eng:'English',fre:'French',fra:'French',spa:'Spanish',ger:'German',deu:'German',por:'Portuguese',rus:'Russian'})[String(code||'').toLowerCase()]||code||''}
+// Official-page lookup only suggests images; selecting one changes the form,
+// and the ordinary Save action remains the only archive write.
+let pageImageRequest=null,pageImageRevision=0;
+function pageImagesAllowed(){return !['Book','Film','TV'].includes($('entryForm').elements.type.value)}
+function resetPageImages(){
+  pageImageRevision++;pageImageRequest?.abort();pageImageRequest=null;
+  $('pageImageResults').innerHTML='';$('pageImageResults').hidden=true;
+  $('pageImageStatus').textContent='';$('findPageImageBtn').disabled=false;
+}
+function updatePageImageControls(){
+  const allowed=pageImagesAllowed();$('findPageImageBtn').hidden=!allowed;
+  if(!allowed)resetPageImages();
+}
+async function findPageImages(automatic=false){
+  const f=$('entryForm'),source=safeWebUrl(f.elements.sourceUrl.value)||safeWebUrl(f.elements.cover.value);
+  if(!window.pathosCanEdit||archiveBusy||!pageImagesAllowed())return;
+  if(!source){if(!automatic)$('pageImageStatus').textContent='Add a public event link first.';return;}
+  const current=f.elements.cover.value.trim();
+  if(automatic&&(!safeWebUrl(f.elements.sourceUrl.value)||current&&safeWebUrl(current)!==source))return;
+  resetPageImages();
+  if(!navigator.onLine){$('pageImageStatus').textContent='Image lookup needs a connection. Your current cover is unchanged.';return;}
+  const revision=pageImageRevision,controller=new AbortController();pageImageRequest=controller;
+  const timeout=setTimeout(()=>controller.abort(),12000);
+  $('findPageImageBtn').disabled=true;$('pageImageStatus').textContent='Looking for images…';
+  try{
+    const response=await fetch('/api/pathos/page-images',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:source}),signal:controller.signal});
+    const result=await response.json();if(!response.ok)throw new Error(result.error||'Image lookup failed.');
+    if(revision!==pageImageRevision||!$('entryDialog').open)return;
+    const images=(result.images||[]).filter(image=>safeWebUrl(image.url));
+    $('pageImageStatus').textContent=images.length?'Choose an image, then save the entry.':'No suitable images found. You can paste an image URL instead.';
+    $('pageImageResults').innerHTML=images.map((image,index)=>`<button type="button" class="page-image-choice" data-page-image="${index}"><img src="${esc(image.url)}" alt="Suggested cover ${index+1}" referrerpolicy="no-referrer"><span>Use image</span></button>`).join('');
+    $('pageImageResults').hidden=!images.length;
+    $('pageImageResults').querySelectorAll('[data-page-image]').forEach((button,index)=>{
+      button.querySelector('img').addEventListener('error',()=>{button.disabled=true;button.querySelector('span').textContent='Image unavailable';});
+      button.onclick=()=>{
+        const existing=f.elements.cover.value.trim(),chosen=images[index].url;
+        if(existing&&existing!==chosen&&safeWebUrl(existing)!==source&&!confirm('Replace the current cover with this image?'))return;
+        f.elements.cover.value=chosen;
+        $('pageImageResults').querySelectorAll('button').forEach(node=>node.setAttribute('aria-pressed',String(node===button)));
+        $('pageImageStatus').textContent='Image selected. Save the entry to keep it.';
+      };
+    });
+  }catch(error){
+    if(revision===pageImageRevision)$('pageImageStatus').textContent=error.name==='AbortError'?'Image lookup timed out. Your current cover is unchanged.':error instanceof SyntaxError||error instanceof TypeError?'Image lookup is unavailable. You can paste an image URL instead.':error.message||'Could not read that page. Your current cover is unchanged.';
+  }finally{
+    clearTimeout(timeout);if(revision===pageImageRevision){$('findPageImageBtn').disabled=false;pageImageRequest=null;}
+  }
+}
+$('findPageImageBtn').onclick=()=>findPageImages();
+$('entryForm').elements.sourceUrl.addEventListener('change',()=>findPageImages(true));
+$('entryForm').elements.sourceUrl.addEventListener('input',resetPageImages);
+$('entryDialog').addEventListener('close',()=>{if(!$('entryDialog').open)resetPageImages();});
 const SINGLE_DATE_MEDIA={Film:'Watched on',Theatre:'Attended on',Concert:'Attended on',Exhibition:'Visited on',Opera:'Attended on'};
 function updateDateFields(){
-  const f=$('entryForm');if(!f)return;const type=f.elements.type.value;const sourceLabel=$('sourceUrlLabel');if(sourceLabel)sourceLabel.textContent=['Theatre','Concert','Opera','Exhibition'].includes(type)?'Official event / production page':'Reference / source page';const startField=$('startDateField'),endField=$('endDateField'),start=f.elements.startDate,end=f.elements.endDate;const singleLabel=SINGLE_DATE_MEDIA[type]||'';
+  const f=$('entryForm');if(!f)return;const type=f.elements.type.value;const sourceLabel=$('sourceUrlLabel');if(sourceLabel)sourceLabel.textContent=['Theatre','Concert','Opera','Exhibition'].includes(type)?'Official event / production page':'Reference / source page';const startField=$('startDateField'),endField=$('endDateField'),start=f.elements.startDate,end=f.elements.endDate;const singleLabel=SINGLE_DATE_MEDIA[type]||'';updatePageImageControls();
   if(singleLabel){
     if(!end.value&&start.value)end.value=start.value;start.value='';startField?.classList.add('hidden');if($('endDateLabel'))$('endDateLabel').textContent=singleLabel;end.removeAttribute('min');
   }else{
@@ -1221,6 +1283,7 @@ function updateFormSections(){
   const ed=editionFromForm();if($('editionFormSummary'))$('editionFormSummary').textContent=ed?(ed.publisher||ed.isbn||ed.ean||ed.identifierValue||'Recorded'):'Optional · ISBN, EAN, cover';
 }
 function resetFormSections(existing=false){
+  resetPageImages();updatePageImageControls();
   ['passagesDetails','bookEditionDetails','moreEntryDetails'].forEach(id=>{if($(id))$(id).open=false});
   if(existing){
     const f=$('entryForm');
@@ -1238,7 +1301,7 @@ function openEntryDialog(opts={}){
 function openExperience(id){
   if(archiveBusy)return;
   if(!window.pathosCanEdit){const item=db.experiences.find(x=>x.id===id);if(item)openWork(item.workId);return;}
-  const e=db.experiences.find(x=>x.id===id);if(!e)return;const w=workFor(e.workId);if(!w)return;editingExperienceId=id;const f=$('entryForm');f.reset();clearEditionForm();Object.entries({title:w.title,type:w.type,creator:w.creator,year:w.year,cover:w.cover,status:e.status||'completed',startDate:e.startDate,endDate:e.endDate,rating:e.rating,venue:e.venue,sourceUrl:e.sourceUrl||'',tags:(e.tags||[]).join(', '),review:e.review}).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??''});f.elements.repeat.checked=e.repeat;f.elements.isPublic.checked=!!e.isPublic;renderQuoteEditor(e.quotes||[]);if(e.edition)fillEditionForm(e.edition);selectedCatalogItem=localItemFromWork(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(true);$('deleteBtn').classList.remove('hidden');$('entryDialog').showModal();
+  const e=db.experiences.find(x=>x.id===id);if(!e)return;const w=workFor(e.workId);if(!w)return;editingExperienceId=id;const f=$('entryForm');f.reset();clearEditionForm();Object.entries({title:w.title,type:w.type,creator:w.creator,year:w.year,cover:w.cover,status:e.status||'completed',startDate:e.startDate,endDate:e.endDate,rating:e.rating,venue:e.venue,sourceUrl:e.sourceUrl||'',tags:(e.tags||[]).join(', '),review:e.review}).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??''});f.elements.repeat.checked=e.repeat;f.elements.isPublic.checked=!!e.isPublic;renderQuoteEditor(e.quotes||[]);if(e.edition)fillEditionForm(e.edition);selectedCatalogItem=localItemFromWork(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(true);$('deleteBtn').classList.remove('hidden');$('entryDialog').showModal();void findPageImages(true);
 }
 $('entryForm').addEventListener('submit',ev=>{if(!window.pathosCanEdit||archiveBusy){ev.preventDefault();return;}
   ev.preventDefault();const f=new FormData(ev.currentTarget);let data=Object.fromEntries(f.entries());if(SINGLE_DATE_MEDIA[data.type])data.startDate='';if(!validateDateOrder(true))return;data.repeat=f.get('repeat')==='on';data.isPublic=f.get('isPublic')==='on';data.quotes=quotesFromEditor();data=mergeSelectedCatalog(data);if(data.type==='Book')data.edition=editionFromForm();

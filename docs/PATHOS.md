@@ -38,6 +38,8 @@ src/app/pathos/page.tsx                   # /pathos; iframe /pathos/app.html
 public/pathos/app.html                    # owner's interface
 public/pathos/config.js                   # public Supabase config, no private keys
 public/pathos/sync.js                     # Supabase auth, reads, owner saves
+src/app/api/pathos/page-images/route.ts   # same-origin online image suggestions
+src/lib/pathos-page-images.ts            # bounded public-page fetch and image extraction
 
 src/app/pathos-personal/page.tsx          # /pathos-personal -> /pathos-personal/index.html
 public/pathos-personal/index.html         # interface + local-first storage
@@ -63,7 +65,7 @@ Reliability changes prepared on `codex/pathos-reliability` (not yet a production
 - Hosted saves use a fresh owner-session check, an archive comparison against the latest cloud read, and a same-origin Web Lock where available. This rejects previously saved changes from other windows/devices, but **is not an atomic cross-device conditional write**. A simultaneous save on another device (or from an old client) can still race the preflight read; resolving that needs a separately reviewed server-side revision check.
 - Automatic ISBN enrichment fills missing edition fields and preserves recorded metadata, identifiers and uploaded/manual covers. Editing an edition also preserves its contributors.
 - Save errors remain visible and block Personal updates; a later successful write clears the failure. Personal refuses updates/restores while an entry dialog, import or metadata operation is open/running, and prevents new edits while preparing an update. Unsaved form entries are not auto-saved.
-- The service worker uses shell cache `pathos-personal-shell-v6` and looks up shell assets in its own versioned cache, so a waiting release's cache cannot be served prematurely. Cover-cache behavior and the standalone manifest are unchanged. Preview v4/v5 provided the real reliability update-cycle check; v6 stages the subsequent interface simplifications.
+- The service worker uses shell cache `pathos-personal-shell-v7` and looks up shell assets in its own versioned cache, so a waiting release's cache cannot be served prematurely. Cover-cache behavior and the standalone manifest are unchanged. Preview v4/v5 provided the real reliability update-cycle check; v6 stages interface simplifications and v7 adds official-page image suggestions.
 
 ## 4. What the user wants the experience to feel like
 
@@ -90,8 +92,10 @@ Work details show each experience's review once, with no duplicate Latest review
 
 - Books: prioritize **correct edition** (language, publisher, cover, year, format). Existing manual edition editing supports **ISBN, EAN/barcode, StoryGraph UID and other identifiers**, plus hand-uploaded covers. Matching the *wrong* edition is worse than having no cover. In particular, a generic Open Library cover does not establish exact edition identity.
 - Films: metadata/cover enrichment through TMDB where already implemented. Keep any user-supplied API credential out of commits.
-- Other cultural works: allow a source/reference or official event page and a manual poster/cover URL. **Automatically fetching a representative image from an official page** (for example theatre production **KA-IN**) was discussed but **deferred**. If implemented later, consider `og:image`/relevant page images, server-side fetch restrictions and a human-approved choice; do not overwrite manual images.
-- Cover images from external services may not load when offline unless cached. Uploaded local images should be preserved in backups.
+- Other cultural works: the entry form's More details section has **Find image** beside the reference/event URL for theatre, concerts, exhibitions, opera and other non-book/non-TMDB media. Pasting/changing an event link suggests images when the cover is blank or contains that same webpage URL. Opening an existing entry with the same page URL in both fields also suggests images; this handles the current KA-IN record without silently changing it. Existing image covers are not looked up automatically. Choose **Use image**, then **Save**; cancelling or merely loading suggestions never changes the archive. Replacing a different existing cover requires confirmation. Manual cover URLs remain available.
+- Image suggestions come from `/api/pathos/page-images`, an online, same-origin Next.js Node route shared by both interfaces. It receives only the requested public URL, not the archive, IDs, reviews or credentials. It considers Open Graph, Twitter cards, JSON-LD images and ordinary/lazy page images, resolves relative URLs, deduplicates candidates and excludes obvious logos/icons and organization-logo metadata. It returns at most six choices, never an automatic saved cover. On the real KA-IN page, two production photos were found; its organization metadata incorrectly points to unrelated DARDUST artwork, which is excluded. Books keep their exact-edition workflow; Film/TV keep TMDB.
+- The fetcher accepts ordinary public HTTP(S) URLs only (no credentials/custom ports), rejects nonpublic IPv4/IPv6 and mixed DNS answers, pins a validated address for the connection, rechecks each redirect (maximum three), limits HTML to 2 MiB and lookup time to eight seconds, and forwards no cookies/auth headers. Candidate image hosts are also checked. The route limits input size/concurrency, refuses cross-site browser requests and marks responses no-store/noindex. This is metadata lookup, not cloud sync or an image proxy. Some sites may block fetching or hotlinking; failure leaves the current cover intact.
+- Cover images from external services may not load when offline unless cached. Event-image selections are remote URLs; their availability offline is not guaranteed by the current Open Library/TMDB cover cache. Image lookup requires a connection, while local records and JSON backup/restore continue to work offline. Uploaded local images should be preserved in backups.
 
 ### Visual/product decisions worth preserving
 
@@ -153,7 +157,7 @@ Important: the current worker has named caches and a manually incremented app-sh
 
 **Later feature work:**
 
-- Fetch candidate images from official production/event URLs (theatre, exhibitions, concerts); user chooses, and manually chosen covers take precedence.
+- Expand official-page image extraction only in response to real failures (for example sites that require JavaScript); preserve user choice and manual covers. The basic public-page chooser is now implemented on the reliability branch.
 - Improve search, edition matching and reliable cover selection, including titles and languages without ISBNs.
 - Share more interaction/UI code between hosted and personal modes, while retaining clearly separated storage and privacy boundaries. Make this a deliberate refactor with migrations/tests, not an incidental rewrite.
 - Optionally explore publishing personal-app reviews someday, but **do not add user accounts or cloud storage by default**; this was an idea, not an approved feature.

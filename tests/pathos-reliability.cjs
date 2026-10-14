@@ -254,6 +254,47 @@ async function checkArchiveViews(page){
     await ctx.setOffline(false);
   });
   await run('single-review default, accessible repeat reviews, no Home reviews and edition covers in full timeline',()=>checkArchiveViews(page));
+  await run('official-page image suggestions preserve records until Save, protect manual covers and fail safely offline',async()=>{
+    const eventUrl='https://venue.example/events/ka-in/',image1='https://images.example/production-01.png',image2='https://images.example/production-02.png';
+    const event={schemaVersion:6,works:[{id:'event-work',title:'KA-IN',type:'Theatre',cover:eventUrl,creator:'Test troupe'}],experiences:[{id:'event-experience',workId:'event-work',endDate:'2026-10-14',review:'Event review',rating:4,status:'completed',sourceUrl:eventUrl,isPublic:false,quotes:[]}]};
+    let mode='ok',lookups=0;
+    await page.route('https://images.example/**',route=>route.fulfill({contentType:'image/png',body:Buffer.from(pixel.split(',')[1],'base64')}));
+    await page.route('**/api/pathos/page-images',async route=>{
+      lookups++;
+      if(mode==='blocked')return route.fulfill({status:502,json:{error:'Could not read that page. Your cover is unchanged.'}});
+      return route.fulfill({json:{pageUrl:eventUrl,images:[{url:image1,source:'Page image'},{url:image2,source:'Page image'}]}});
+    });
+    await restore(page,event);
+    await page.evaluate(()=>openExperience('event-experience'));
+    await page.locator('.page-image-choice').first().waitFor();
+    assert.equal(await page.locator('.page-image-choice').count(),2);
+    assert.equal((await archive(page)).works[0].cover,eventUrl);
+    await page.locator('.page-image-choice').first().click();
+    assert.equal(await page.locator('[name="cover"]').inputValue(),image1);
+    assert.equal((await disk(page)).works[0].cover,eventUrl);
+    await page.locator('#cancelBtn').click();assert.equal((await archive(page)).works[0].cover,eventUrl);
+    await page.evaluate(()=>openExperience('event-experience'));await page.locator('.page-image-choice').first().waitFor();
+    await page.locator('.page-image-choice').first().click();
+    await page.locator('#entryForm button[type="submit"]').click();await saved(page);
+    let data=await disk(page);assert.equal(data.works[0].cover,image1);
+    assert.equal(data.experiences[0].id,'event-experience');assert.equal(data.experiences[0].sourceUrl,eventUrl);assert.equal(data.experiences[0].review,'Event review');assert.equal(data.experiences[0].isPublic,false);
+    const previousLookups=lookups;
+    await page.evaluate(()=>openExperience('event-experience'));
+    assert.equal(lookups,previousLookups,'Existing manual covers must not trigger automatic replacement lookup');
+    await page.locator('#findPageImageBtn').click();await page.locator('.page-image-choice').first().waitFor();
+    page.confirmRestore=false;await page.locator('.page-image-choice').nth(1).click();page.confirmRestore=true;
+    assert.equal(await page.locator('[name="cover"]').inputValue(),image1);
+    await page.locator('#cancelBtn').click();
+    await page.evaluate(()=>openExperience('event-experience'));mode='blocked';
+    await page.locator('#findPageImageBtn').click();await page.waitForFunction(()=>document.getElementById('pageImageStatus').textContent.includes('Could not read'));
+    assert.equal(await page.locator('[name="cover"]').inputValue(),image1);
+    await ctx.setOffline(true);await page.locator('#findPageImageBtn').click();
+    assert.match(await page.locator('#pageImageStatus').textContent(),/needs a connection/);
+    assert.equal((await archive(page)).works[0].cover,image1);
+    await ctx.setOffline(false);await page.locator('#cancelBtn').click();
+    await page.locator('#addBtn').click();assert.equal(await page.locator('#findPageImageBtn').isVisible(),false);
+    await page.locator('#cancelBtn').click();
+  });
   await ctx.close();
 
   await run('two staged releases: Later, two clients, pending/failed writes, open form, offline browser restart',async()=>{
@@ -341,6 +382,20 @@ async function checkArchiveViews(page){
     assert.match((await download).suggestedFilename(),/^pathos-before-restore-/);
     await owner.waitForFunction(()=>!document.getElementById('restoreInput').value);
     assert.deepEqual(await owner.evaluate(()=>window.mockCloud.experiences),fixture.experiences);
+    const eventUrl='https://venue.example/events/ka-in/',poster=origin+'/pathos-personal/icon-192.png';
+    const event={schemaVersion:6,works:[{id:'event',title:'KA-IN',type:'Theatre',cover:eventUrl}],experiences:[{id:'attendance',workId:'event',sourceUrl:eventUrl,review:'Hosted event review',isPublic:true,status:'completed',endDate:'2026-10-14'}]};
+    const eventOwner=await observe(await hosted.newPage());
+    await eventOwner.addInitScript(value=>{window.mockCloud=value;},event);
+    await eventOwner.route('**/api/pathos/page-images',route=>route.fulfill({json:{pageUrl:eventUrl,images:[{url:poster,source:'Page image'}]}}));
+    await eventOwner.goto(origin+'/pathos/app.html');await eventOwner.waitForFunction(()=>window.pathosCanEdit);
+    await eventOwner.evaluate(()=>openExperience('attendance'));await eventOwner.locator('.page-image-choice').waitFor();
+    assert.equal(await eventOwner.evaluate(()=>window.mockCloud.works[0].cover),eventUrl);
+    await eventOwner.locator('.page-image-choice').click();
+    assert.equal(await eventOwner.evaluate(()=>window.mockCloud.works[0].cover),eventUrl);
+    await eventOwner.locator('#entryForm button[type="submit"]').click();
+    await eventOwner.waitForFunction(expected=>window.mockCloud.works[0].cover===expected,poster);
+    assert.equal(await eventOwner.evaluate(()=>window.mockCloud.experiences[0].isPublic),true);
+    assert.equal(await eventOwner.evaluate(()=>window.mockCloud.experiences[0].review),'Hosted event review');
     const failed=await observe(await hosted.newPage());
     await failed.addInitScript(()=>{window.mockLoadError=true;});await failed.goto(origin+'/pathos/app.html');
     await failed.waitForFunction(()=>document.querySelector('.pathos-sync-status').textContent.startsWith('Load failed'));
