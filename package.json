@@ -7,13 +7,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:pathos": "node tests/pathos-reliability.cjs"
+    "test:pathos": "node tests/pathos-reliability.cjs",
+    "test:pathos-images": "node --test tests/pathos-page-images.cjs"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@mui/material": "^5.15.15",
     "gh-pages": "^6.1.1",
+    "htmlparser2": "12.0.0",
+    "ipaddr.js": "2.5.0",
     "katex": "^0.17.0",
     "next": "^16.2.12",
     "react": "^18",
