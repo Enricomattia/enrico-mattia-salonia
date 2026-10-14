@@ -21,24 +21,33 @@ async function checkTimeline(page,outputDirectory){
   assert(await page.evaluate(()=>document.getElementById('currentSection').getBoundingClientRect().bottom<document.querySelector('.home-timeline-section').getBoundingClientRect().top),'Current is above the timeline');
   await page.evaluate(()=>{db.experiences[0].status='completed';renderAll();});
   const variant=page.url().includes('personal')?'personal':'hosted';
-  for(const width of [1280,768,390,320]){
+  for(const width of [1280,768,601,600,390,320]){
     await page.setViewportSize({width,height:844});
     await page.evaluate(()=>{showView('home');window.scrollTo({top:0,behavior:'instant'});});
-    await page.waitForFunction(()=>document.querySelector('#homeTimelineTrack path')?.getAttribute('d'));
+    if(width>600)await page.waitForFunction(()=>document.querySelector('#homeTimelineTrack path')?.getAttribute('d'));
     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     assert.equal(await page.locator('#homeTimelineTrack button[data-exp]').count(),12);
     for(const track of ['#homeTimelineTrack','#timelineList']){
       if(track==='#timelineList')await page.evaluate(()=>showView('timeline'));
-      await page.waitForFunction(selector=>!!document.querySelector(selector+' path')?.getAttribute('d'),track);
+      if(width>600)await page.waitForFunction(selector=>!!document.querySelector(selector+' path')?.getAttribute('d'),track);
       const positions=await page.locator(track+' .serpent-stop').evaluateAll(nodes=>nodes.map(node=>({x:node.offsetLeft,y:node.offsetTop,id:node.querySelector('button').dataset.exp})));
       assert.deepEqual(positions.map(p=>p.id),titles.slice(0,track==='#timelineList'?19:12).map((_,i)=>'ui-exp-'+i),'DOM/focus order must remain chronological');
-      assert(positions[0].x<positions[1].x&&positions[1].x<positions[2].x);
-      assert(positions[3].x>positions[4].x&&positions[4].x>positions[5].x);
-      assert(positions[6].y>positions[3].y&&positions[3].y>positions[0].y);
+      if(width>600){
+        assert(positions[0].x<positions[1].x&&positions[1].x<positions[2].x);
+        assert(positions[3].x>positions[4].x&&positions[4].x>positions[5].x);
+        assert(positions[6].y>positions[3].y&&positions[3].y>positions[0].y);
+      }else{
+        assert(positions.every((p,i)=>p.x===positions[0].x&&(!i||p.y>positions[i-1].y)),'Phone timeline is a single chronological column');
+        assert.equal(await page.locator(track+' svg').isVisible(),false);
+        const cardWidth=(await page.locator(track+' button').first().boundingBox()).width;
+        const viewport=page.locator(track==='#timelineList'?'#fullTimelineScroll':'#homeTimelineScroll');
+        assert(cardWidth>=(await viewport.boundingBox()).width*.9,'Phone cards use nearly all available width');
+        assert(await viewport.evaluate(node=>node.scrollWidth<=node.clientWidth+1),'Phone timeline needs no horizontal scrolling');
+      }
       assert.equal(await page.locator(track+' .serpent-cover img').count(),positions.length);
       assert.match(await page.locator(track+' img').first().getAttribute('src'),/#exact-edition$/);
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Only the timeline canvas may overflow horizontally');
-      if(width<=768){
+      if(width>600&&width<=768){
         const viewport=page.locator(track==='#timelineList'?'#fullTimelineScroll':'#homeTimelineScroll');
         assert(await viewport.evaluate(node=>node.scrollWidth>node.clientWidth));
         await viewport.evaluate(node=>node.scrollLeft=node.scrollWidth);
@@ -47,6 +56,8 @@ async function checkTimeline(page,outputDirectory){
       }
     }
     if(width<=600){
+      assert.equal(await page.locator('#homeTimelineNext').isVisible(),false);
+      assert.equal(await page.locator('[data-timeline-pan="1"]').isVisible(),false);
       for(const name of ['Home','Library','Reviews','Insights']){
         const nav=page.locator('.tabs>.tab').filter({hasText:new RegExp('^'+name+'$')});
         assert(await nav.isVisible(),name+' is available at '+width);
@@ -66,9 +77,9 @@ async function checkTimeline(page,outputDirectory){
     if(outputDirectory&&[1280,390].includes(width)){
       await fs.mkdir(outputDirectory,{recursive:true});
       await page.evaluate(()=>{showView('home');window.scrollTo({top:0,behavior:'instant'});});
-      await page.screenshot({path:path.join(outputDirectory,variant+'-home-'+width+'.png'),fullPage:true});
+      await page.screenshot({path:path.join(outputDirectory,variant+'-home-'+width+'.png'),fullPage:width>600});
       await page.evaluate(()=>{showView('timeline');window.scrollTo({top:0,behavior:'instant'});});
-      await page.screenshot({path:path.join(outputDirectory,variant+'-timeline-'+width+'.png'),fullPage:true});
+      await page.screenshot({path:path.join(outputDirectory,variant+'-timeline-'+width+'.png'),fullPage:width>600});
     }
   }
   await page.setViewportSize({width:390,height:844});
@@ -79,13 +90,14 @@ async function checkTimeline(page,outputDirectory){
   await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
   const touch=await page.context().newCDPSession(page);
   await touch.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
-  const start={x:300,y:380};
+  const start={x:160,y:540};
   await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[start]});
-  for(let x=270;x>=90;x-=30)await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:start.y}]});
+  for(let y=510;y>=300;y-=30)await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:start.x,y}]});
   await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
-  await page.waitForFunction(()=>document.getElementById('homeTimelineScroll').scrollLeft>40);
+  await page.waitForFunction(()=>window.scrollY>100);
+  assert.equal(await page.locator('#homeTimelineScroll').evaluate(node=>node.scrollLeft),0);
   // Let the browser finish touch momentum before switching to keyboard input.
-  await page.evaluate(()=>new Promise(resolve=>{let previous=-1,stable=0;function frame(){const x=document.getElementById('homeTimelineScroll').scrollLeft;stable=x===previous?stable+1:0;previous=x;if(stable>=5)resolve();else requestAnimationFrame(frame);}frame();}));
+  await page.evaluate(()=>new Promise(resolve=>{let previous=-1,stable=0;function frame(){const y=window.scrollY;stable=y===previous?stable+1:0;previous=y;if(stable>=5)resolve();else requestAnimationFrame(frame);}frame();}));
   await touch.send('Emulation.setTouchEmulationEnabled',{enabled:false});await touch.detach();
   await page.locator('#homeTimelineScroll').evaluate(node=>node.scrollLeft=0);
   await page.locator('#homeTimelineTrack [data-exp="ui-exp-0"]').focus();

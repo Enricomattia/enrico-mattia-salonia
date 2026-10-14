@@ -459,14 +459,19 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
  .home-timeline-actions {gap:6px;max-width:none;flex-wrap:nowrap}
  .home-timeline-actions .view-link {margin-left:4px;font-size:11px;min-height:44px;display:flex;align-items:center}
  .rail-arrow {width:36px;height:44px}
- .serpent-track {min-width:760px;gap:56px 30px;padding:8px 28px 20px}
- .timeline.serpent-track {padding:8px 28px 20px}
+ .serpent-viewport {overflow:visible;overscroll-behavior-x:auto;touch-action:pan-y pinch-zoom;padding:0}
+ .serpent-track {display:flex;flex-direction:column;min-width:0;gap:24px;padding:0 0 0 4px}
+ .serpent-stop {border-left:1px solid #c1d7d4;padding-left:15px}
+ .serpent-stop:not(:last-child):after {content:'';position:absolute;left:-1px;top:100%;height:24px;border-left:1px solid #c1d7d4}
+ .serpent-date:before {content:'';position:absolute;left:-4px;top:5px;width:7px;height:7px;border:2px solid #82aaa5;border-radius:50%;background:var(--bg)}
+ .serpent-path,.serpent-direction,.home-timeline-actions .rail-arrow,.timeline-pan {display:none}
+ .timeline.serpent-track {padding:0 0 0 4px}
  .serpent-date {font-size:10px}
- .serpent-card {height:212px;padding:14px;gap:12px}
- .serpent-card-top {grid-template-columns:60px minmax(0,1fr);gap:11px}
- .serpent-cover {width:60px;height:86px}
- .serpent-title {font-size:14px}
- .serpent-creator {font-size:11px}
+ .serpent-card {height:auto;min-height:174px;padding:16px;gap:12px}
+ .serpent-card-top {grid-template-columns:76px minmax(0,1fr);gap:14px}
+ .serpent-cover {width:76px;height:108px}
+ .serpent-title {font-size:16px}
+ .serpent-creator {font-size:12px}
  .serpent-excerpt {font-size:13px;-webkit-line-clamp:3}
  .filters,.review-mode-panel .section-head .filters {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
  .filters input,.filters #librarySort,.filters #reviewSort,.filters #passageSort {grid-column:1/-1}
@@ -548,7 +553,7 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
         <button type="button" class="view-link" id="viewFullTimelineBtn">Full timeline ↗</button>
       </div>
     </div>
-    <div id="homeTimelineScroll" class="serpent-viewport" role="region" aria-label="Recent experiences, winding timeline. Scroll down and sideways." tabindex="0">
+    <div id="homeTimelineScroll" class="serpent-viewport" role="region" aria-label="Recent experiences, newest first" tabindex="0">
       <div id="homeTimelineTrack" class="serpent-track"></div>
     </div>
   </section>
@@ -579,7 +584,7 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
 <section id="timeline" class="view">
   <div class="section-head"><div><h2>Timeline</h2></div><div class="timeline-pan"><button type="button" class="rail-arrow" data-timeline-pan="-1" aria-label="Scroll full timeline left">←</button><button type="button" class="rail-arrow" data-timeline-pan="1" aria-label="Scroll full timeline right">→</button></div></div>
   
-  <div class="serpent-viewport" id="fullTimelineScroll" role="region" aria-label="All experiences, winding timeline. Scroll down and sideways." tabindex="0"><div id="timelineList" class="timeline serpent-track"></div></div>
+  <div class="serpent-viewport" id="fullTimelineScroll" role="region" aria-label="All dated experiences, newest first" tabindex="0"><div id="timelineList" class="timeline serpent-track"></div></div>
 </section>
 
 <section id="reviews" class="view">
