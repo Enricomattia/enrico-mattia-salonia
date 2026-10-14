@@ -486,12 +486,13 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
 @media(prefers-reduced-motion:reduce) {.serpent-card {transition:none}}
 
 </style>
+<link rel="stylesheet" href="/pathos/discover.css">
 </head>
 <body>
 
 <header class="topbar">
   <div class="archive-heading"><h1 class="pathos-wordmark" aria-label="Πathos"><span class="pathos-pi" aria-hidden="true">Π</span><span>athos</span></h1></div>
-  <div class="top-actions"><button class="btn primary" id="addBtn">+ Add experience</button></div>
+  <div class="top-actions"><button type="button" class="btn" id="discoverBtn" aria-label="Find a book or film" hidden>Find<span class="desktop-action-text"> a work</span></button><button class="btn primary" id="addBtn" aria-label="Add experience">+ Add<span class="desktop-action-text"> experience</span></button></div>
 </header>
 <nav class="tabs" aria-label="Πathos pages">
   <button data-view="home" class="tab active">Home</button>
@@ -912,7 +913,23 @@ window.pathosCanEdit=false;
 window.pathosBridge={
   getArchive:()=>clone(db),
   setArchive:archive=>{db=migrateDatabase(clone(archive)).database;renderAll();},
-  notify:msg=>toast(msg)
+  notify:msg=>toast(msg),
+  openCatalogueEntry:(item,status)=>{
+    if(!window.pathosCanEdit||archiveBusy)return;
+    const external=item.provider==='openlibrary'?{openlibraryKey:item.id}:{tmdb:item.id};
+    const existing=findWork({title:item.title,type:item.type,creator:item.creator,year:item.year,external});
+    openEntryDialog(existing?{work:existing}:{});
+    const form=$('entryForm');form.elements.status.value=status;
+    if(!existing){
+      ['title','creator','year','type'].forEach(key=>form.elements[key].value=item[key]||'');
+      form.elements.cover.value=item.type==='Book'?'':item.cover;
+      selectedCatalogItem={...item,external,sourceMetadata:{genres:item.genres,overview:item.description},aliases:[]};
+      updateEditionPanel();setCatalogHint();
+      if(item.type==='Book'){loadEditionsForWork(item.id);$('bookEditionDetails').open=true;}
+    }
+    if(status==='planned'){form.elements.startDate.value='';form.elements.endDate.value='';}
+    updateDateFields();
+  }
 };
 function saveDb(){renderAll(); if(window.pathosCanEdit&&window.pathosHostedSave)return window.pathosHostedSave(clone(db));alert('Sign in to save changes.');return Promise.resolve(false);}
 function toast(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
@@ -1622,5 +1639,6 @@ renderAll();
 </script>
 <script src="/pathos/config.js"></script>
 <script type="module" src="/pathos/sync.js"></script>
+<script type="module" src="/pathos/discover.js"></script>
 </body>
 </html>
