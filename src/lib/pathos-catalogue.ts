@@ -1,6 +1,7 @@
 // Public catalogue metadata only. Private archive records never enter this API.
+import { searchBooks, googleBook } from "../../public/pathos/book-catalogue.mjs";
 export type CatalogueItem = {
-  provider: "openlibrary" | "tmdb"; id: string; type: "Book" | "Film";
+  provider: "openlibrary" | "googlebooks" | "tmdb"; id: string; type: "Book" | "Film";
   title: string; creator: string; year: string; cover: string;
   description: string; genres: string[]; sourceUrl: string;
 };
@@ -60,14 +61,15 @@ export async function requireOwner(request: Request, network: Fetch = fetch) {
   if (user.id !== OWNER_ID) throw new CatalogueError("Only the archive owner can use this feature.", 403);
 }
 
-async function publicJson(url: string, token: string, network: Fetch) {
+async function publicJson(url: string, token: string, network: Fetch, referrer = "") {
   try {
     const response = await network(url, {
-      headers: { Accept: "application/json", "User-Agent": "Pathos/1.0 (https://enricomattiasalonia.com/pathos)", ...(token ? { Authorization: "Bearer " + token } : {}) },
+      headers: { Accept: "application/json", "User-Agent": "Pathos/1.0 (https://enricomattiasalonia.com/pathos)", ...(referrer && new URL(url).hostname === "www.googleapis.com" ? { Referer: referrer } : {}), ...(token ? { Authorization: "Bearer " + token } : {}) },
       cache: "no-store", redirect: "error", signal: AbortSignal.timeout(8000),
     });
     if (!response.ok) {
       await response.body?.cancel();
+      if (new URL(url).hostname === "www.googleapis.com") throw new CatalogueError("Google Books rejected the request. Check your API key, website restrictions and quota under Metadata & covers.", 502);
       throw new CatalogueError(response.status === 401 ? "The TMDB token was rejected. Update it under Metadata & covers." : "The catalogue is unavailable. Please try again.", 502);
     }
     return await boundedJson(response.body, 2 * 1024 * 1024);
@@ -86,7 +88,7 @@ function movie(data: Record<string, any>): CatalogueItem {
     sourceUrl: "https://www.themoviedb.org/movie/" + id };
 }
 
-export async function catalogue(body: Record<string, unknown>, tmdbToken = "", network: Fetch = fetch) {
+export async function catalogue(body: Record<string, unknown>, tmdbToken = "", network: Fetch = fetch, googleKey = "", referrer = "") {
   if (!body || typeof body !== "object" || Array.isArray(body)) throw new CatalogueError("Enter a title to search.");
   if (body.action === "check") return { ok: true };
   if (!["search", "detail"].includes(String(body.action)) || !["Book", "Film"].includes(String(body.type))) throw new CatalogueError("Choose Books or Films.");
@@ -99,18 +101,22 @@ export async function catalogue(body: Record<string, unknown>, tmdbToken = "", n
       const data = await publicJson("https://api.themoviedb.org/3/search/movie?" + new URLSearchParams({ query: q, include_adult: "false", language: "en-US" }), tmdbToken, network);
       return { items: (Array.isArray(data.results) ? data.results : []).filter((d: any) => Number.isInteger(d.id) && d.id > 0).slice(0, 8).map(movie) };
     }
-    const data = await publicJson("https://openlibrary.org/search.json?" + new URLSearchParams({ q, limit: "8", fields: "key,title,author_name,first_publish_year,cover_i,subject" }), "", network);
-    return { items: (Array.isArray(data.docs) ? data.docs : []).filter((d: any) => /^\/works\/OL\d+W$/.test(d.key)).slice(0, 8).map((d: any): CatalogueItem => ({
-      provider: "openlibrary", id: d.key, type: "Book", title: text(d.title), creator: strings(d.author_name, 2).join(", "),
-      year: /^\d{4}$/.test(String(d.first_publish_year)) ? String(d.first_publish_year) : "",
-      cover: Number.isInteger(d.cover_i) && d.cover_i > 0 ? `https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg` : "",
-      description: "", genres: strings(d.subject), sourceUrl: "https://openlibrary.org" + d.key,
-    })) };
+    if (body.page !== undefined && (!Number.isInteger(body.page) || Number(body.page) < 0 || Number(body.page) > 99)) throw new CatalogueError("Invalid catalogue page.");
+    try { return await searchBooks(q, { page: body.page ?? 0, language: text(body.language, 30), publisher: text(body.publisher, 120), filterLanguage: body.filterLanguage === true, googleKey, getJson: (url: string) => publicJson(url, "", network, referrer) }); }
+    catch { throw new CatalogueError("Book catalogues are unavailable. Manual entry still works.", 502); }
+  }
+  if (!film && body.provider === "googlebooks") {
+    if (typeof body.id !== "string" || !/^[A-Za-z0-9_-]{1,80}$/.test(body.id)) throw new CatalogueError("Choose a book from the results.");
+    if (!/^[A-Za-z0-9_-]{20,200}$/.test(googleKey)) throw new CatalogueError("Add a Google Books API key under Metadata & covers.", 428);
+    const item = googleBook(await publicJson("https://www.googleapis.com/books/v1/volumes/" + body.id + "?key=" + encodeURIComponent(googleKey), "", network, referrer));
+    if (!item) throw new CatalogueError("That book is unavailable.", 502);
+    return { item };
   }
   if (film) {
     if (!/^[1-9]\d{0,9}$/.test(String(body.id))) throw new CatalogueError("Choose a film from the results.");
     return { item: movie(await publicJson(`https://api.themoviedb.org/3/movie/${body.id}?append_to_response=credits&language=en-US`, tmdbToken, network)) };
   }
+  if (body.provider !== undefined && body.provider !== "openlibrary") throw new CatalogueError("Choose a book from the results.");
   if (typeof body.id !== "string" || !/^\/works\/OL\d+W$/.test(body.id)) throw new CatalogueError("Choose a book from the results.");
   const data = await publicJson("https://openlibrary.org" + body.id + ".json", "", network);
   const authors = await Promise.all((Array.isArray(data.authors) ? data.authors : []).slice(0, 2).map(async (a: any) => {

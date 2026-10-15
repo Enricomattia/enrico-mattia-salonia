@@ -1,9 +1,10 @@
 /* Πathos Personal offline application shell. No access to /pathos or Supabase. */
-const CACHE='pathos-personal-shell-v12';
+const CACHE='pathos-personal-shell-v13';
 const COVERS='pathos-personal-covers-v1';
 const SHELL=[
  '/pathos-personal/index.html',
  '/pathos-personal/cover-accent.mjs',
+ '/pathos-personal/book-catalogue.mjs',
  '/pathos-personal/manifest.webmanifest',
  '/pathos-personal/icon-192.png',
  '/pathos-personal/icon-512.png'
@@ -36,7 +37,7 @@ self.addEventListener('fetch',event=>{
    }
    return;
  }
- if(req.destination==='image'&&['covers.openlibrary.org','image.tmdb.org'].includes(url.hostname)){
+ if(req.destination==='image'&&['covers.openlibrary.org','image.tmdb.org','books.google.com','books.googleusercontent.com'].includes(url.hostname)){
    event.respondWith(caches.open(COVERS).then(async cache=>{
      const cached=await cache.match(req);
      if(cached)return cached;

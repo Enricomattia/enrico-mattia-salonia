@@ -3,6 +3,7 @@ const normal = value => String(value || '').normalize('NFKC').toLowerCase().repl
 const clean = (value, max = 1200) => String(value || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 const list = value => Array.isArray(value) ? value.map(x => clean(x, 80)).filter(Boolean).slice(0, 24) : [];
 export function sameWork(work, candidate) {
+  if (candidate.provider === 'googlebooks' && work.external?.googleBooks === candidate.id) return true;
   if (candidate.provider === 'openlibrary' && work.external?.openlibraryKey === candidate.id) return true;
   if (candidate.provider === 'tmdb' && String(work.external?.tmdb) === candidate.id && work.type === 'Film') return true;
   return work.type === candidate.type && normal(work.title) === normal(candidate.title) && (!work.creator || !candidate.creator || normal(work.creator) === normal(candidate.creator));
@@ -12,10 +13,11 @@ export function candidateText(candidate) {
 }
 export function buildHistory(archive, candidate) {
   const works = new Map((archive.works || []).map(w => [w.id, w]));
+  const targetWorks = new Set(candidate.provider === 'googlebooks' ? (archive.experiences || []).filter(e => e.edition?.googleBooksId === candidate.id).map(e => e.workId) : []);
   const records = [];
   for (const e of archive.experiences || []) {
     const work = works.get(e.workId);
-    if (!work || e.status === 'planned' || sameWork(work, candidate)) continue;
+    if (!work || e.status === 'planned' || targetWorks.has(e.workId) || sameWork(work, candidate)) continue;
     const rating = e.rating !== '' && e.rating != null && Number.isFinite(Number(e.rating)) && Number(e.rating) >= 0 && Number(e.rating) <= 5 ? Number(e.rating) : null;
     if (rating == null && !work.liked && !e.review && e.status !== 'dnf') continue;
     const review = clean(e.review, 1500), genres = list(work.sourceMetadata?.genres);

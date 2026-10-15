@@ -22,9 +22,9 @@ const pixel='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCA
 const fixture={schemaVersion:6,works:[{id:'book-1',title:'Synthetic book',type:'Book',creator:'Test author',cover:pixel,aliases:[],liked:true,external:{isbn:'9780140328721'},sourceMetadata:{}}],experiences:[{id:'reading-1',workId:'book-1',startDate:'2026-10-01',endDate:'2026-10-01',status:'completed',rating:4.5,review:'A review\nwith paragraphs.',quotes:[{id:'quote-1',text:'A saved passage',note:'p. 12',featured:true}],tags:['test'],isPublic:true,edition:{isbn:'9780140328721',ean:'9780140328721',identifierType:'catalogue',identifierValue:'custom-1',sourceId:'storygraph-test-uid',publisher:'Manual publisher',publishYear:'2020',language:'Italian',format:'Paperback',pages:'123',contributors:'Test translator',cover:pixel,source:'manual'}}]};
 const baseline={};
 if(process.env.PATHOS_UPDATE_BASELINE_REF){
-  for(const name of ['index.html','sw.js','cover-accent.mjs']){
+  for(const name of ['index.html','sw.js','cover-accent.mjs','book-catalogue.mjs']){
     try{baseline[name]=execFileSync('git',['show',process.env.PATHOS_UPDATE_BASELINE_REF+':public/pathos-personal/'+name],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','pipe']});}
-    catch(error){if(name!=='cover-accent.mjs')throw error;}
+    catch(error){if(!['cover-accent.mjs','book-catalogue.mjs'].includes(name))throw error;}
   }
 }
 const server=http.createServer(async(req,res)=>{
@@ -33,7 +33,7 @@ const server=http.createServer(async(req,res)=>{
     if(!/^\/(pathos|pathos-personal)\/[a-z0-9.-]+$/i.test(pathname)){res.writeHead(404).end();return;}
     const name=path.basename(pathname);
     let bytes=await fsp.readFile(path.join(publicRoot,pathname));
-    if(pathname.startsWith('/pathos-personal/')&&['index.html','sw.js','cover-accent.mjs'].includes(name)){
+    if(pathname.startsWith('/pathos-personal/')&&['index.html','sw.js','cover-accent.mjs','book-catalogue.mjs'].includes(name)){
       let source=release==='before'&&baseline[name]?baseline[name]:bytes.toString();
       if(name==='sw.js'&&!(release==='before'&&baseline[name]))source=source.replace(/pathos-personal-shell-v\d+/g,'pathos-personal-shell-test-'+release);
       if(name==='index.html')source=source.replace('</head>','<meta name="pathos-test-release" content="'+release+'"></head>');
@@ -330,6 +330,10 @@ async function checkArchiveViews(page){
       const cacheName=(await caches.keys()).find(name=>name.startsWith('pathos-personal-shell-'));
       return (await(await caches.open(cacheName)).match('/pathos-personal/cover-accent.mjs')).text();
     }),fs.readFileSync(path.join(publicRoot,'pathos-personal/cover-accent.mjs'),'utf8'),'Accepted update switches to the new cached presentation module');
+    assert.equal(await app.evaluate(async()=>{
+      const cacheName=(await caches.keys()).find(name=>name.startsWith('pathos-personal-shell-'));
+      return(await(await caches.open(cacheName)).match('/pathos-personal/book-catalogue.mjs')).text();
+    }),fs.readFileSync(path.join(publicRoot,'pathos-personal/book-catalogue.mjs'),'utf8'),'The accepted update includes the new book catalogue module for offline startup');
     assert.equal(await peer.locator('meta[name="pathos-test-release"]').getAttribute('content'),'before');
     await peer.close();
     release='next';

@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     if (!request.headers.get("content-type")?.startsWith("application/json")) throw new CatalogueError("Send a catalogue query as JSON.", 415);
     if (active >= 2) throw new CatalogueError("Wait for the current lookup to finish.", 429);
     active++;
-    try { return Response.json(await catalogue(await boundedJson(request.body, 4096, 400), request.headers.get("x-pathos-tmdb") || process.env.PATHOS_TMDB_TOKEN || ""), { headers }); }
+    try { return Response.json(await catalogue(await boundedJson(request.body, 4096, 400), request.headers.get("x-pathos-tmdb") || process.env.PATHOS_TMDB_TOKEN || "", fetch, request.headers.get("x-pathos-google-books") || process.env.PATHOS_GOOGLE_BOOKS_KEY || "", (request.headers.get("origin") || new URL(request.url).origin) + "/"), { headers }); }
     finally { active--; }
   } catch (error) {
     return Response.json({ error: error instanceof CatalogueError ? error.message : "Could not look up that work. Please try again." }, { status: error instanceof CatalogueError ? error.status : 502, headers });
