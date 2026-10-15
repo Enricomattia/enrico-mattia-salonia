@@ -1,4 +1,4 @@
-import { buildHistory } from './match-engine.mjs';
+import { buildHistory, evaluateMatch } from './match-engine.mjs';
 
 const $ = id => document.getElementById(id);
 const button = $('discoverBtn');
@@ -85,11 +85,12 @@ function renderPreview() {
 }
 function renderMatch(result) {
   const box = $('matchResult');box.replaceChildren();
-  box.append(node('div',result.label,'discover-match-title'),node('div',`${result.confidence} confidence · ${result.historyCount} past experiences considered`,'meta'),node('p',result.summary));
+  box.append(node('div',result.label,'discover-match-title'),node('div',`${result.confidence} confidence · ${result.historyCount} past experiences considered`,'meta'),node('p',result.explanation||result.summary,'discover-match-explanation'));
+  if(result.uncertainty)box.append(node('p',result.uncertainty,'discover-match-uncertainty'));
   const evidence = node('div','','discover-evidence');
   for(const e of result.evidence){
     const card = node('article','');card.dataset.direction = e.direction;
-    card.append(node('strong',e.title),node('div',`${e.type} · you rated it ${e.rating}/5`,'meta'));
+    card.append(node('strong',e.title),node('div',`${e.type} · ${e.rating==null?'unrated':`you rated it ${e.rating}/5`}`,'meta'));
     if(e.shared.length)card.append(node('small','Shared catalogue subjects: '+e.shared.join(', ')));
     if(e.review)card.append(node('blockquote',e.review));evidence.append(card);
   }
@@ -102,7 +103,7 @@ async function match() {
     await window.pathosOwnerCatalogue({action:'check'},request.signal);
     if(current!==revision||!owner())return;
     const history = buildHistory(window.pathosBridge.getArchive(),selected);
-    if(history.filter(e=>e.rating!=null).length<3){$('matchStatus').textContent = 'Add at least three rated past experiences to build a useful match.';matching = false;$('calculateMatch').disabled = false;return;}
+    if(!history.length){renderMatch(evaluateMatch(selected,[],[],[]));$('matchStatus').textContent = '';matching = false;$('calculateMatch').disabled = false;return;}
     enabled = true;
     $('matchStatus').textContent = 'Preparing local matching…';
     if(!worker){

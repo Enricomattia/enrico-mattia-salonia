@@ -31,6 +31,37 @@ export function cosine(a, b) {
   for (let i = 0; i < a.length; i++) { dot += a[i] * b[i]; aa += a[i] ** 2; bb += b[i] ** 2; }
   return aa && bb ? Math.max(-1, Math.min(1, dot / Math.sqrt(aa * bb))) : 0;
 }
+function explainMatch(candidate, selected, { enough, label, mean, baseline, unique, ratedCount, confidence }) {
+  const score = value => Number(value.toFixed(2));
+  const sentences = [];
+  if (enough) {
+    sentences.push(label === 'Strong match' ? 'This looks promising based on your past ratings.' : label === 'Weaker match' ? 'Your past ratings suggest some caution about this one.' : 'Your past ratings do not point clearly toward or away from this one.');
+    sentences.push(`Giving closer comparisons more weight, their ratings average ${score(mean)}/5, against ${score(baseline)}/5 across your rated history.`);
+  } else {
+    sentences.push(selected.length ? 'There are some possible connections, even though there is not enough evidence for a reliable verdict.' : 'There is not enough evidence to suggest whether this will suit you yet.');
+  }
+  for (const e of selected) {
+    const connections = [];
+    if (e.shared.length) connections.push(`shared catalogue subjects (${e.shared.slice(0, 3).join(', ')})`);
+    if (candidate.creator && normal(e.creator) === normal(candidate.creator)) connections.push(`the same creator (${candidate.creator})`);
+    sentences.push(`The local text comparison links this to “${e.title}”${connections.length ? ', with ' + connections.join(' and ') : ''}.`);
+    if (e.rating != null) {
+      const comparison = e.rating >= baseline + .15 ? 'above' : e.rating <= baseline - .3 ? 'below' : 'close to';
+      sentences.push(`You rated it ${e.rating}/5, ${comparison} your usual average${e.liked ? ', and marked it as a favorite' : ''}.`);
+    } else {
+      sentences.push(e.liked ? 'You marked it as a favorite, but without a rating it does not affect the rating-based verdict.' : 'It has no rating, so its notes help identify a connection without being treated as a like or dislike.');
+    }
+  }
+  const gaps = [];
+  if (ratedCount < 10) gaps.push(`your rated history is still small (${ratedCount} experience${ratedCount === 1 ? '' : 's'})`);
+  if (unique === 0) gaps.push('no close rated comparison was found');
+  else if (unique < 4) gaps.push(`there ${unique === 1 ? 'is only one distinct close rated comparison' : `are only ${unique} distinct close rated comparisons`}`);
+  if (clean(candidate.description).length < 150) gaps.push('the catalogue description is brief or missing');
+  const uncertainty = confidence === 'Low'
+    ? `Confidence is low because ${gaps.join('; ')}. These connections are tentative and may miss what matters to you about the work.`
+    : 'There are several rated comparisons and a fuller catalogue description, but textual similarity and past ratings still cannot predict your reaction.';
+  return { explanation: sentences.join(' '), uncertainty };
+}
 export function evaluateMatch(candidate, history, candidateVector, vectors) {
   const rated = history.filter(e => e.rating != null);
   const baseline = rated.length ? rated.reduce((sum, e) => sum + e.rating, 0) / rated.length : 3;
@@ -54,11 +85,13 @@ export function evaluateMatch(candidate, history, candidateVector, vectors) {
   const selected = [], seen = new Set();
   const add = e => { if (e && !seen.has(e.workId) && selected.length < 3) { seen.add(e.workId); selected.push(e); } };
   // Surface counterevidence as well as similarities to favourites.
-  add(related.find(e => e.rating != null && e.rating >= baseline + .15));
-  add(related.find(e => e.rating != null && e.rating <= baseline - .3));
-  related.filter(e => e.rating != null).forEach(add);
+  add(nearest.find(e => e.rating >= baseline + .15));
+  add(nearest.find(e => e.rating <= baseline - .3));
+  nearest.forEach(add);
+  related.filter(e => e.rating == null).forEach(add);
   return { label, confidence, historyCount: history.length, ratedCount: rated.length, relatedCount: unique,
+    ...explainMatch(candidate, selected, { enough, label, mean, baseline, unique, ratedCount: rated.length, confidence }),
     summary: !enough ? 'There is too little descriptive information or comparable rated history for a useful prediction.' : shift >= .2 ? 'The closest connections lean toward experiences you rated above your usual average.' : shift <= -.25 ? 'The closest connections lean toward experiences you rated below your usual average.' : 'Your comparable experiences point in different directions, or sit close to your usual rating.',
-    evidence: selected.map(e => ({ id: e.id, workId: e.workId, title: e.title, type: e.type, rating: e.rating, shared: e.shared.slice(0, 3), review: clean(e.review, 180), direction: e.rating >= baseline + .15 ? 'positive' : e.rating <= baseline - .3 ? 'caution' : 'neutral' })),
+    evidence: selected.map(e => ({ id: e.id, workId: e.workId, title: e.title, type: e.type, rating: e.rating, shared: e.shared.slice(0, 3), review: clean(e.review, 180), direction: e.rating == null ? 'neutral' : e.rating >= baseline + .15 ? 'positive' : e.rating <= baseline - .3 ? 'caution' : 'neutral' })),
     limitations: 'An experimental estimate from your history, not a probability. Unrated reviews help find connections but do not establish liking. Long reviews are excerpted; catalogue descriptions may be incomplete.' };
 }
