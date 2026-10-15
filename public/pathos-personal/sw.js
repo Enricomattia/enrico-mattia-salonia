@@ -1,5 +1,5 @@
 /* Πathos Personal offline application shell. No access to /pathos or Supabase. */
-const CACHE='pathos-personal-shell-v14';
+const CACHE='pathos-personal-shell-v15';
 const COVERS='pathos-personal-covers-v1';
 const SHELL=[
  '/pathos-personal/index.html',
@@ -7,7 +7,13 @@ const SHELL=[
  '/pathos-personal/book-catalogue.mjs',
  '/pathos-personal/manifest.webmanifest',
  '/pathos-personal/icon-192.png',
- '/pathos-personal/icon-512.png'
+ '/pathos-personal/icon-512.png',
+ '/pathos-personal/fonts/newsreader-latin.woff2',
+ '/pathos-personal/fonts/newsreader-latin-ext.woff2',
+ '/pathos-personal/fonts/newsreader-italic-latin.woff2',
+ '/pathos-personal/fonts/newsreader-italic-latin-ext.woff2',
+ '/pathos-personal/fonts/instrument-sans-latin.woff2',
+ '/pathos-personal/fonts/instrument-sans-latin-ext.woff2'
 ];
 self.addEventListener('install',event=>{
  // Cache the new shell, but do not replace the running app until accepted.

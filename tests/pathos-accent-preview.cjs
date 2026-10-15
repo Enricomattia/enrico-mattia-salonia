@@ -31,13 +31,13 @@ let browser;
  await page.goto(target.origin+'/pathos/app.html');
  await page.waitForFunction(()=>document.querySelector('.pathos-sync-status')?.textContent==='Public archive');
  assert.equal(await page.evaluate(()=>window.pathosCanEdit),false);
- try {await page.waitForFunction(()=>document.querySelector('#homeTimelineTrack .has-cover-accent'),{},{timeout:25000});}
- catch(error){console.log(await page.evaluate(()=>({targets:document.querySelectorAll('#homeTimelineTrack [data-cover-accent]').length,images:[...document.querySelectorAll('#homeTimelineTrack img')].map(img=>({host:new URL(img.src).hostname,loaded:img.complete&&img.naturalWidth>0})),errors:[]})));throw error;}
+ try {await page.waitForFunction(()=>document.querySelector('#timelineList .has-cover-accent'),{},{timeout:25000});}
+ catch(error){console.log(await page.evaluate(()=>({targets:document.querySelectorAll('#timelineList [data-cover-accent]').length,images:[...document.querySelectorAll('#timelineList img')].map(img=>({host:new URL(img.src).hostname,loaded:img.complete&&img.naturalWidth>0})),errors:[]})));throw error;}
  await page.waitForLoadState('networkidle',{timeout:15000}).catch(()=>{});
  const archive=await page.evaluate(()=>JSON.stringify(window.pathosBridge.getArchive()));
  const output=process.env.PATHOS_UI_SCREENSHOTS||await fs.mkdtemp(path.join(os.tmpdir(),'pathos-accent-'));
  await fs.mkdir(output,{recursive:true});
- const accents=await page.locator('#homeTimelineTrack .has-cover-accent').count();
+ const accents=await page.locator('#timelineList .has-cover-accent').count();
  await page.screenshot({path:path.join(output,'artwork-accent-desktop.png')});
  await page.evaluate(()=>document.querySelectorAll('.has-cover-accent').forEach(n=>n.classList.remove('has-cover-accent')));
  await page.screenshot({path:path.join(output,'artwork-neutral-desktop.png')});

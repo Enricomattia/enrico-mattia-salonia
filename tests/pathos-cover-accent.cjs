@@ -30,7 +30,7 @@ async function checkCoverAccents(page){
   const accents=await page.locator('#timelineList .has-cover-accent').evaluateAll(nodes=>nodes.map(n=>n.style.getPropertyValue('--cover-accent')));
   assert.notEqual(accents[0],accents[1],'Each exact edition supplies its own color');
   assert.equal(await page.locator('#timelineList [data-exp="accent-blue"]').getAttribute('data-cover-accent'),blue);
-  const ink=await page.locator('#timelineList .serpent-title').first().evaluate(n=>getComputedStyle(n).color);
+  const ink=await page.locator('#timelineList .diary-title').first().evaluate(n=>getComputedStyle(n).color);
   await page.evaluate(()=>showView('library'));
   await page.waitForFunction(()=>document.querySelector('#libraryGrid .has-cover-accent'));
   assert.equal(await page.locator('#libraryGrid .work-card').getAttribute('data-cover-accent'),blue,'Library uses the currently shown edition');
@@ -43,7 +43,7 @@ async function checkCoverAccents(page){
   await page.evaluate(()=>{db.works[0].cover='https://accent.example/no-cors.svg';db.experiences.forEach(e=>e.edition=null);renderAll();showView('timeline');});
   await page.waitForFunction(()=>[...document.querySelectorAll('#timelineList img')].every(img=>img.complete&&img.naturalWidth>0));
   assert.equal(await page.locator('#timelineList .has-cover-accent').count(),0);
-  assert.equal(await page.locator('#timelineList .serpent-title').first().evaluate(n=>getComputedStyle(n).color),ink,'Text color stays fixed');
+  assert.equal(await page.locator('#timelineList .diary-title').first().evaluate(n=>getComputedStyle(n).color),ink,'Text color stays fixed');
   await page.context().unroute('https://accent.example/**');
   // An initial failure or timeout gets one cache-reloading retry. A failed
   // pair is cooled down, then connectivity recovery retries without a reload.
