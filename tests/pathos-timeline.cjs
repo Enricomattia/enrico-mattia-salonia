@@ -58,20 +58,20 @@ async function checkTimeline(page,outputDirectory){
     if(width<=600){
       assert.equal(await page.locator('#homeTimelineNext').isVisible(),false);
       assert.equal(await page.locator('[data-timeline-pan="1"]').isVisible(),false);
-      for(const name of ['Home','Library','Reviews','Insights']){
+      for(const name of ['Home','Library','Timeline','Insights']){
         const nav=page.locator('.tabs>.tab').filter({hasText:new RegExp('^'+name+'$')});
         assert(await nav.isVisible(),name+' is available at '+width);
         assert((await nav.boundingBox()).height>=44);
       }
       await page.locator('#moreMenuLabel').click();
-      await page.locator('#moreMenu .menu-view[data-view="timeline"]').click();
-      assert(await page.locator('#timeline').isVisible());
+      await page.locator('#moreMenu .menu-view[data-view="passages"]').click();
+      assert(await page.locator('#passages').isVisible());
       await page.evaluate(()=>showView('library'));
       await page.locator('#libraryAdvanced>summary').click();
       const panel=await page.locator('#libraryAdvanced .filter-panel').boundingBox();
       assert(panel.x>=0&&panel.x+panel.width<=width+1,'Library filters fit the screen');
       await page.locator('#libraryAdvanced>summary').click();
-      await page.evaluate(()=>showView('reviews'));
+      await page.evaluate(()=>showView('passages'));
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
     }
     if(outputDirectory&&[1280,390].includes(width)){

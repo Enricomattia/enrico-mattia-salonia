@@ -1,6 +1,6 @@
 # Πathos — Project handoff for Codex
 
-_Last checked against the GitHub repository: 14 October 2026._
+_Last checked against the GitHub repository: 15 October 2026._
 
 ## 1. What Πathos is
 
@@ -70,7 +70,7 @@ Release changes in PR #6 (`codex/pathos-reliability`):
 - Hosted saves use a fresh owner-session check, an archive comparison against the latest cloud read, and a same-origin Web Lock where available. This rejects previously saved changes from other windows/devices, but **is not an atomic cross-device conditional write**. A simultaneous save on another device (or from an old client) can still race the preflight read; resolving that needs a separately reviewed server-side revision check.
 - Automatic ISBN enrichment fills missing edition fields and preserves recorded metadata, identifiers and uploaded/manual covers. Editing an edition also preserves its contributors.
 - Save errors remain visible and block Personal updates; a later successful write clears the failure. Personal refuses updates/restores while an entry dialog, import or metadata operation is open/running, and prevents new edits while preparing an update. Unsaved form entries are not auto-saved.
-- The service worker uses shell cache `pathos-personal-shell-v9` and looks up shell assets in its own versioned cache, so a waiting release's cache cannot be served prematurely. Cover-cache behavior and the standalone manifest are unchanged. Preview v4/v5 provided the real reliability update-cycle check; v6 stages interface simplifications and v7 adds official-page image suggestions. Release v8 adds winding timelines, mobile layout improvements and Current above the Home timeline. The v9 follow-up makes both timelines vertical and nearly full-width on phones (600px and narrower), retaining winding rows on larger screens.
+- The service worker uses shell cache `pathos-personal-shell-v10` and looks up shell assets in its own versioned cache, so a waiting release's cache cannot be served prematurely. Cover-cache behavior and the standalone manifest are unchanged. Preview v4/v5 provided the real reliability update-cycle check; v6 stages interface simplifications and v7 adds official-page image suggestions. Release v8 adds winding timelines, mobile layout improvements and Current above the Home timeline. The v9 follow-up makes both timelines vertical and nearly full-width on phones (600px and narrower), retaining winding rows on larger screens. Release v10 adds viewing language and publication series and promotes Timeline into the primary navigation.
 
 ## 4. What the user wants the experience to feel like
 
@@ -78,9 +78,9 @@ Release changes in PR #6 (`codex/pathos-reliability`):
 
 - **Home:** the latest **12 dated experiences** use a single vertical list on phones (600px and narrower), with cards filling nearly all available content width and no sideways scrolling. Larger screens retain a winding, three-column timeline: the first row reads left to right, the next right to left, joined by rounded turns. Scroll vertically through the rows and pan horizontally when the canvas exceeds the screen, using touch, trackpad or arrow buttons. Vertical wheel scrolling stays vertical; this replaces the previous wheel-to-horizontal behavior at the user's request. DOM, keyboard and screen-reader order remain chronological, newest first. **Current appears above the timeline** when there are in-progress experiences, and stays hidden when there are none. There is no Recent reviews section. Empty timelines have no decorative line.
 - **Library:** all works, filters by media/status and other useful criteria, simple manual addition and editing.
-- **Reviews:** one browseable collection of written reviews and a **Passages** area within Reviews (rather than a disconnected home-page section). Show the latest matching review per work by default; an Earlier review(s) disclosure appears only when more than one written review matches the filters for that work. Filters search all experience reviews, so an older matching review remains findable. Sorting orders works by their currently shown review. All experience reviews stay in storage and exports.
+- **Timeline:** replaces the redundant Reviews primary page. Shows all dated, non-planned experiences with the existing responsive timeline. Reviews remain on their individual experiences, in work details, Library search and exports; removing the review browser does not delete any writing.
 - **Insights:** statistics and charts that are **interactive**. Clicking a distribution bar, e.g. a rating, should reveal the corresponding experiences. Avoid explanatory filler text that was intentionally removed.
-- **More:** secondary features such as full Timeline, metadata and covers, import and backups. The full Timeline uses the same responsive layout (vertical on phones, winding rows on larger screens) across the content width for **all dated, non-planned experiences**. Both timelines retain cover/poster images on desktop and mobile, preferring each experience's exact edition cover. Each card has its own date; the full Timeline no longer groups records in a narrow monthly list.
+- **More:** secondary features: **Passages**, metadata and covers, import and backups. Passages retains its existing search, media/year/featured filters and sorting in its own secondary page. The primary Timeline uses the same responsive layout as Home (vertical on phones, winding rows on larger screens) across the content width. Both timelines retain cover/poster images on desktop and mobile, preferring each experience's exact edition cover. Each card has its own date; the full Timeline no longer groups records in a narrow monthly list.
 
 On phones, all four primary pages remain visible in a sticky navigation row; More opens the same secondary menu as desktop. Phone timelines scroll vertically, hide horizontal arrows/direction marks and keep covers visible. Only larger-screen timeline canvases may pan sideways; the whole page must fit the screen. Library uses two columns; filters and single-column entry forms fit narrow screens, inputs use 16px text to avoid automatic iOS zoom, and actions have larger touch targets. Personal still hides ready-status and Install controls in standalone mode while showing save errors. These are presentation changes: no storage, edition, publication or authentication behavior changes.
 
@@ -103,6 +103,8 @@ Every eligible non-planned past experience contributes a local representation us
 - Distinguish a **work** from an **experience of a work**. Re-readings/re-watches can have different dates, ratings, reviews and, for books, editions.
 - Media categories include books, film, TV, theatre, videogames, albums, concerts, exhibitions, podcasts, opera and other categories supported by the existing code.
 - Useful fields include status (completed/in progress/planned/did not finish), start/end dates, rating, review, passages/quotes, tags, venue, source URL, cover, favourite status and repeat experience.
+- Films have optional **Viewing language**, stored as `experience.viewingLanguage`. Record the language actually watched, never infer it from a film's original language. Repeat viewings start with a blank language and retain separate choices. The field appears in work details and is searchable in Library.
+- Exact book editions have optional **Publication series** and **Series number**, stored as `edition.series` and `edition.seriesNumber` alongside `edition.publisher`. For example: `Einaudi · Nuovi Coralli n. 15`. The number is text, allowing values such as `2 bis`. Repeat readings retain independent edition choices, and manual series values survive enrichment, edits and backups. These are additive optional fields; schema version 6, IDs and storage keys remain unchanged.
 - Add a little **Today** shortcut near date fields; this was a requested UX improvement and should be preserved.
 - Dates must remain flexible: users may log an experience on the same day or have incomplete dates; do not reintroduce validation that unnecessarily forces finish after start for every status.
 - Keep the interface simple; do not invent new mandatory form fields.
@@ -126,7 +128,9 @@ Every eligible non-planned past experience contributes a local representation us
 
 ## 5. Cloud data and privacy — hosted owner's Πathos
 
-The owner authenticates through Supabase email/password. Site visitors who are not signed in can see only published experiences and safe fields. When the app first went live, the owner's existing archive was imported and all the then-existing experiences were set public. **Do not assume future entries inherit that visibility**: inspect the current form defaults and database logic before modifying publication rules.
+The owner authenticates through Supabase email/password. Site visitors who are not signed in can see only published experiences and safe fields. New hosted experiences are **public by default**, including entries logged again, discovery/planned entries and CSV imports. The entry form has a visible **Keep this experience private** checkbox, applying to its review and passages too. Explicit `isPublic: false` remains private. Editing a legacy entry with a false/missing flag keeps it private; existing archives and JSON restores retain their recorded visibility without bulk changes. Personal remains local-only with no publication controls.
+
+The public RPC's explicit projection includes optional `viewingLanguage`; publication series travels in the already-projected `edition` object. `scripts/pathos-public-viewing-language.sql` adds only that one safe field to the inspected function and includes a rollback that removes its public projection without deleting stored languages. It preserves the owner/publication filter, permissions, RLS and private archive write function. The database's fallback for malformed/missing publication settings remains private; new-entry defaults are applied by the hosted UI, never by migrating old records.
 
 The Supabase implementation uses:
 
@@ -138,7 +142,7 @@ The Supabase implementation uses:
 
 Tables have row-level security. The public RPC is deliberately usable by anonymous visitors, but **must never reveal unpublished records or fields**. Before editing database functions or policies, retrieve and inspect their current definitions and existing production data. Test public reads while signed out, authenticated owner reads/writes and unauthorized writes separately. Never put `service_role`, passwords, database connection strings or raw archive dumps into GitHub. The Supabase URL and publishable key in `public/pathos/config.js` are *public* identifiers and **must not be treated as a security boundary**.
 
-If asked to change privacy defaults, confirm what should happen for *new* experiences and whether existing visibility is to be preserved; do not bulk-toggle an archive without explicit authorization.
+The owner requested the new public default on 15 October 2026. Preserve existing visibility in any future changes; do not bulk-toggle an archive without explicit authorization.
 
 ## 6. Local data and updates — Πathos Personal
 
