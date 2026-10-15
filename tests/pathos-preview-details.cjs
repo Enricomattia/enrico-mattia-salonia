@@ -6,6 +6,7 @@ const path=require('node:path');
 const {chromium}=require('playwright');
 const {checkEntryDetails}=require('./pathos-entry-details.cjs');
 const {checkCoverAccents}=require('./pathos-cover-accent.cjs');
+const {checkNavigation}=require('./pathos-navigation.cjs');
 const target=new URL(process.env.PATHOS_PREVIEW_URL||'https://invalid.invalid');
 assert.match(target.hostname,/^deploy-preview-\d+--[a-z0-9-]+\.netlify\.app$/,'Only a Netlify PR preview is allowed');
 const moduleSource=`export function createClient(){return {auth:{getUser:async()=>({data:{user:{id:window.PATHOS_CONFIG.ownerUserId}}})},rpc:async(name,args)=>{if(name==='pathos_replace_my_archive'){window.testCloud=JSON.parse(JSON.stringify(args.p_archive));return{};}return{data:window.testCloud};}}}`;
@@ -37,10 +38,11 @@ async function restore(page,value){
     page.on('dialog',dialog=>dialog.accept());
     await page.goto(target.origin+(variant==='personal'?'/pathos-personal/index.html':'/pathos/app.html'));
     await page.waitForFunction(()=>window.pathosCanEdit);
+    await checkNavigation(page,process.env.PATHOS_UI_SCREENSHOTS);
     if(variant==='personal'){
       await page.evaluate(()=>navigator.serviceWorker.ready);
       await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
-      assert((await page.evaluate(()=>caches.keys())).includes('pathos-personal-shell-v13'));
+      assert((await page.evaluate(()=>caches.keys())).includes('pathos-personal-shell-v14'));
     }
     assert.equal(await page.locator('#reviews,[data-view="reviews"]').count(),0);
     await page.locator('[data-view="timeline"].tab').click();

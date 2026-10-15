@@ -13,6 +13,7 @@ const {chromium}=require('playwright');
 const {checkTimeline}=require('./pathos-timeline.cjs');
 const {checkEntryDetails}=require('./pathos-entry-details.cjs');
 const {checkCoverAccents}=require('./pathos-cover-accent.cjs');
+const {checkNavigation,navigatePage}=require('./pathos-navigation.cjs');
 const root=path.resolve(__dirname,'..');
 const publicRoot=path.join(root,'public');
 const launch={headless:true,...(process.env.PATHOS_BROWSER==='chromium'?{}:{channel:process.env.PATHOS_BROWSER||'msedge'})};
@@ -84,6 +85,7 @@ async function backup(page){
 }
 async function run(name,fn){await fn();console.log('PASS '+name);}
 async function checkArchiveViews(page){
+  await checkNavigation(page,process.env.PATHOS_UI_SCREENSHOTS);
   await checkCoverAccents(page);
   const before=await archive(page);
   await page.evaluate(value=>{db=value;renderAll();showView('home');},fixture);
@@ -100,8 +102,7 @@ async function checkArchiveViews(page){
   assert.equal(await page.locator('#reviews,[data-view="reviews"]').count(),0);
   await page.locator('.tabs>.tab[data-view="timeline"]').click();
   assert(await page.locator('#timeline').isVisible());
-  await page.locator('#moreMenuLabel').click();
-  await page.locator('#moreMenu [data-view="passages"]').click();
+  await navigatePage(page,'passages');
   assert.equal(await page.locator('#passagesList .passage-card').count(),1);
   const repeated=copy(fixture);
   repeated.experiences.push({...copy(repeated.experiences[0]),id:'reading-2',endDate:'2026-10-14',rating:3,repeat:true,review:'Second reading review',edition:{...repeated.experiences[0].edition,cover:pixel+'#second-edition'}});
@@ -384,6 +385,7 @@ async function checkArchiveViews(page){
     await hosted.addInitScript(()=>{window.mockOwner=true;});
     const owner=await observe(await hosted.newPage());await owner.goto(origin+'/pathos/app.html');
     await owner.waitForFunction(()=>window.pathosCanEdit);
+    await checkNavigation(owner,process.env.PATHOS_UI_SCREENSHOTS);
     await checkEntryDetails(owner,{backup,restore});
     await owner.evaluate(()=>{db.experiences[0].review='Cloud edit';return saveDb();});
     assert.equal(await owner.evaluate(()=>window.mockCloud.experiences[0].review),'Cloud edit');

@@ -2,6 +2,7 @@
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const fs=require('node:fs/promises');
+const {navigatePage}=require('./pathos-navigation.cjs');
 
 async function checkTimeline(page,outputDirectory){
   await page.bringToFront();
@@ -58,13 +59,12 @@ async function checkTimeline(page,outputDirectory){
     if(width<=600){
       assert.equal(await page.locator('#homeTimelineNext').isVisible(),false);
       assert.equal(await page.locator('[data-timeline-pan="1"]').isVisible(),false);
-      for(const name of ['Home','Library','Timeline','Insights']){
+      for(const name of ['Home','Library','Timeline']){
         const nav=page.locator('.tabs>.tab').filter({hasText:new RegExp('^'+name+'$')});
         assert(await nav.isVisible(),name+' is available at '+width);
         assert((await nav.boundingBox()).height>=44);
       }
-      await page.locator('#moreMenuLabel').click();
-      await page.locator('#moreMenu .menu-view[data-view="passages"]').click();
+      await navigatePage(page,'passages');
       assert(await page.locator('#passages').isVisible());
       await page.evaluate(()=>showView('library'));
       await page.locator('#libraryAdvanced>summary').click();
