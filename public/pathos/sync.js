@@ -34,7 +34,7 @@ else {
     const {data,error}=await supabase.auth.getSession();
     if(error||!data?.session?.access_token)throw new Error('Your session expired. Sign in again.');
     const response=await fetch('/api/pathos/catalogue',{
-      method:'POST',signal,cache:'no-store',headers:{'Content-Type':'application/json',Authorization:'Bearer '+data.session.access_token,...(body.type==='Film'&&localStorage.getItem('culturalArchive.tmdbToken')?{'X-Pathos-TMDB':localStorage.getItem('culturalArchive.tmdbToken')}:{})},body:JSON.stringify(body)
+      method:'POST',signal,cache:'no-store',headers:{...(body.type==='Book'&&localStorage.getItem('culturalArchive.googleBooksKey')?{'X-Pathos-Google-Books':localStorage.getItem('culturalArchive.googleBooksKey')}:{}),'Content-Type':'application/json',Authorization:'Bearer '+data.session.access_token,...(body.type==='Film'&&localStorage.getItem('culturalArchive.tmdbToken')?{'X-Pathos-TMDB':localStorage.getItem('culturalArchive.tmdbToken')}:{})},body:JSON.stringify(body)
     });
     const result=await response.json();
     if(response.status===401||response.status===403)ownerMode(false);

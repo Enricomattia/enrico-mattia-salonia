@@ -9,6 +9,7 @@
     "lint": "next lint",
     "test:pathos": "node tests/pathos-reliability.cjs",
     "test:pathos-images": "node --test tests/pathos-page-images.cjs",
+    "test:pathos-books": "node --test tests/pathos-books.cjs && node tests/pathos-books-browser.cjs",
     "test:pathos-match": "node --test tests/pathos-match.cjs && node tests/pathos-discovery-browser.cjs",
     "test:pathos-match-real": "node tests/pathos-match-real.cjs"
   },

@@ -11,6 +11,8 @@ const path=require('node:path');
 const {execFileSync}=require('node:child_process');
 const {chromium}=require('playwright');
 const {checkTimeline}=require('./pathos-timeline.cjs');
+const {checkEntryDetails}=require('./pathos-entry-details.cjs');
+const {checkCoverAccents}=require('./pathos-cover-accent.cjs');
 const root=path.resolve(__dirname,'..');
 const publicRoot=path.join(root,'public');
 const launch={headless:true,...(process.env.PATHOS_BROWSER==='chromium'?{}:{channel:process.env.PATHOS_BROWSER||'msedge'})};
@@ -20,7 +22,10 @@ const pixel='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCA
 const fixture={schemaVersion:6,works:[{id:'book-1',title:'Synthetic book',type:'Book',creator:'Test author',cover:pixel,aliases:[],liked:true,external:{isbn:'9780140328721'},sourceMetadata:{}}],experiences:[{id:'reading-1',workId:'book-1',startDate:'2026-10-01',endDate:'2026-10-01',status:'completed',rating:4.5,review:'A review\nwith paragraphs.',quotes:[{id:'quote-1',text:'A saved passage',note:'p. 12',featured:true}],tags:['test'],isPublic:true,edition:{isbn:'9780140328721',ean:'9780140328721',identifierType:'catalogue',identifierValue:'custom-1',sourceId:'storygraph-test-uid',publisher:'Manual publisher',publishYear:'2020',language:'Italian',format:'Paperback',pages:'123',contributors:'Test translator',cover:pixel,source:'manual'}}]};
 const baseline={};
 if(process.env.PATHOS_UPDATE_BASELINE_REF){
-  for(const name of ['index.html','sw.js'])baseline[name]=execFileSync('git',['show',process.env.PATHOS_UPDATE_BASELINE_REF+':public/pathos-personal/'+name],{cwd:root,encoding:'utf8'});
+  for(const name of ['index.html','sw.js','cover-accent.mjs','book-catalogue.mjs']){
+    try{baseline[name]=execFileSync('git',['show',process.env.PATHOS_UPDATE_BASELINE_REF+':public/pathos-personal/'+name],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','pipe']});}
+    catch(error){if(!['cover-accent.mjs','book-catalogue.mjs'].includes(name))throw error;}
+  }
 }
 const server=http.createServer(async(req,res)=>{
   try{
@@ -28,7 +33,7 @@ const server=http.createServer(async(req,res)=>{
     if(!/^\/(pathos|pathos-personal)\/[a-z0-9.-]+$/i.test(pathname)){res.writeHead(404).end();return;}
     const name=path.basename(pathname);
     let bytes=await fsp.readFile(path.join(publicRoot,pathname));
-    if(pathname.startsWith('/pathos-personal/')&&['index.html','sw.js'].includes(name)){
+    if(pathname.startsWith('/pathos-personal/')&&['index.html','sw.js','cover-accent.mjs','book-catalogue.mjs'].includes(name)){
       let source=release==='before'&&baseline[name]?baseline[name]:bytes.toString();
       if(name==='sw.js'&&!(release==='before'&&baseline[name]))source=source.replace(/pathos-personal-shell-v\d+/g,'pathos-personal-shell-test-'+release);
       if(name==='index.html')source=source.replace('</head>','<meta name="pathos-test-release" content="'+release+'"></head>');
@@ -79,6 +84,7 @@ async function backup(page){
 }
 async function run(name,fn){await fn();console.log('PASS '+name);}
 async function checkArchiveViews(page){
+  await checkCoverAccents(page);
   const before=await archive(page);
   await page.evaluate(value=>{db=value;renderAll();showView('home');},fixture);
   assert.equal(await page.locator('#stats .stat').nth(2).locator('strong').textContent(),'1');
@@ -91,21 +97,16 @@ async function checkArchiveViews(page){
   assert.equal(await page.locator('#workDialogBody .work-summary-review,#workDialogBody .work-metrics').count(),0);
   assert.equal((await page.locator('#workDialogBody').innerText()).includes('LATEST REVIEW'),false);
   await page.locator('#closeWorkDialog').click();
-  await page.evaluate(()=>showView('reviews'));
-  assert.equal(await page.locator('#reviewsList .review-card-full').count(),1);
-  assert.equal(await page.locator('#reviewsList .review-history').count(),0);
+  assert.equal(await page.locator('#reviews,[data-view="reviews"]').count(),0);
+  await page.locator('.tabs>.tab[data-view="timeline"]').click();
+  assert(await page.locator('#timeline').isVisible());
+  await page.locator('#moreMenuLabel').click();
+  await page.locator('#moreMenu [data-view="passages"]').click();
+  assert.equal(await page.locator('#passagesList .passage-card').count(),1);
   const repeated=copy(fixture);
   repeated.experiences.push({...copy(repeated.experiences[0]),id:'reading-2',endDate:'2026-10-14',rating:3,repeat:true,review:'Second reading review',edition:{...repeated.experiences[0].edition,cover:pixel+'#second-edition'}});
   await page.evaluate(value=>{db=value;renderAll();},repeated);
-  assert.equal(await page.locator('#reviewsList>.review-group').count(),1);
-  assert.equal(await page.locator('#reviewsList>.review-group>.review-card-full').getAttribute('data-exp'),'reading-2');
-  const older=page.locator('#reviewsList details .review-card-full');
-  assert.equal(await older.isVisible(),false);
-  await page.locator('#reviewsList summary').click();assert.equal(await older.isVisible(),true);
-  await page.locator('#reviewSearch').fill('paragraphs');
-  assert.equal(await page.locator('#reviewsList .review-card-full').getAttribute('data-exp'),'reading-1');
-  assert.equal(await page.locator('#reviewsList .review-history').count(),0);
-  await page.locator('#reviewSearch').fill('');
+  assert.equal(await page.locator('#passagesList .passage-card').count(),2);
   await page.evaluate(()=>openWork('book-1'));
   assert.equal(await page.locator('#workDialogBody .experience-review').count(),2);
   assert.equal(await page.locator('#workDialogBody .experience-review').first().innerText(),'Second reading review');
@@ -117,16 +118,9 @@ async function checkArchiveViews(page){
   assert.equal(await page.locator('#timelineList .timeline-cover img').first().isVisible(),true);
   await page.screenshot({path:path.join(temporary,(await page.url()).includes('personal')?'personal-timeline-mobile.png':'hosted-timeline-mobile.png'),fullPage:true});
   await page.setViewportSize({width:1280,height:800});
-  await page.evaluate(()=>showView('reviews'));
-  await page.screenshot({path:path.join(temporary,(await page.url()).includes('personal')?'personal-reviews.png':'hosted-reviews.png'),fullPage:true});
+  await page.evaluate(()=>showView('passages'));
+  await page.screenshot({path:path.join(temporary,(await page.url()).includes('personal')?'personal-passages.png':'hosted-passages.png'),fullPage:true});
   assert.deepEqual(await archive(page),repeated,'Changing views must never rewrite records');
-  const sorted=copy(repeated);
-  sorted.works.push({id:'film-2',title:'Another reviewed work',type:'Film',creator:'Test director'});
-  sorted.experiences.push({id:'watch-2',workId:'film-2',endDate:'2026-10-10',review:'Film review',rating:4,status:'completed'});
-  await page.evaluate(value=>{db=value;renderAll();},sorted);
-  await page.locator('#reviewSort').selectOption('rating-desc');
-  assert.equal(await page.locator('#reviewsList>.review-group>.review-card-full').first().getAttribute('data-exp'),'watch-2','Sort by the displayed latest review, not an earlier higher rating');
-  await page.locator('#reviewSort').selectOption('newest');
   await checkTimeline(page,process.env.PATHOS_UI_SCREENSHOTS||temporary);
   await page.evaluate(value=>{db=value;renderAll();showView('home');},before);
 }
@@ -144,9 +138,11 @@ async function checkArchiveViews(page){
     await page.locator('[name="type"]').selectOption('Film');
     await page.locator('[name="title"]').fill('Synthetic film');
     await page.locator('[name="endDate"]').fill('2026-10-14');
+    await page.locator('[name="viewingLanguage"]').fill('Italian');
     await page.locator('#entryForm button[type="submit"]').click();await saved(page);
     let data=await archive(page);assert.equal(data.experiences.length,1);
     const id=data.experiences[0].id;
+    assert.equal(data.experiences[0].viewingLanguage,'Italian');
     await page.reload();await page.waitForFunction(()=>window.pathosPersonalReady);
     await page.evaluate(id=>openExperience(id),id);
     assert.equal(await page.locator('#entryDialog').evaluate(el=>el.open),true);
@@ -157,6 +153,7 @@ async function checkArchiveViews(page){
     await page.locator('#deleteBtn').click();await saved(page);
     assert.equal((await disk(page)).experiences.length,0);
   });
+  await run('movie language, edition series, repeat isolation, round trip and offline reload',()=>checkEntryDetails(page,{backup,restore}));
   await run('restore/export round trip, preserved edition and passage IDs, cancellation and durable undo',async()=>{
     await restore(page,fixture);assert.deepEqual((await archive(page)).experiences,fixture.experiences);
     const exported=await backup(page);assert.deepEqual(exported.experiences,fixture.experiences);
@@ -181,8 +178,10 @@ async function checkArchiveViews(page){
     const missing=copy(fixture);missing.experiences[0].workId='missing';
     const badPassage=copy(fixture);badPassage.experiences[0].quotes=[{text:42}];
     const badEdition=copy(fixture);badEdition.experiences[0].edition.cover={url:'invalid'};
+    const badSeries=copy(fixture);badSeries.experiences[0].edition.series=['invalid'];
+    const badLanguage=copy(fixture);badLanguage.experiences[0].viewingLanguage={invalid:true};
     const duplicatePassage=copy(fixture);duplicatePassage.experiences[0].quotes.push(copy(duplicatePassage.experiences[0].quotes[0]));
-    for(const value of ['{bad json',duplicate,missing,badPassage,badEdition,duplicatePassage,{...fixture,schemaVersion:99}]){
+    for(const value of ['{bad json',duplicate,missing,badPassage,badEdition,badSeries,badLanguage,duplicatePassage,{...fixture,schemaVersion:99}]){
       await restore(page,value);assert.deepEqual(await disk(page),before);
       assert.deepEqual(await page.evaluate(()=>readLocalArchive('before-restore')),recovery);
     }
@@ -255,7 +254,7 @@ async function checkArchiveViews(page){
     assert.equal((await archive(page)).experiences[0].edition.cover,pixel);
     await ctx.setOffline(false);
   });
-  await run('review defaults, winding timelines, mobile/touch navigation and exact-edition covers',()=>checkArchiveViews(page));
+  await run('Timeline navigation, retained reviews/passages, mobile/touch and exact-edition covers',()=>checkArchiveViews(page));
   await run('official-page image suggestions preserve records until Save, protect manual covers and fail safely offline',async()=>{
     const eventUrl='https://venue.example/events/ka-in/',image1='https://images.example/production-01.png',image2='https://images.example/production-02.png';
     const event={schemaVersion:6,works:[{id:'event-work',title:'KA-IN',type:'Theatre',cover:eventUrl,creator:'Test troupe'}],experiences:[{id:'event-experience',workId:'event-work',endDate:'2026-10-14',review:'Event review',rating:4,status:'completed',sourceUrl:eventUrl,isPublic:false,quotes:[]}]};
@@ -301,12 +300,20 @@ async function checkArchiveViews(page){
 
   await run('two staged releases: Later, two clients, pending/failed writes, open form, offline browser restart',async()=>{
     release='before';
+    const updateFixture=copy(fixture);
+    Object.assign(updateFixture.experiences[0].edition,{series:'Nuovi Coralli',seriesNumber:'15'});
+    updateFixture.works.push({id:'update-film',title:'Update language test',type:'Film'});
+    updateFixture.experiences.push({id:'update-watch',workId:'update-film',viewingLanguage:'Italian',status:'completed',rating:'',quotes:[]});
     const profile=path.join(temporary,'profile');
     let installed=await chromium.launchPersistentContext(profile,launch);persistentContexts.push(installed);
     let app=await personal(installed);
     // Seed the old release using its own persistence path; no real user data.
-    await app.evaluate(value=>{db=value;saveDb();},fixture);
+    await app.evaluate(value=>{db=value;saveDb();},updateFixture);
     await app.waitForFunction(()=>pendingWrites===0);
+    if(baseline['cover-accent.mjs'])assert.equal(await app.evaluate(async()=>{
+      const cacheName=(await caches.keys()).find(name=>name.startsWith('pathos-personal-shell-'));
+      return (await(await caches.open(cacheName)).match('/pathos-personal/cover-accent.mjs')).text();
+    }),baseline['cover-accent.mjs'],'The old app runs the old cached presentation module');
     const peer=await personal(installed);
     release='current';
     await app.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();await r.update();});
@@ -318,7 +325,15 @@ async function checkArchiveViews(page){
     await app.locator('#pathosUpdateNow').click();
     await app.waitForFunction(()=>document.querySelector('meta[name="pathos-test-release"]').content==='current');
     await app.waitForFunction(()=>window.pathosPersonalReady);
-    assert.deepEqual((await archive(app)).experiences,fixture.experiences);
+    assert.deepEqual((await archive(app)).experiences,updateFixture.experiences);
+    assert.equal(await app.evaluate(async()=>{
+      const cacheName=(await caches.keys()).find(name=>name.startsWith('pathos-personal-shell-'));
+      return (await(await caches.open(cacheName)).match('/pathos-personal/cover-accent.mjs')).text();
+    }),fs.readFileSync(path.join(publicRoot,'pathos-personal/cover-accent.mjs'),'utf8'),'Accepted update switches to the new cached presentation module');
+    assert.equal(await app.evaluate(async()=>{
+      const cacheName=(await caches.keys()).find(name=>name.startsWith('pathos-personal-shell-'));
+      return(await(await caches.open(cacheName)).match('/pathos-personal/book-catalogue.mjs')).text();
+    }),fs.readFileSync(path.join(publicRoot,'pathos-personal/book-catalogue.mjs'),'utf8'),'The accepted update includes the new book catalogue module for offline startup');
     assert.equal(await peer.locator('meta[name="pathos-test-release"]').getAttribute('content'),'before');
     await peer.close();
     release='next';
@@ -346,6 +361,8 @@ async function checkArchiveViews(page){
     app=await personal(installed);
     assert.equal((await archive(app)).experiences[0].review,'Saved before update');
     assert.equal((await archive(app)).experiences[0].edition.cover,pixel);
+    assert.equal((await archive(app)).experiences[0].edition.series,'Nuovi Coralli');
+    assert.equal((await archive(app)).experiences[1].viewingLanguage,'Italian');
     assert.equal(await app.locator('link[rel="manifest"]').getAttribute('href'),'/pathos-personal/manifest.webmanifest');
     await app.screenshot({path:path.join(temporary,'personal.png'),fullPage:true});
     await installed.close();
@@ -367,6 +384,7 @@ async function checkArchiveViews(page){
     await hosted.addInitScript(()=>{window.mockOwner=true;});
     const owner=await observe(await hosted.newPage());await owner.goto(origin+'/pathos/app.html');
     await owner.waitForFunction(()=>window.pathosCanEdit);
+    await checkEntryDetails(owner,{backup,restore});
     await owner.evaluate(()=>{db.experiences[0].review='Cloud edit';return saveDb();});
     assert.equal(await owner.evaluate(()=>window.mockCloud.experiences[0].review),'Cloud edit');
     assert.deepEqual(await owner.evaluate(()=>{db.experiences[0].review='Queued A';const a=saveDb();db.experiences[0].review='Queued B';return Promise.all([a,saveDb()]);}),[true,true]);

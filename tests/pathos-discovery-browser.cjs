@@ -39,7 +39,12 @@ const moduleText=`export function createClient(){return {auth:{getUser:async()=>
  await guest.close();
  await context.addInitScript(()=>{window.__owner=true;window.__workers=[];window.__messages=[];window.__NativeWorker=window.Worker;window.Worker=class{
   constructor(){window.__workers.push(this);}
-  postMessage(data){window.__messages.push(data);if(data.type==='cancel')return;setTimeout(()=>this.onmessage?.({data:{id:data.id,type:'result',result:{label:'Strong match',confidence:'Low',historyCount:data.history.length,summary:'Synthetic engine response',evidence:[{title:'<img src=x onerror=alert(1)>',type:'Book',rating:5,shared:['Fiction'],review:'Actual past review',direction:'positive'}],limitations:'An estimate, not a probability.'}}}),30);}
+  postMessage(data){window.__messages.push(data);if(data.type==='cancel')return;setTimeout(async()=>{
+   const {evaluateMatch}=await import('/pathos/match-engine.mjs');
+   const history=data.history.map((e,i)=>i===0?{...e,title:'<img src=x onerror=alert(1)>'}:e);
+   const result=evaluateMatch(data.candidate,history,[1,0],history.map(e=>window.__forceRelated||e.rating>=4?[1,0]:[0,1]));
+   this.onmessage?.({data:{id:data.id,type:'result',result}});
+  },30);}
   terminate(){this.terminated=true;}
  };});
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
@@ -52,7 +57,11 @@ const moduleText=`export function createClient(){return {auth:{getUser:async()=>
  await page.locator('#calculateMatch').click();await page.locator('.discover-match-title').waitFor();
  assert.equal(await page.locator('.discover-match-title').textContent(),'Strong match');
  assert.equal(await page.locator('.discover-evidence img').count(),0,'Evidence must render as text');
- assert.equal(await page.locator('.discover-evidence strong').textContent(),'<img src=x onerror=alert(1)>');
+ assert.equal(await page.locator('.discover-evidence strong').first().textContent(),'<img src=x onerror=alert(1)>');
+ assert.match(await page.locator('.discover-match-explanation').innerText(),/5\/5/);
+ assert.match(await page.locator('.discover-match-explanation').innerText(),/Fiction, Memory/);
+ assert.match(await page.locator('.discover-match-uncertainty').innerText(),/Confidence is low because/);
+ assert.equal(await page.locator('.discover-match-explanation img').count(),0);
  const payload=await page.evaluate(()=>window.__messages.find(x=>x.type==='match'));
  assert.equal(payload.history.length,6);assert(!JSON.stringify(payload).includes('Private passage'));assert(!JSON.stringify(payload).includes('private-cover'));
  assert.equal(await page.evaluate(()=>JSON.stringify(window.pathosBridge.getArchive())),before);
@@ -63,6 +72,24 @@ const moduleText=`export function createClient(){return {auth:{getUser:async()=>
  }
  await page.setViewportSize({width:390,height:844});
  await page.screenshot({path:path.join(process.env.PATHOS_UI_SCREENSHOTS||os.tmpdir(),'pathos-discovery-mobile.png')});
+ await page.locator('#matchResult').screenshot({path:path.join(process.env.PATHOS_UI_SCREENSHOTS||os.tmpdir(),'pathos-match-explanation-mobile.png')});
+ // One rated record, an unrated review and an empty archive all explain their limits.
+ await page.evaluate(()=>{window.__beforeSparse=window.pathosBridge.getArchive();window.pathosBridge.setArchive({...window.__beforeSparse,works:window.__beforeSparse.works.slice(0,1),experiences:window.__beforeSparse.experiences.slice(0,1)});});
+ await page.locator('#calculateMatch').click();
+ await page.waitForFunction(()=>document.querySelector('.discover-match-title').textContent==='Not enough evidence');
+ assert.match(await page.locator('.discover-match-explanation').innerText(),/5\/5/);
+ assert.match(await page.locator('.discover-match-uncertainty').innerText(),/one distinct close rated comparison/);
+ await page.evaluate(()=>{const value=window.pathosBridge.getArchive();value.experiences[0].rating='';window.pathosBridge.setArchive(value);window.__forceRelated=true;});
+ await page.locator('#calculateMatch').click();
+ await page.waitForFunction(()=>document.querySelector('.discover-evidence .meta')?.textContent.includes('unrated'));
+ assert.match(await page.locator('.discover-match-explanation').innerText(),/without being treated as a like or dislike/);
+ const matchesBefore=await page.evaluate(()=>window.__messages.filter(m=>m.type==='match').length);
+ await page.evaluate(()=>window.pathosBridge.setArchive({schemaVersion:6,works:[],experiences:[]}));
+ await page.locator('#calculateMatch').click();
+ assert.match(await page.locator('.discover-match-uncertainty').innerText(),/no close rated comparison/);
+ assert.equal(await page.evaluate(()=>window.__messages.filter(m=>m.type==='match').length),matchesBefore,'Empty history needs no model request');
+ await page.evaluate(()=>{window.pathosBridge.setArchive(window.__beforeSparse);window.__forceRelated=false;});
+ assert.equal(await page.evaluate(()=>JSON.stringify(window.pathosBridge.getArchive())),before);
  await page.getByRole('button',{name:'Add to Planned',exact:true}).click();
  assert.equal(await page.locator('#entryForm [name="status"]').inputValue(),'planned');
  assert.equal(await page.locator('#entryForm [name="cover"]').inputValue(),'','A generic work cover must not become an exact edition cover');

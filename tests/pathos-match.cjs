@@ -84,3 +84,36 @@ test('matching handles positive/negative preferences, sparse metadata, repeats a
  assert.equal(evaluateMatch(candidate,history.slice(0,1),[1,0],positive).label,'Not enough evidence');
  const repeats=history.map(e=>({...e,workId:'same'}));assert.equal(evaluateMatch(candidate,repeats,[1,0],positive).label,'Not enough evidence');
 });
+test('match explanations name the evidence and explain low confidence without inventing preferences',async()=>{
+ const {evaluateMatch}=await import('../public/pathos/match-engine.mjs');
+ const candidate={type:'Book',creator:'Shared author',genres:['Memory','Fiction'],description:'A detailed catalogue description. '.repeat(8)};
+ const history=[
+  {id:'a',workId:'a',title:'A favorite novel',type:'Book',rating:5,creator:'Shared author',genres:['Memory'],review:'I loved the ending.',liked:true},
+  {id:'b',workId:'b',title:'A disappointing film',type:'Film',rating:1,creator:'Other',genres:['Fiction'],review:'Too slow for me.'},
+  {id:'c',workId:'c',title:'Another novel',type:'Book',rating:3,genres:[],review:''},
+ ];
+ const mixed=evaluateMatch(candidate,history,[1,0],history.map(()=>[1,0]));
+ assert.equal(mixed.confidence,'Low');
+ assert.match(mixed.explanation,/A favorite novel/);assert.match(mixed.explanation,/A disappointing film/);
+ assert.match(mixed.explanation,/5\/5/);assert.match(mixed.explanation,/1\/5/);
+ assert.match(mixed.explanation,/shared catalogue subjects \(Memory\)/);
+ assert.match(mixed.explanation,/same creator \(Shared author\)/);
+ assert.match(mixed.uncertainty,/rated history is still small/);
+ assert.match(mixed.uncertainty,/3 distinct close rated comparisons/);
+ const sparse=evaluateMatch(candidate,history.slice(0,1),[1,0],[[1,0]]);
+ assert.equal(sparse.label,'Not enough evidence');assert.match(sparse.explanation,/A favorite novel/);
+ assert.match(sparse.uncertainty,/one distinct close rated comparison/);
+ const empty=evaluateMatch({...candidate,description:''},[],[],[]);
+ assert.match(empty.explanation,/not enough evidence/);assert.match(empty.uncertainty,/no close rated comparison/);
+ assert.match(empty.uncertainty,/description is brief or missing/);
+ const unrelated=evaluateMatch(candidate,history,[0,1],history.map(()=>[1,0]));
+ assert.equal(unrelated.evidence.length,0);assert(!unrelated.explanation.includes('favorite novel'));
+ assert.match(unrelated.uncertainty,/no close rated comparison/);
+ const unrated=evaluateMatch(candidate,[{...history[0],rating:null,liked:false}],[1,0],[[1,0]]);
+ assert.equal(unrated.evidence[0].rating,null);assert.equal(unrated.evidence[0].direction,'neutral');
+ assert.match(unrated.explanation,/without being treated as a like or dislike/);
+ assert(!unrated.explanation.includes('You rated it'));
+ const full=Array.from({length:10},(_,i)=>({...history[i%3],id:String(i),workId:String(i)}));
+ const moderate=evaluateMatch(candidate,full,[1,0],full.map(()=>[1,0]));
+ assert.equal(moderate.confidence,'Moderate');assert.match(moderate.uncertainty,/cannot predict your reaction/);
+});
