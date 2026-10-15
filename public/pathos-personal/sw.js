@@ -1,8 +1,9 @@
 /* Πathos Personal offline application shell. No access to /pathos or Supabase. */
-const CACHE='pathos-personal-shell-v10';
+const CACHE='pathos-personal-shell-v11';
 const COVERS='pathos-personal-covers-v1';
 const SHELL=[
  '/pathos-personal/index.html',
+ '/pathos-personal/cover-accent.mjs',
  '/pathos-personal/manifest.webmanifest',
  '/pathos-personal/icon-192.png',
  '/pathos-personal/icon-512.png'

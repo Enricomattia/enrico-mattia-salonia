@@ -12,6 +12,7 @@ const {execFileSync}=require('node:child_process');
 const {chromium}=require('playwright');
 const {checkTimeline}=require('./pathos-timeline.cjs');
 const {checkEntryDetails}=require('./pathos-entry-details.cjs');
+const {checkCoverAccents}=require('./pathos-cover-accent.cjs');
 const root=path.resolve(__dirname,'..');
 const publicRoot=path.join(root,'public');
 const launch={headless:true,...(process.env.PATHOS_BROWSER==='chromium'?{}:{channel:process.env.PATHOS_BROWSER||'msedge'})};
@@ -80,6 +81,7 @@ async function backup(page){
 }
 async function run(name,fn){await fn();console.log('PASS '+name);}
 async function checkArchiveViews(page){
+  await checkCoverAccents(page);
   const before=await archive(page);
   await page.evaluate(value=>{db=value;renderAll();showView('home');},fixture);
   assert.equal(await page.locator('#stats .stat').nth(2).locator('strong').textContent(),'1');
