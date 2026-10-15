@@ -28,6 +28,8 @@ async function restore(page,value){
   for(const variant of ['personal','hosted']){
     const context=await browser.newContext({acceptDownloads:true});
     await context.addInitScript(()=>window.testCloud={schemaVersion:6,works:[],experiences:[]});
+    // Netlify's deploy-preview drawer (absent in production) covers the phone bottom bar.
+    await context.addInitScript(()=>document.addEventListener('DOMContentLoaded',()=>{const style=document.createElement('style');style.textContent='[data-netlify-deploy-id]{display:none!important}';document.head.append(style);}));
     await context.route('**/*',route=>{
       const url=route.request().url();
       if(url.startsWith('https://cdn.jsdelivr.net/npm/@supabase/supabase-js'))return route.fulfill({contentType:'text/javascript',body:moduleSource});
