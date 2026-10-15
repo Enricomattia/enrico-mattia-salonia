@@ -31,7 +31,7 @@ if(process.env.PATHOS_UPDATE_BASELINE_REF){
 const server=http.createServer(async(req,res)=>{
   try{
     const pathname=new URL(req.url,'http://localhost').pathname;
-    if(!/^\/(pathos|pathos-personal)\/[a-z0-9.-]+$/i.test(pathname)){res.writeHead(404).end();return;}
+    if(!/^\/(pathos|pathos-personal)\/(fonts\/)?[a-z0-9.-]+$/i.test(pathname)){res.writeHead(404).end();return;}
     const name=path.basename(pathname);
     let bytes=await fsp.readFile(path.join(publicRoot,pathname));
     if(pathname.startsWith('/pathos-personal/')&&['index.html','sw.js','cover-accent.mjs','book-catalogue.mjs'].includes(name)){
@@ -40,7 +40,7 @@ const server=http.createServer(async(req,res)=>{
       if(name==='index.html')source=source.replace('</head>','<meta name="pathos-test-release" content="'+release+'"></head>');
       bytes=Buffer.from(source);
     }
-    const type=name.endsWith('.html')?'text/html':/\.m?js$/.test(name)?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.png')?'image/png':'application/manifest+json';
+    const type=name.endsWith('.html')?'text/html':/\.m?js$/.test(name)?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.png')?'image/png':name.endsWith('.woff2')?'font/woff2':'application/manifest+json';
     res.writeHead(200,{'Content-Type':type,'Cache-Control':'no-store'}).end(bytes);
   }catch{res.writeHead(404).end();}
 });
@@ -89,7 +89,9 @@ async function checkArchiveViews(page){
   await checkCoverAccents(page);
   const before=await archive(page);
   await page.evaluate(value=>{db=value;renderAll();showView('home');},fixture);
-  assert.equal(await page.locator('#stats .stat').nth(2).locator('strong').textContent(),'1');
+  await page.evaluate(()=>{insightPeriod='all';renderInsights();});
+  assert.equal(await page.locator('#insightStats .insight-stat').nth(2).locator('strong').textContent(),'1');
+  await page.evaluate(()=>{insightPeriod=null;renderInsights();});
   assert.equal(await page.locator('#homeLatestReviews').count(),0);
   assert.equal(await page.locator('#home').getByText('Recent reviews',{exact:true}).count(),0);
   await page.evaluate(()=>showView('library'));
@@ -100,8 +102,9 @@ async function checkArchiveViews(page){
   assert.equal((await page.locator('#workDialogBody').innerText()).includes('LATEST REVIEW'),false);
   await page.locator('#closeWorkDialog').click();
   assert.equal(await page.locator('#reviews,[data-view="reviews"]').count(),0);
-  await page.locator('.tabs>.tab[data-view="timeline"]').click();
-  assert(await page.locator('#timeline').isVisible());
+  assert.equal(await page.locator('[data-view="timeline"]').count(),0);
+  await page.evaluate(()=>showView('timeline'));
+  assert(await page.locator('#home').isVisible(),'The former Timeline route opens the Home diary');
   await navigatePage(page,'passages');
   assert.equal(await page.locator('#passagesList .passage-card').count(),1);
   const repeated=copy(fixture);

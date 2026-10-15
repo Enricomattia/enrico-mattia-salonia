@@ -42,11 +42,11 @@ async function restore(page,value){
     if(variant==='personal'){
       await page.evaluate(()=>navigator.serviceWorker.ready);
       await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
-      assert((await page.evaluate(()=>caches.keys())).includes('pathos-personal-shell-v14'));
+      assert((await page.evaluate(()=>caches.keys())).includes('pathos-personal-shell-v15'));
     }
     assert.equal(await page.locator('#reviews,[data-view="reviews"]').count(),0);
-    await page.locator('[data-view="timeline"].tab').click();
-    assert(await page.locator('#timeline').isVisible());
+    await page.evaluate(()=>showView('timeline'));
+    assert(await page.locator('#home').isVisible());
     await checkCoverAccents(page);
     await checkEntryDetails(page,{backup,restore});
     await page.locator('#addBtn').click();

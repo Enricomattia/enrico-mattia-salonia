@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#f8f8f5">
-<title>Πathos · v0.5.6</title>
+<title>Πathos · v0.6.0</title>
 <style>
 :root{--bg:#f4f0e8;--paper:#fffdf8;--ink:#1e1d1a;--muted:#716d65;--line:#d8d0c3;--accent:#222;--soft:#ebe4d8;--danger:#9f2c2c;--shadow:0 14px 40px rgba(40,32,18,.09)}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -333,6 +333,7 @@ dialog::backdrop {background:rgba(25,38,36,.42)}
 
 /* Hosted private editor: hide editing controls unless authenticated as owner. */
 body:not(.pathos-owner) #addBtn, body:not(.pathos-owner) #backupBtn,
+body:not(.pathos-owner) #navLogBtn, body:not(.pathos-owner) #settingsMenu,
 body:not(.pathos-owner) #restoreInput, body:not(.pathos-owner) label:has(#restoreInput), body:not(.pathos-owner) #resetSnapshotBtn,
 body:not(.pathos-owner) #enrichBooksBtn, body:not(.pathos-owner) #enrichFilmsBtn,
 body:not(.pathos-owner) #enrichAllBtn, body:not(.pathos-owner) #saveTmdbBtn,
@@ -513,6 +514,224 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
  .tabs>.tab[data-view],.tabs .more-menu>summary{padding-left:6px;padding-right:6px;min-width:44px;min-height:50px}
  .tabs .more-menu{margin-left:0}
 }
+
+/* v0.6 — diary redesign: one serif voice, month diary, work pages, typographic covers. */
+@font-face{font-family:"Newsreader";font-style:normal;font-weight:400 600;font-display:swap;src:url(/pathos/fonts/newsreader-latin-ext.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Newsreader";font-style:normal;font-weight:400 600;font-display:swap;src:url(/pathos/fonts/newsreader-latin.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Newsreader";font-style:italic;font-weight:400 600;font-display:swap;src:url(/pathos/fonts/newsreader-italic-latin-ext.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Newsreader";font-style:italic;font-weight:400 600;font-display:swap;src:url(/pathos/fonts/newsreader-italic-latin.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Instrument Sans";font-style:normal;font-weight:400 700;font-display:swap;src:url(/pathos/fonts/instrument-sans-latin-ext.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Instrument Sans";font-style:normal;font-weight:400 700;font-display:swap;src:url(/pathos/fonts/instrument-sans-latin.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+:root{--serif:"Newsreader",Georgia,"Times New Roman",serif;--sans:"Instrument Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;--muted:#5f6765;--pip-empty:#d3dbd8}
+body{font-family:var(--sans);font-size:15px}
+.visually-hidden{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* Type: serif for titles and the archive's own writing, sans for controls. */
+.topbar h1,.pathos-wordmark{font-family:var(--serif);font-weight:500!important;letter-spacing:-.015em!important;font-size:38px}
+.section-head h2,.section-head h3,.dialog-head h2,.panel h3,.chart-head h3,.home-panel h3,.review-card-head h3,.insight-block>h3{font-family:var(--serif);font-weight:500;letter-spacing:-.01em}
+.section-head h2{font-size:36px}.section-head h3{font-size:28px}.chart-head h3{font-size:24px}
+.btn,.input,.tab,.menu-view{font-family:var(--sans)}
+.btn{font-size:13px}
+.textarea,.quote-item textarea,.review-snippet,.experience-review,.review-body-full,.mini-review-text,.drill-excerpt,.passage-card blockquote,.presentation-quote p,.saved-passage,.review-presentation-quote{font-family:var(--serif)}
+.passage-card blockquote{font-size:20px;line-height:1.55;color:var(--ink)}
+.passage-title{margin:5px 0 0;font:500 22px/1.25 var(--serif)}
+.work-card h3{font:500 18px/1.25 var(--serif);letter-spacing:0}
+.tab{text-transform:none;letter-spacing:0;font-size:15px;font-weight:500;color:var(--muted);padding:15px 2px 13px}
+.tab.active{color:var(--ink);font-weight:600}
+.tab-icon,.tab-log{display:none}
+
+/* Archive tools live behind one quiet control instead of in the page list. */
+.settings-menu{position:relative}
+.settings-menu>summary{list-style:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;cursor:pointer}
+.settings-menu>summary::-webkit-details-marker{display:none}
+.settings-menu[open]>summary,.settings-menu>summary.active{background:var(--soft);border-color:var(--line)}
+.settings-menu .more-menu-panel{position:absolute;right:0;top:calc(100% + 6px);z-index:80;min-width:220px;padding:6px}
+
+/* Ratings as five quiet pips plus the exact value. */
+.rating-pips{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.pips{display:inline-flex;gap:3px}
+.pip{width:8px;height:8px;border-radius:50%;background:var(--pip-empty)}
+.pip.full{background:var(--ink)}
+.pip.half{background:linear-gradient(90deg,var(--ink) 50%,var(--pip-empty) 50%)}
+.rating-value{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+@media(forced-colors:active){.pip{border:1px solid CanvasText;background:Canvas}.pip.full,.pip.half{background:CanvasText}}
+
+/* Typographic covers: drawn from the title when no artwork exists or loads. */
+.cover,.work-cover,.work-detail-cover,.mini-cover,.review-list-cover,.timeline-cover,.diary-cover,.insight-cover{position:relative;overflow:hidden;container-type:inline-size}
+.cover>img,.work-cover>img,.work-detail-cover>img,.mini-cover>img,.review-list-cover>img,.timeline-cover>img,.diary-cover>img,.insight-cover>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.generated-cover{position:absolute;inset:0;display:flex;flex-direction:column;background:#fbfaf6;color:var(--ink);text-align:left;box-shadow:inset 0 0 0 1px rgba(48,51,52,.12)}
+.gc-band{flex:0 0 30%;background:var(--gc)}
+.gc-text{display:none;flex:1 1 auto;flex-direction:column;gap:.45em;min-height:0;overflow:hidden;padding:10% 10% 0;font-size:clamp(12px,11cqi,24px)}
+.gc-title{font:500 1em/1.12 var(--serif);overflow-wrap:anywhere}
+.gc-creator{font:italic 400 .7em/1.3 var(--serif);color:#4b5452}
+.gc-mark{margin-top:auto;padding:0 0 9% 10%;font:400 12px/1 var(--serif);color:var(--muted)}
+@container (min-width:96px){.gc-text{display:flex}}
+@container (max-width:46px){.gc-mark{display:none}}
+
+/* Home: Current, then the diary grouped by month. */
+#currentSection .section-head{margin:0 0 16px}
+.current-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:14px}
+.current-card{display:flex;gap:18px;align-items:flex-start;width:100%;padding:18px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:inherit;font:inherit;text-align:left;cursor:pointer;transition:border-color .15s}
+.current-card:hover{border-color:#9fc4c2}
+.current-card:focus-visible{outline:2px solid #387d82;outline-offset:3px}
+.current-card .cover{width:72px;min-width:72px;height:108px;border-radius:2px}
+.current-card.has-cover-accent{background:linear-gradient(115deg,rgba(var(--cover-accent),.08),rgba(var(--cover-accent),.02) 70%),var(--paper);border-color:rgba(var(--cover-accent),.3)}
+.current-card-text{display:flex;flex-direction:column;gap:5px;min-width:0}
+.current-title{font:500 21px/1.2 var(--serif);overflow-wrap:anywhere}
+.current-meta{font-size:13px;color:var(--muted)}
+.diary-section{max-width:900px}
+#currentSection:not(.hidden)+.diary-section{margin-top:14px}
+.diary-month{margin:0 0 44px}
+.diary-month>h3{margin:0;padding-bottom:12px;border-bottom:1px solid var(--ink);font:500 30px/1.2 var(--serif);letter-spacing:-.01em}
+.diary-list{list-style:none;margin:0;padding:0}
+.diary-row{display:grid;grid-template-columns:56px minmax(0,1fr);gap:18px;border-bottom:1px solid var(--line)}
+.diary-day{display:flex;flex-direction:column;padding-top:21px;line-height:1}
+.diary-row.is-compact .diary-day{padding-top:15px}
+.diary-day-num{font:400 28px/1 var(--serif);font-variant-numeric:lining-nums}
+.diary-day-wd{margin-top:6px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.diary-entry{display:grid;grid-template-columns:60px minmax(0,1fr);gap:18px;align-items:start;width:100%;padding:20px 8px 20px 0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.diary-entry.timeline-item:before{content:none}
+.diary-entry:focus-visible{outline:2px solid #387d82;outline-offset:2px;border-radius:3px}
+.diary-entry:hover .diary-title{text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:4px}
+.diary-cover{width:60px;height:90px;border-radius:2px;background:var(--soft);box-shadow:0 1px 2px rgba(30,30,30,.16)}
+.diary-entry.has-cover-accent .diary-cover{box-shadow:0 1px 2px rgba(30,30,30,.16),0 8px 18px rgba(var(--cover-accent),.32)}
+.diary-row.is-compact .diary-entry{grid-template-columns:28px minmax(0,1fr);gap:14px;align-items:center;padding:12px 8px 12px 0}
+.diary-row.is-compact .diary-cover{width:28px;height:42px}
+.diary-body{display:flex;flex-direction:column;gap:4px;min-width:0}
+.diary-head{display:flex;justify-content:space-between;align-items:baseline;gap:4px 16px;flex-wrap:wrap}
+.diary-title{font:500 21px/1.25 var(--serif);overflow-wrap:anywhere}
+.diary-row.is-compact .diary-title{font-size:18px}
+.diary-meta{font-size:13px;color:var(--muted)}
+.diary-status{color:var(--ink);font-weight:600}
+.diary-excerpt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:64ch;margin-top:6px;font:17px/1.55 var(--serif);color:#39413f;overflow-wrap:anywhere}
+.diary-more{margin-top:-20px}
+.diary-more .btn[hidden]{display:none}
+
+/* Library: medium chips, serif titles, pips. */
+.media-chips{display:flex;flex-wrap:wrap;gap:8px;margin:-4px 0 26px}
+.media-chips[hidden]{display:none}
+.media-chip-btn{min-height:40px;padding:0 15px;border:1px solid #c6d0cc;border-radius:999px;background:transparent;color:var(--ink);font:500 13px var(--sans);cursor:pointer}
+.media-chip-btn:hover{border-color:var(--ink)}
+.media-chip-btn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.work-rating{margin-top:6px}
+.work-card .work-cover{border-radius:2px}
+
+/* Work pages: a tinted header from the cover, then the writing as reading text. */
+dialog.work-page{width:min(1040px,calc(100vw - 32px));max-height:calc(100dvh - 48px);padding:0;border-radius:6px;overflow:auto}
+.work-page>.dialog-head{position:sticky;top:0;z-index:5;height:0;margin:0;display:block}
+.work-page #closeWorkDialog{position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.88);font-size:28px;color:var(--ink)}
+.work-hero{display:flex;flex-wrap:wrap;gap:24px 40px;align-items:flex-end;padding:48px 64px 36px 48px;background:#eef3f1}
+.work-hero.has-cover-accent{background:linear-gradient(rgba(var(--cover-accent),.15),rgba(var(--cover-accent),.15)),#fff}
+.work-hero .work-detail-cover{width:190px;min-width:190px;height:285px;border-radius:3px;box-shadow:0 2px 4px rgba(0,0,0,.15),0 18px 40px rgba(0,0,0,.13)}
+.work-hero-text{flex:1 1 360px;min-width:0;display:flex;flex-direction:column;gap:8px}
+.work-hero h2{margin:0;font:500 clamp(34px,5vw,54px)/1.05 var(--serif);letter-spacing:-.02em;overflow-wrap:anywhere}
+.work-hero-meta{font:400 19px/1.4 var(--serif);color:#2f3836}
+.work-hero .eyebrow,.work-hero .meta{color:#4a5351}
+.work-epigraph{margin:10px 0 0;max-width:46ch;font:italic 18px/1.5 var(--serif);color:#2f3836}
+.work-epigraph footer{margin-top:4px;font:12px var(--sans);font-style:normal;color:#4a5351}
+.work-links{display:flex;flex-wrap:wrap;gap:4px 16px}
+.work-links .source-link{margin-top:2px}
+.work-hero .work-actions{margin-top:10px}
+.work-page-body{max-width:820px;padding:36px 48px 56px}
+.work-page .experience-list{gap:0}
+.work-page .experience,.work-page .experience.has-cover-accent{padding:28px 0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none;cursor:default}
+.work-page .experience:first-child{padding-top:0;border-top:0}
+.work-page .experience:hover{background:transparent}
+.experience-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.experience-date{font:500 20px var(--serif)}
+.experience-head .pill{margin:0}
+.experience-edit{margin-left:auto}
+.experience-facts{margin-top:6px;font-size:13px;color:var(--muted)}
+.work-page .experience-edition{margin-top:8px;padding:0;background:transparent;font-size:13px}
+.work-page .experience-review{max-width:64ch;margin:18px 0 0;font:19px/1.65 var(--serif);color:var(--ink);overflow-wrap:anywhere}
+.work-page .experience-passages{margin-top:26px;padding-top:0;border:0}
+.experience-quote{position:relative;margin:16px 0 0;padding-left:28px}
+.experience-quote:before{content:"\201C";position:absolute;left:0;top:-6px;font:400 44px/1 var(--serif);color:var(--muted)}
+.experience-quote blockquote{margin:0;max-width:42ch;font:italic 21px/1.5 var(--serif);color:var(--ink)}
+.experience-quote figcaption{margin-top:6px;font-size:12px;color:var(--muted)}
+body:not(.pathos-owner) .experience-edit{display:none}
+
+/* Insights: one period, one sentence, then the charts. */
+.insight-top{display:flex;flex-direction:column;align-items:flex-start;gap:26px;margin:4px 0 56px}
+.period-switch{display:inline-flex;padding:4px;border:1px solid var(--line);border-radius:999px;background:var(--paper)}
+.period-switch button{min-height:40px;padding:0 18px;border:0;border-radius:999px;background:transparent;color:var(--ink);font:500 13px var(--sans);cursor:pointer}
+.period-switch button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.insight-headline{margin:0;max-width:22ch;font:400 clamp(32px,5vw,56px)/1.1 var(--serif);letter-spacing:-.02em}
+.insight-stat-row{display:flex;flex-wrap:wrap;gap:12px 44px;align-self:stretch;padding-top:22px;border-top:1px solid var(--ink)}
+.insight-stat,.insight-stat.insight-stat-action{display:flex;flex-direction:column;gap:2px;width:auto;min-width:110px;margin:-4px -8px;padding:4px 8px;border:0;border-radius:4px;background:transparent;color:inherit;font:inherit;text-align:left}
+.insight-stat strong{font:400 34px/1.15 var(--serif);font-variant-numeric:lining-nums}
+.insight-stat span{font-size:13px;color:var(--muted)}
+.insight-block{margin:0 0 56px}
+.insight-block[hidden]{display:none}
+.insight-block>h3{margin:0 0 18px;font-size:26px}
+.year-covers{display:flex;flex-direction:column;gap:14px}
+.year-cover-row{display:grid;grid-template-columns:110px minmax(0,1fr);gap:16px;align-items:start}
+.year-cover-month{padding-top:8px;font:500 17px var(--serif)}
+.year-cover-list{display:flex;flex-wrap:wrap;gap:8px}
+.year-cover{padding:0;border:0;background:transparent;cursor:pointer;border-radius:2px}
+.year-cover:focus-visible{outline:2px solid #387d82;outline-offset:2px}
+.year-cover .insight-cover{width:44px;height:66px;border-radius:2px;box-shadow:0 1px 2px rgba(30,30,30,.18)}
+.year-cover:hover .insight-cover{transform:translateY(-2px)}
+.insight-grid{gap:48px 56px}
+.chart-head{flex-wrap:wrap;row-gap:4px}
+.chart-panel{padding:22px 0 0;border:0;border-top:1px solid var(--line);border-radius:0}
+.chart-panel[hidden]{display:none}
+.rating-col.insight-hit[disabled]{cursor:default;opacity:1}
+.rating-label{font-size:11px}
+@media(prefers-reduced-motion:reduce){.year-cover:hover .insight-cover{transform:none}}
+
+/* Phones: a bottom bar with the four pages and Log in the middle. */
+@media(max-width:600px){
+ .topbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px}
+ .topbar h1{font-size:32px}
+ .top-actions,.top-actions:has(.personal-status),body.pathos-owner .top-actions{display:flex!important;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:6px;min-width:0}
+ body.pathos-owner .top-actions #addBtn{display:none!important}
+ nav.tabs{position:fixed;top:auto;right:0;bottom:0;left:0;z-index:70;display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);align-items:center;gap:0;margin:0;padding:4px 6px max(6px,env(safe-area-inset-bottom));background:var(--paper);border-top:1px solid var(--line);border-bottom:0;box-shadow:0 -6px 20px rgba(30,40,38,.05)}
+ .tabs>.tab[data-view]{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:54px;padding:6px 2px 4px;border-bottom:0;font-size:11px;letter-spacing:0}
+ .tabs>.tab.active{color:var(--ink)}
+ .tab-icon{display:block;width:22px;height:22px;flex:none}
+ .tab-label{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+ body.pathos-owner .tab-log{display:flex}
+ .tab-log{justify-self:center;align-items:center;justify-content:center;width:52px;height:52px;padding:0;border:0;border-radius:50%;background:var(--ink);color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(48,51,52,.28)}
+ .tab-log:focus-visible{outline:2px solid #387d82;outline-offset:3px}
+ .tabs .more-menu>summary{min-height:54px;padding:6px 2px 4px;font-size:11px}
+ .tabs .more-menu-panel{top:auto;bottom:calc(100% + 8px)}
+ body{padding-bottom:calc(68px + env(safe-area-inset-bottom))}
+ main{padding-bottom:32px}
+ .toast,.pathos-update-banner{bottom:calc(80px + env(safe-area-inset-bottom))}
+ .section-head h2{font-size:30px}
+ .current-cards{display:flex;gap:12px;overflow-x:auto;margin-right:-16px;padding-right:16px;scroll-snap-type:x mandatory;scrollbar-width:none}
+ .current-card{flex:0 0 min(280px,82vw);padding:14px;scroll-snap-align:start}
+ .current-card .cover{width:48px;min-width:48px;height:72px}
+ .current-title{font-size:18px}
+ .diary-month{margin-bottom:34px}
+ .diary-month>h3{font-size:24px}
+ .diary-row{grid-template-columns:30px minmax(0,1fr);gap:12px}
+ .diary-day{padding-top:18px}
+ .diary-day-num{font-size:22px}
+ .diary-day-wd{font-size:10px;letter-spacing:.05em}
+ .diary-entry{grid-template-columns:44px minmax(0,1fr);gap:14px;padding:16px 0}
+ .diary-cover{width:44px;height:66px}
+ .diary-row.is-compact .diary-entry{padding:12px 0}
+ .diary-title{font-size:18px}
+ .diary-excerpt{font-size:15px}
+ .media-chips{flex-wrap:nowrap;overflow-x:auto;margin-right:-16px;padding-right:16px;scrollbar-width:none}
+ .media-chip-btn{flex:none}
+ .filters #librarySort{grid-column:auto}
+ #libraryAdvanced .filter-panel{left:0;right:auto}
+ dialog.work-page{width:100%;max-width:100vw;height:100dvh;max-height:100dvh;margin:0;padding:0;border:0;border-radius:0}
+ .work-hero{gap:18px;align-items:flex-start;padding:60px 20px 24px}
+ .work-hero .work-detail-cover{width:110px;min-width:110px;height:165px}
+ .work-hero .work-actions{flex-direction:row;flex-wrap:wrap;align-items:center}
+ .work-page-body{padding:24px 20px 40px}
+ .work-page .experience-review{font-size:17px}
+ .experience-quote blockquote{font-size:19px}
+ .insight-stat-row{gap:12px 28px}
+ .insight-stat strong{font-size:28px}
+ .year-cover-row{grid-template-columns:1fr;gap:8px}
+ .year-cover-month{padding-top:0}
+}
+@media(max-width:600px) and (forced-colors:active){nav.tabs{border-top:1px solid CanvasText}}
 </style>
 <link rel="stylesheet" href="/pathos/discover.css">
 </head>
@@ -520,26 +739,21 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
 
 <header class="topbar">
   <div class="archive-heading"><h1 class="pathos-wordmark" aria-label="Πathos"><span class="pathos-pi" aria-hidden="true">Π</span><span>athos</span></h1></div>
-  <div class="top-actions"><button type="button" class="btn" id="discoverBtn" aria-label="Find a book or film" hidden>Find<span class="desktop-action-text"> a work</span></button><button class="btn primary" id="addBtn" aria-label="Add experience">+ Add<span class="desktop-action-text"> experience</span></button></div>
+  <div class="top-actions"><button type="button" class="btn" id="discoverBtn" aria-label="Find a book or film" hidden>Find<span class="desktop-action-text"> a work</span></button><details class="settings-menu" id="settingsMenu"><summary class="btn subtle" aria-label="Metadata, import and backup" title="Metadata, import and backup"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></summary><div class="more-menu-panel"><button type="button" class="menu-view" data-view="metadata">Metadata & covers</button><button type="button" class="menu-view" data-view="import">Import & backup</button></div></details><button class="btn primary" id="addBtn" aria-label="Add experience">+ Add<span class="desktop-action-text"> experience</span></button></div>
 </header>
 <nav class="tabs" aria-label="Πathos pages">
-  <button data-view="home" class="tab active">Home</button>
-  <button data-view="library" class="tab">Library</button>
-  <button data-view="timeline" class="tab">Timeline</button>
-  <button data-view="passages" class="tab" hidden>Passages</button>
-  <button data-view="insights" class="tab">Insights</button>
-  <button data-view="metadata" class="tab" hidden>Metadata & covers</button>
-  <button data-view="import" class="tab" hidden>Import & backup</button>
-  <details class="more-menu" id="moreMenu">
+  <button data-view="home" class="tab active"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z"/></svg><span class="tab-label">Home</span></button>
+  <button data-view="library" class="tab"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 4h4v16H5zM10 4h4v16h-4zM15.5 5l3.6-.9 3.4 15.5-3.6.9z"/></svg><span class="tab-label">Library</span></button>
+  <button type="button" class="tab-log" id="navLogBtn" aria-label="Log an experience"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button data-view="passages" class="tab"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 7h4v4c0 3-2 5-4 6M15 7h4v4c0 3-2 5-4 6"/></svg><span class="tab-label">Passages</span></button>
+  <button data-view="insights" class="tab"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 20v-8M10 20V6M15 20v-9M20 20V9"/></svg><span class="tab-label">Insights</span></button>
+  <details class="more-menu" id="moreMenu" hidden>
     <summary class="tab" id="moreMenuLabel">More <span aria-hidden="true">⌄</span></summary>
     <div class="more-menu-panel">
       <button type="button" class="menu-view" data-view="home" hidden>Home</button>
       <button type="button" class="menu-view" data-view="library" hidden>Library</button>
-      <button type="button" class="menu-view" data-view="timeline" hidden>Timeline</button>
-      <button type="button" class="menu-view" data-view="passages">Passages</button>
+      <button type="button" class="menu-view" data-view="passages" hidden>Passages</button>
       <button type="button" class="menu-view" data-view="insights" hidden>Insights</button>
-      <button type="button" class="menu-view" data-view="metadata">Metadata & covers</button>
-      <button type="button" class="menu-view" data-view="import">Import & backup</button>
     </div>
   </details>
 </nav>
@@ -547,24 +761,11 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
 <section id="home" class="view active">
   <section id="currentSection" class="hidden">
     <div class="section-head"><div><h3>Current</h3></div></div>
-    <div id="currentList" class="cards"></div>
+    <div id="currentList" class="current-cards"></div>
   </section>
-  <section class="home-timeline-section" aria-label="Recent cultural experiences">
-    <div class="home-timeline-heading">
-      <div>
-        
-        <h2>Recent</h2>
-        
-      </div>
-      <div class="home-timeline-actions">
-        <button type="button" class="rail-arrow" id="homeTimelinePrev" aria-label="Scroll recent timeline left" title="Scroll left">←</button>
-        <button type="button" class="rail-arrow" id="homeTimelineNext" aria-label="Scroll recent timeline right" title="Scroll right">→</button>
-        <button type="button" class="view-link" id="viewFullTimelineBtn">Full timeline ↗</button>
-      </div>
-    </div>
-    <div id="homeTimelineScroll" class="serpent-viewport" role="region" aria-label="Recent experiences, newest first" tabindex="0">
-      <div id="homeTimelineTrack" class="serpent-track"></div>
-    </div>
+  <section class="home-timeline-section diary-section" aria-label="Diary, newest first">
+    <div id="timelineList" class="diary"></div>
+    <div class="diary-more"><button type="button" class="btn" id="diaryMoreBtn" hidden>Show earlier entries</button></div>
   </section>
 </section>
 
@@ -573,7 +774,7 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
     <div><h2>Library</h2><div id="libraryCount" class="meta"></div></div>
     <div class="filters">
       <input id="searchInput" class="input" placeholder="Search title, creator, review, tag…">
-      <select id="typeFilter" class="input"><option value="">All media</option></select>
+      
       <details class="filter-details" id="libraryAdvanced"><summary class="btn subtle">Filters</summary><div class="filter-panel">
       <select id="statusFilter" class="input">
         <option value="">All statuses</option><option value="completed">Completed</option><option value="in-progress">In progress</option><option value="planned">Planned</option><option value="dnf">Did not finish</option>
@@ -587,13 +788,8 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
       </select>
     </div>
   </div>
+  <div id="typeChips" class="media-chips" role="group" aria-label="Medium"></div>
   <div id="libraryGrid" class="library-grid"></div>
-</section>
-
-<section id="timeline" class="view">
-  <div class="section-head"><div><h2>Timeline</h2></div><div class="timeline-pan"><button type="button" class="rail-arrow" data-timeline-pan="-1" aria-label="Scroll full timeline left">←</button><button type="button" class="rail-arrow" data-timeline-pan="1" aria-label="Scroll full timeline right">→</button></div></div>
-  
-  <div class="serpent-viewport" id="fullTimelineScroll" role="region" aria-label="All dated experiences, newest first" tabindex="0"><div id="timelineList" class="timeline serpent-track"></div></div>
 </section>
 
 <section id="passages" class="view">
@@ -616,29 +812,21 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
 </section>
 
 <section id="insights" class="view">
-  <div class="section-head"><div><h2>Insights</h2></div></div>
-  
-  <div class="insight-summary">
-    <div class="section-head"><div><h3>At a glance</h3></div></div>
-    <div class="stats" id="stats"></div>
-    <div class="insight-year-panel">
-      
-      <h3 id="homeYearTitle">Your year so far</h3>
-      <div id="homeYearSummary"></div>
-    </div>
+  <div class="insight-top">
+    <div class="period-switch" id="insightPeriod" role="group" aria-label="Period"></div>
+    <h2 id="insightHeadline" class="insight-headline"></h2>
+    <div class="insight-stat-row" id="insightStats"></div>
   </div>
-  <div class="section-head"><div><h3>Ratings & writing</h3></div><span class="meta">Select a bar or point to see the entries</span></div>
-  <div class="stats" id="insightStats"></div>
+  <section class="insight-block" id="yearCoversSection" aria-labelledby="yearCoversHeading"><h3 id="yearCoversHeading">The year in covers</h3><div id="yearCovers" class="year-covers"></div></section>
   <div class="insight-grid">
-    <section class="chart-panel"><div class="chart-head"><div><h3>Rating distribution</h3></div><div class="chart-note" id="ratingDistNote"></div></div><div id="ratingDistribution"></div></section>
-    <section class="chart-panel"><div class="chart-head"><div><h3>Average rating by medium</h3></div><div class="chart-note">Minimum 2 ratings</div></div><div id="ratingByMedium"></div></section>
-    <section class="chart-panel wide"><div class="chart-head"><div><h3>Experiences and written reviews by year</h3></div><div class="chart-note">Based on actual experience dates</div></div><div id="activityByYear"></div></section>
-    <section class="chart-panel wide"><div class="chart-head"><div><h3>Average rating by year</h3></div><div class="chart-note">Years with at least 2 ratings</div></div><div id="ratingTrend"></div></section>
-    <section class="chart-panel"><div class="chart-head"><div><h3>Review rate by medium</h3></div><div class="chart-note">Share with written review</div></div><div id="reviewRateByMedium"></div></section>
-    <section class="chart-panel"><div class="chart-head"><div><h3>Your longest reviews</h3></div><div class="chart-note">By word count</div></div><div id="longestReviews" class="review-list"></div></section>
+    <section class="chart-panel"><div class="chart-head"><div><h3>How you rate</h3></div><div class="chart-note" id="ratingDistNote"></div></div><div id="ratingDistribution"></div></section>
+    <section class="chart-panel"><div class="chart-head"><div><h3>By medium</h3></div><div class="chart-note">Average rating · at least 2 ratings</div></div><div id="ratingByMedium"></div></section>
+    <section class="chart-panel wide" id="activityPanel"><div class="chart-head"><div><h3>Experiences and written reviews by year</h3></div></div><div id="activityByYear"></div></section>
+    <section class="chart-panel wide" id="trendPanel"><div class="chart-head"><div><h3>Average rating by year</h3></div><div class="chart-note">Years with at least 2 ratings</div></div><div id="ratingTrend"></div></section>
+    <section class="chart-panel"><div class="chart-head"><div><h3>Review rate by medium</h3></div></div><div id="reviewRateByMedium"></div></section>
+    <section class="chart-panel"><div class="chart-head"><div><h3>Your longest reviews</h3></div></div><div id="longestReviews" class="review-list"></div></section>
   </div>
 </section>
-
 
 <section id="metadata" class="view">
   <div class="section-head"><div><h2>Metadata & covers</h2></div></div>
@@ -770,8 +958,8 @@ body:not(.pathos-owner) [data-view="metadata"], body:not(.pathos-owner) [data-vi
   <div id="insightDialogList" class="insight-drill-results"></div>
 </dialog>
 
-<dialog id="workDialog">
-  <div class="dialog-head"><div id="workDialogTitle"></div><button class="icon-btn" id="closeWorkDialog">×</button></div>
+<dialog id="workDialog" class="work-page" aria-labelledby="workPageTitle">
+  <div class="dialog-head"><button class="icon-btn" id="closeWorkDialog" aria-label="Close">×</button></div>
   <div id="workDialogBody"></div>
 </dialog>
 
@@ -952,7 +1140,18 @@ function safeWebUrl(value){try{const u=new URL(String(value||'').trim());return 
 function sourcePageLink(e){const u=safeWebUrl(e?.sourceUrl);return u?`<a class="inline-link" href="${esc(u)}" target="_blank" rel="noopener noreferrer">Open reference page ↗</a>`:''}
 function bestRecordedBookCover(w){const ex=experiencesFor(w.id);return ex.map(e=>e.edition?.cover||'').find(Boolean)||''}
 function coverAccentAttr(w,e=null){const url=editionCover(e)||w.cover||'';return url?' data-cover-accent="'+esc(url)+'"':''}
-function coverHTML(w,cls='cover',e=null){const cover=editionCover(e)||w.cover||'';return `<div class="${cls}">${cover?`<img src="${esc(cover)}" alt="" onerror="this.style.display='none';this.parentElement.textContent='${mediumIcon(w.type)}'">`:mediumIcon(w.type)}</div>`}
+// Without artwork, or when it fails to load, a typographic cover is drawn from the
+// title. It is presentation only: nothing is saved and no edition is implied.
+const COVER_TINTS=['#6f8a78','#8c6e5c','#5d7889','#8a6274','#6e6a8c','#857b55','#5b8580'];
+function coverTint(w){let hash=0;for(const ch of `${w?.title||''}|${w?.creator||''}`)hash=(Math.imul(hash,31)+ch.codePointAt(0))>>>0;return COVER_TINTS[hash%COVER_TINTS.length]}
+function generatedCover(w){return `<span class="generated-cover" style="--gc:${coverTint(w)}" aria-hidden="true"><span class="gc-band"></span><span class="gc-text"><span class="gc-title">${esc(w?.title||'')}</span>${w?.creator?`<span class="gc-creator">${esc(w.creator)}</span>`:''}</span><span class="gc-mark">Π</span></span>`}
+function coverHTML(w,cls='cover',e=null){const cover=editionCover(e)||w.cover||'';return `<div class="${cls}">${generatedCover(w)}${cover?`<img src="${esc(cover)}" alt="" loading="lazy" onerror="this.remove()">`:''}</div>`}
+function ratingPips(rating){
+  if(rating===''||rating==null||!Number.isFinite(Number(rating)))return'';
+  const n=Number(rating);let pips='';
+  for(let i=1;i<=5;i++)pips+=`<span class="pip${n>=i?' full':n>=i-.5?' half':''}"></span>`;
+  return `<span class="rating-pips"><span class="pips" aria-hidden="true">${pips}</span><span class="rating-value">${esc(formatRating(n))}/5</span></span>`;
+}
 function workSearchText(w){return uniqueText([w.title,w.creator,w.year,...(w.aliases||[]),w.sourceMetadata?.originalTitle,...(w.sourceMetadata?.alternativeTitles||[])]).join(' ')}
 function findWork(data){
   const ext=data.external||{};
@@ -984,25 +1183,7 @@ function duplicateExperience(m){
   return db.experiences.some(e=>e.workId===w.id&&String(e.status||'completed')===String(m.status||'completed')&&String(e.startDate||'')===String(m.startDate||'')&&String(e.endDate||'')===String(m.endDate||'')&&String(e.rating??'')===String(m.rating??'')&&norm(e.review)===norm(m.review));
 }
 
-function renderAll(){renderStats();renderHomeExtras();renderCurrent();renderHomeTimeline();renderFilters();renderLibrary();renderTimeline();renderPassageFilters();renderPassages();renderInsights();renderMetadataKpis()}
-function renderStats(){
-  const completed=db.experiences.filter(e=>(e.status||'completed')==='completed').length;
-  const rated=db.experiences.filter(e=>e.rating!==''&&e.rating!=null);
-  const avg=rated.length?(rated.reduce((a,e)=>a+Number(e.rating),0)/rated.length).toFixed(1):'—';
-  const reviews=db.experiences.filter(e=>String(e.review||'').trim()).length;
-  $('stats').innerHTML=[['Works',db.works.length],['Completed',completed],['Written reviews',reviews],['Average rating',avg]].map(([l,v])=>`<div class="stat"><strong>${v}</strong><span>${l}</span></div>`).join('');
-}
-
-function renderHomeExtras(){
-  const year=String(new Date().getFullYear());
-  if($('homeYearTitle'))$('homeYearTitle').textContent=`${year} so far`;
-  const arr=db.experiences.filter(e=>e.status!=='planned'&&experienceDate(e)?.startsWith(year));
-  const rated=arr.filter(e=>e.rating!==''&&e.rating!=null),reviewed=arr.filter(e=>String(e.review||'').trim());
-  const avg=rated.length?(rated.reduce((a,e)=>a+Number(e.rating),0)/rated.length).toFixed(2):'—';
-  const words=reviewed.reduce((a,e)=>a+reviewWords(e),0);
-  const byType={};arr.forEach(e=>{const w=workFor(e.workId);if(w)byType[w.type]=(byType[w.type]||0)+1});
-  if($('homeYearSummary'))$('homeYearSummary').innerHTML=`<div class="year-numbers"><div class="year-number"><strong>${arr.length}</strong><span>experiences</span></div><div class="year-number"><strong>${avg}</strong><span>average rating</span></div><div class="year-number"><strong>${reviewed.length}</strong><span>written reviews</span></div><div class="year-number"><strong>${words.toLocaleString()}</strong><span>review words</span></div></div><div class="media-breakdown">${Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`<span class="media-chip">${esc(t)} ${n}</span>`).join('')||'<span class="meta">No dated experiences this year yet.</span>'}</div>`;
-}
+function renderAll(){renderCurrent();renderFilters();renderLibrary();renderTimeline();renderPassageFilters();renderPassages();renderInsights();renderMetadataKpis()}
 function workAverageRating(wid){const a=experiencesFor(wid).filter(e=>e.rating!==''&&e.rating!=null).map(e=>Number(e.rating));return a.length?a.reduce((s,x)=>s+x,0)/a.length:null}
 function workLatestDate(wid){return experiencesFor(wid).map(experienceDate).filter(Boolean).sort().pop()||''}
 function reviewWords(e){return String(e.review||'').trim()?String(e.review).trim().split(/\s+/).length:0}
@@ -1022,33 +1203,60 @@ function renderPassages(){
   rows=rows.filter(x=>{const d=reviewDate(x.e),y=/^\d{4}/.test(d)?d.slice(0,4):'';if(type&&x.w.type!==type)return false;if(year&&y!==year)return false;if(featured==='featured'&&!x.quote.featured)return false;if(q&&![x.quote.text,x.quote.note,x.w.title,x.w.creator,x.w.type].some(v=>norm(v).includes(q)))return false;return true});
   const d=x=>reviewDate(x.e)||'';if(sort==='oldest')rows.sort((a,b)=>(d(a)||'9999').localeCompare(d(b)||'9999'));else if(sort==='title')rows.sort((a,b)=>a.w.title.localeCompare(b.w.title));else rows.sort((a,b)=>d(b).localeCompare(d(a))||String(b.e.createdAt||'').localeCompare(String(a.e.createdAt||'')));
   $('passagesCount').textContent=`Showing ${rows.length} of ${total} saved passage${total===1?'':'s'}`;
-  $('passagesList').innerHTML=rows.length?rows.map(x=>`<article class="passage-card"${coverAccentAttr(x.w,x.e)} data-exp="${x.e.id}"><div class="eyebrow">${esc(x.w.type.toUpperCase())}${x.quote.featured?' · PRESENTATION':''}</div><h3 style="margin:5px 0 0;font:600 21px Georgia,serif">${esc(x.w.title)}</h3><div class="meta">${esc(x.w.creator||'')}${reviewDate(x.e)?` · ${esc(dateLabel(reviewDate(x.e)))}`:''}</div><blockquote>${esc(x.quote.text).replace(/\n/g,'<br>')}</blockquote>${x.quote.note?`<div class="meta">${esc(x.quote.note)}</div>`:''}</article>`).join(''):'<div class="empty" style="grid-column:1/-1">No passages match these filters.</div>';bindExperienceClicks($('passagesList'));
+  $('passagesList').innerHTML=rows.length?rows.map(x=>`<article class="passage-card"${coverAccentAttr(x.w,x.e)} data-exp="${x.e.id}"><div class="eyebrow">${esc(x.w.type.toUpperCase())}${x.quote.featured?' · PRESENTATION':''}</div><h3 class="passage-title">${esc(x.w.title)}</h3><div class="meta">${esc(x.w.creator||'')}${reviewDate(x.e)?` · ${esc(dateLabel(reviewDate(x.e)))}`:''}</div><blockquote>${esc(x.quote.text).replace(/\n/g,'<br>')}</blockquote>${x.quote.note?`<div class="meta">${esc(x.quote.note)}</div>`:''}</article>`).join(''):'<div class="empty" style="grid-column:1/-1">No passages match these filters.</div>';bindExperienceClicks($('passagesList'));
 }
+// Insights show either the current year or the whole archive. Without an
+// explicit choice, the current year is used once it has a dated experience.
+let insightPeriod=null;
+const MEDIA_NOUNS={Book:['book','books'],Film:['film','films'],TV:['TV series','TV series'],Theatre:['theatre performance','theatre performances'],Videogame:['videogame','videogames'],Album:['album','albums'],Concert:['concert','concerts'],Exhibition:['exhibition','exhibitions'],Podcast:['podcast','podcasts'],Opera:['opera','operas'],Other:['other experience','other experiences']};
+function currentYear(){return String(new Date().getFullYear())}
+function activeInsightPeriod(){if(insightPeriod)return insightPeriod;const y=currentYear();return db.experiences.some(e=>e.status!=='planned'&&datedYear(e)===y)?y:'all'}
+function inInsightPeriod(e){const p=activeInsightPeriod();return p==='all'||datedYear(e)===p}
+function countNoun(n,[one,many]){return `${n.toLocaleString()} ${n===1?one:many}`}
+function monthName(key){const m=String(key).match(/^(\d{4})-(\d{2})/);return m?new Date(`${m[1]}-${m[2]}-01T12:00:00`).toLocaleDateString(undefined,{month:'long'}):''}
 function renderInsights(){
-  const experienced=db.experiences.filter(e=>e.status!=='planned');
-  const rated=experienced.filter(e=>e.rating!==''&&e.rating!=null&&Number.isFinite(Number(e.rating)));
-  const reviewed=experienced.filter(e=>String(e.review||'').trim());
-  const words=reviewed.reduce((sum,e)=>sum+reviewWords(e),0);
-  const five=rated.filter(e=>Number(e.rating)===5).length;
-  const reviewRate=pct(reviewed.length,experienced.length);
+  const period=activeInsightPeriod(),year=currentYear(),allTime=period==='all';
+  $('insightPeriod').innerHTML=[[year,year],['all','All time']].map(([value,label])=>`<button type="button" data-period="${value}" aria-pressed="${period===value}">${label}</button>`).join('');
+  const experienced=db.experiences.filter(e=>e.status!=='planned'&&inInsightPeriod(e));
+  const rated=experienced.filter(insightHasRating),reviewed=experienced.filter(insightReview);
+  const words=reviewed.reduce((sum,e)=>sum+reviewWords(e),0),five=rated.filter(e=>Number(e.rating)===5).length;
+  const avg=rated.length?(rated.reduce((sum,e)=>sum+Number(e.rating),0)/rated.length).toFixed(2):'—';
+  if(allTime)$('insightHeadline').textContent=db.works.length?`${countNoun(db.works.length,['work','works'])} across ${countNoun(experienced.length,['experience','experiences'])}.`:'Nothing recorded yet.';
+  else{
+    const byType={};experienced.forEach(e=>{const type=workFor(e.workId)?.type;if(type)byType[type]=(byType[type]||0)+1});
+    const parts=Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([type,n])=>countNoun(n,MEDIA_NOUNS[type]||[type,type]));
+    $('insightHeadline').textContent=experienced.length?`${countNoun(experienced.length,['experience','experiences'])} so far in ${year}: ${new Intl.ListFormat('en',{style:'long',type:'conjunction'}).format(parts)}.`:`Nothing recorded in ${year} yet.`;
+  }
+  const stat=(value,label,drill)=>drill?`<button type="button" class="insight-stat insight-stat-action" data-drill="${drill}"><strong>${value}</strong><span>${label}</span></button>`:`<div class="insight-stat"><strong>${value}</strong><span>${label}</span></div>`;
   $('insightStats').innerHTML=[
-    ['Rated',rated.length,`${pct(rated.length,experienced.length)}% of experienced items`],
-    ['Written reviews',reviewed.length,`${reviewRate}% review rate`],
-    ['Words written',words.toLocaleString(),reviewed.length?`${Math.round(words/reviewed.length)} words per review`:'' ],
-    ['Five-star ratings',five,rated.length?`${pct(five,rated.length)}% of ratings`:'' ]
-  ].map(([l,v,sub],i)=>i===2?`<div class="stat"><strong>${v}</strong><span>${l}</span>${sub?`<small>${sub}</small>`:''}</div>`:`<button type="button" class="stat insight-stat-action" data-drill="${['allRated','allReviewed','','fiveStars'][i]}"><strong>${v}</strong><span>${l}</span>${sub?`<small>${sub}</small>`:''}</button>`).join('');
+    stat(avg,'average rating',''),
+    stat(rated.length.toLocaleString(),rated.length===1?'rating':'ratings','allRated'),
+    stat(reviewed.length.toLocaleString(),reviewed.length===1?'written review':'written reviews','allReviewed'),
+    stat(words.toLocaleString(),'words of review',''),
+    stat(five.toLocaleString(),'rated five','fiveStars')
+  ].join('');
+  const months=new Map();
+  if(!allTime)datedExperiences().filter(e=>datedYear(e)===period).forEach(e=>{const key=experienceDate(e).slice(0,7);if(!months.has(key))months.set(key,[]);months.get(key).push(e)});
+  $('yearCoversSection').hidden=!months.size;
+  $('yearCovers').innerHTML=[...months].map(([key,list])=>`<div class="year-cover-row"><div class="year-cover-month">${esc(monthName(key)||key)}</div><div class="year-cover-list">${list.map(e=>{const w=workFor(e.workId);return `<button type="button" class="year-cover" data-exp="${esc(e.id)}" title="${esc(w.title)}" aria-label="Open ${esc(w.title)}, ${esc(dateLabel(experienceDate(e)))}">${coverHTML(w,'insight-cover',e)}</button>`}).join('')}</div></div>`).join('');
+  bindExperienceClicks($('yearCovers'));
   renderRatingDistribution(rated);
   renderRatingByMedium(rated);
-  renderActivityByYear(experienced);
-  renderRatingTrend(rated);
   renderReviewRateByMedium(experienced);
   renderLongestReviews(reviewed);
+  $('activityPanel').hidden=!allTime;$('trendPanel').hidden=!allTime;
+  if(allTime){renderActivityByYear(experienced);renderRatingTrend(rated);}
 }
+$('insightPeriod').addEventListener('click',event=>{
+  const button=event.target.closest('[data-period]');if(!button)return;
+  insightPeriod=button.dataset.period;renderInsights();
+  $('insightPeriod').querySelector(`[data-period="${insightPeriod}"]`)?.focus();
+});
 
 function insightHasRating(e){return e.rating!==''&&e.rating!=null&&Number.isFinite(Number(e.rating))}
 function insightReview(e){return Boolean(String(e.review||'').trim())}
 function openInsightDrill(kind,value){
-  const all=db.experiences.filter(e=>e.status!=='planned');
+  const all=db.experiences.filter(e=>e.status!=='planned'&&(['year','reviewedYear','ratedYear'].includes(kind)||inInsightPeriod(e)));
   let title='Experiences',matching=[];
   if(kind==='rating'){matching=all.filter(e=>insightHasRating(e)&&Number(e.rating)===Number(value));title=`Rated ${formatRating(Number(value))}/5`}
   else if(kind==='ratedMedium'){matching=all.filter(e=>insightHasRating(e)&&workFor(e.workId)?.type===value);title=`${value} · Rated experiences`}
@@ -1056,24 +1264,25 @@ function openInsightDrill(kind,value){
   else if(kind==='reviewedYear'){matching=all.filter(e=>datedYear(e)===value&&insightReview(e));title=`${value} · Written reviews`}
   else if(kind==='ratedYear'){matching=all.filter(e=>datedYear(e)===value&&insightHasRating(e));title=`${value} · Ratings`}
   else if(kind==='reviewedMedium'){matching=all.filter(e=>workFor(e.workId)?.type===value&&insightReview(e));title=`${value} · Written reviews`}
+  else if(kind==='ratingBin'){matching=all.filter(e=>insightHasRating(e)&&ratingBin(e.rating)===Number(value));title=`Rated ${formatRating(Number(value))}/5`}
   else if(kind==='allRated'){matching=all.filter(insightHasRating);title='All rated experiences'}
   else if(kind==='allReviewed'){matching=all.filter(insightReview);title='All written reviews'}
   else if(kind==='fiveStars'){matching=all.filter(e=>insightHasRating(e)&&Number(e.rating)===5);title='Five-star experiences'}
   else return;
   matching.sort((a,b)=>(experienceDate(b)||b.loggedDate||'').localeCompare(experienceDate(a)||a.loggedDate||'')||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+  if(!['year','reviewedYear','ratedYear'].includes(kind)&&activeInsightPeriod()!=='all')title=`${activeInsightPeriod()} · ${title}`;
   $('insightDialogTitle').textContent=title;
   $('insightDialogCount').textContent=`${matching.length} matching experience${matching.length===1?'':'s'} · Select one to open it`;
   $('insightDialogList').innerHTML=matching.length?matching.map(e=>{
     const w=workFor(e.workId);if(!w)return'';
-    const cover=editionCover(e)||w.cover||'';
-    return `<button type="button" class="insight-drill-item" data-exp="${esc(e.id)}"><span class="mini-cover">${cover?`<img src="${esc(cover)}" alt="" onerror="this.style.display='none'">`:mediumIcon(w.type)}</span><span><span class="drill-title" style="display:block">${esc(w.title)}</span><span class="meta">${esc(w.type)}${e.rating!==''&&e.rating!=null?` · ★ ${formatRating(e.rating)}/5`:''}${experienceDate(e)?` · ${esc(dateLabel(experienceDate(e)))}`:''}</span>${e.review?`<span class="drill-excerpt" style="display:-webkit-box">${esc(e.review)}</span>`:''}</span></button>`;
+    return `<button type="button" class="insight-drill-item" data-exp="${esc(e.id)}">${coverHTML(w,'mini-cover',e)}<span><span class="drill-title" style="display:block">${esc(w.title)}</span><span class="meta">${esc(w.type)}${e.rating!==''&&e.rating!=null?` · ★ ${formatRating(e.rating)}/5`:''}${experienceDate(e)?` · ${esc(dateLabel(experienceDate(e)))}`:''}</span>${e.review?`<span class="drill-excerpt" style="display:-webkit-box">${esc(e.review)}</span>`:''}</span></button>`;
   }).join(''):'<div class="insight-empty">No matching entries.</div>';
   $('insightDialog').showModal();
 }
 $('closeInsightDialog').addEventListener('click',()=>$('insightDialog').close());
 $('insightDialogList').addEventListener('click',event=>{
   const item=event.target.closest('[data-exp]');if(!item)return;
-  $('insightDialog').close();openExperience(item.dataset.exp);
+  $('insightDialog').close();openExperiencePage(item.dataset.exp);
 });
 $('insights').addEventListener('click',event=>{
   const item=event.target.closest('[data-drill]');if(!item)return;
@@ -1085,11 +1294,15 @@ $('insights').addEventListener('keydown',event=>{
   event.preventDefault();openInsightDrill(item.dataset.drill,item.dataset.value||'');
 });
 
+// Quarter ratings are shown in the nearest half-step column; records keep their exact value.
+function ratingBin(rating){return Math.round(Number(rating)*2)/2}
 function renderRatingDistribution(rated){
-  const counts={};rated.forEach(e=>{const r=Number(e.rating);counts[r]=(counts[r]||0)+1});
-  const buckets=Object.keys(counts).map(Number).sort((a,b)=>a-b),max=Math.max(1,...Object.values(counts));
-  $('ratingDistNote').textContent=`${rated.length} ratings`;
-  $('ratingDistribution').innerHTML=rated.length?`<div class="rating-bars">${buckets.map(x=>{const c=counts[x];const label=Number.isInteger(x)?x.toFixed(0):Number.isInteger(x*2)?x.toFixed(1):x.toFixed(2);return `<button type="button" class="rating-col insight-hit" data-drill="rating" data-value="${x}" title="Show ${c} experiences rated ${label}/5" aria-label="Show ${c} experiences rated ${label} out of 5"><span class="rating-count">${c||''}</span><span class="rating-bar" style="height:${c/max*165}px"></span><span class="rating-label">${label}</span></button>`}).join('')}</div>`:'<div class="insight-empty">No ratings yet.</div>';
+  const counts=new Map();let grouped=0;
+  rated.forEach(e=>{const bin=ratingBin(e.rating);if(bin!==Number(e.rating))grouped++;counts.set(bin,(counts.get(bin)||0)+1)});
+  const buckets=[];for(let x=counts.has(0)?0:.5;x<=5;x+=.5)buckets.push(x);
+  const max=Math.max(1,...counts.values());
+  $('ratingDistNote').textContent=`${rated.length} rating${rated.length===1?'':'s'}${grouped?` · ${grouped} quarter rating${grouped===1?'':'s'} shown with the nearest half`:''}`;
+  $('ratingDistribution').innerHTML=rated.length?`<div class="rating-bars">${buckets.map(x=>{const c=counts.get(x)||0,label=formatRating(x);return `<button type="button" class="rating-col insight-hit" data-drill="ratingBin" data-value="${x}"${c?'':' disabled'} aria-label="Show ${c} experience${c===1?'':'s'} rated ${label} out of 5"><span class="rating-count">${c||''}</span><span class="rating-bar" style="height:${c/max*165}px"></span><span class="rating-label">${label}</span></button>`}).join('')}</div>`:'<div class="insight-empty">No ratings yet.</div>';
 }
 function renderRatingByMedium(rated){
   const map={};rated.forEach(e=>{const w=workFor(e.workId);if(!w)return;(map[w.type]||=[]).push(Number(e.rating))});
@@ -1124,85 +1337,62 @@ function renderLongestReviews(reviewed){
 }
 
 function renderCurrent(){
-  const arr=db.experiences.filter(e=>e.status==='in-progress');
+  const arr=db.experiences.filter(e=>e.status==='in-progress'&&workFor(e.workId));
   $('currentSection').classList.toggle('hidden',!arr.length);
-  $('currentList').innerHTML=arr.map(experienceCard).join('');bindExperienceClicks($('currentList'));
+  $('currentList').innerHTML=arr.map(currentCard).join('');bindExperienceClicks($('currentList'));
 }
-const timelineResizeObserver=new ResizeObserver(entries=>entries.forEach(({target})=>layoutSerpentineTimeline(target)));
+function currentCard(e){
+  const w=workFor(e.workId),meta=[w.creator,w.year].filter(Boolean).map(esc).join(' · ');
+  return `<button type="button" class="current-card"${coverAccentAttr(w,e)} data-exp="${esc(e.id)}">${coverHTML(w,'cover',e)}<span class="current-card-text"><span class="eyebrow">${esc(w.type.toUpperCase())}</span><span class="current-title">${esc(w.title)}</span>${meta?`<span class="current-meta">${meta}</span>`:''}<span class="current-meta">${e.startDate?`Started ${esc(dateLabel(e.startDate))}`:'In progress'}</span></span></button>`;
+}
 function datedExperiences(){
   return db.experiences.filter(e=>experienceDate(e)&&e.status!=='planned'&&workFor(e.workId))
     .sort((a,b)=>experienceDate(b).localeCompare(experienceDate(a))||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
 }
-function renderSerpentineTimeline(track,experiences){
-  track.classList.toggle('is-empty',!experiences.length);
-  if(!experiences.length){track.innerHTML='<div class="empty">Your dated experiences will appear here as you add them.</div>';return;}
-  track.innerHTML='<svg class="serpent-path" aria-hidden="true" focusable="false"><path></path><circle r="4"></circle><circle r="4"></circle></svg>'+experiences.map((e,i)=>{
-    const w=workFor(e.workId),row=Math.floor(i/3),column=row%2?3-i%3:i%3+1;
-    const excerpt=String(e.review||'').trim();
-    return `<div class="serpent-stop" style="grid-row:${row+1};grid-column:${column}"><div class="serpent-date"><time datetime="${esc(experienceDate(e))}">${esc(dateLabel(experienceDate(e)))}</time><span class="serpent-direction" aria-hidden="true">${row%2?'←':'→'}</span></div><button type="button" class="serpent-card timeline-item"${coverAccentAttr(w,e)} data-exp="${esc(e.id)}" aria-label="Open ${esc(w.title)}, ${esc(dateLabel(experienceDate(e)))}"><div class="serpent-card-top">${coverHTML(w,'serpent-cover timeline-cover',e)}<div style="min-width:0"><div class="serpent-type">${esc(w.type)}</div><div class="serpent-title">${esc(w.title)}</div><div class="serpent-creator">${esc(w.creator||'')}</div>${e.rating!==''&&e.rating!=null?`<div class="serpent-rating">★ ${esc(formatRating(e.rating))}/5</div>`:''}</div></div>${excerpt?`<p class="serpent-excerpt">${esc(excerpt)}</p>`:e.venue?`<p class="serpent-excerpt serpent-venue">${esc(e.venue)}</p>`:''}</button></div>`;
-  }).join('');
-  bindExperienceClicks(track);
-  // Reversed visual rows retain chronological keyboard and screen-reader order.
-  track.querySelectorAll('[data-exp]').forEach(button=>button.addEventListener('focus',()=>button.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'})));
-  timelineResizeObserver.observe(track);
-  requestAnimationFrame(()=>layoutSerpentineTimeline(track));
+// Home is the diary: every dated experience, newest first, grouped by month.
+let diaryLimit=60;
+function diaryMonth(date){const m=String(date).match(/^(\d{4})(?:-(\d{2}))?/);if(!m)return'Undated';return m[2]?new Date(`${m[1]}-${m[2]}-01T12:00:00`).toLocaleDateString(undefined,{month:'long',year:'numeric'}):m[1]}
+function diaryDay(date){const m=String(date).match(/^\d{4}-\d{2}-(\d{2})/);return m?{num:String(Number(m[1])),weekday:new Date(`${m[0]}T12:00:00`).toLocaleDateString(undefined,{weekday:'short'})}:null}
+function diaryRow(e,showDay){
+  const w=workFor(e.workId),date=experienceDate(e),day=showDay?diaryDay(date):null,review=String(e.review||'').trim();
+  const status=e.status==='in-progress'?'Started':e.status==='dnf'?'Did not finish':'';
+  const meta=[status?`<span class="diary-status">${status}</span>`:'',...[w.creator,w.type,e.venue].filter(Boolean).map(esc)].filter(Boolean).join(' · ');
+  return `<li class="diary-row${review?'':' is-compact'}">${day?`<time class="diary-day" datetime="${esc(date)}"><span class="diary-day-num">${esc(day.num)}</span><span class="diary-day-wd">${esc(day.weekday)}</span></time>`:'<span class="diary-day" aria-hidden="true"></span>'}<button type="button" class="diary-entry timeline-item"${coverAccentAttr(w,e)} data-exp="${esc(e.id)}" aria-label="Open ${esc(w.title)}, ${esc(dateLabel(date))}">${coverHTML(w,'diary-cover timeline-cover',e)}<span class="diary-body"><span class="diary-head"><span class="diary-title">${esc(w.title)}</span>${ratingPips(e.rating)}</span>${meta?`<span class="diary-meta">${meta}</span>`:''}${review?`<span class="diary-excerpt">${esc(review)}</span>`:''}</span></button></li>`;
 }
-function layoutSerpentineTimeline(track){
-  if(!track.offsetWidth)return;
-  const stops=[...track.querySelectorAll('.serpent-stop')],svg=track.querySelector('svg');
-  if(!stops.length||!svg)return;
-  const point=stop=>({x:stop.offsetLeft+stop.offsetWidth/2,y:stop.offsetTop+stop.querySelector('button').offsetTop+stop.querySelector('button').offsetHeight/2});
-  const first=point(stops[0]),startX=stops[0].offsetLeft-16;
-  let path=`M ${startX} ${first.y} H ${first.x}`;
-  for(let row=0;row<Math.ceil(stops.length/3);row++){
-    const lastIndex=Math.min(row*3+2,stops.length-1),last=point(stops[lastIndex]),right=row%2===0;
-    path+=` H ${last.x}`;
-    if(lastIndex+1<stops.length){
-      const next=point(stops[lastIndex+1]),edge=right?track.clientWidth-36:36,outer=right?track.clientWidth-7:7;
-      path+=` H ${edge} Q ${outer} ${last.y} ${outer} ${last.y+29} V ${next.y-29} Q ${outer} ${next.y} ${edge} ${next.y} H ${next.x}`;
-    }
+function renderTimeline(){
+  const track=$('timelineList'),more=$('diaryMoreBtn'),all=datedExperiences(),shown=all.slice(0,diaryLimit);
+  track.classList.toggle('is-empty',!all.length);more.hidden=all.length<=shown.length;
+  if(!all.length){track.innerHTML='<div class="empty">Your dated experiences will appear here as you add them.</div>';return;}
+  const months=[];let previous='';
+  for(const e of shown){
+    const date=experienceDate(e),label=diaryMonth(date);
+    if(months.at(-1)?.label!==label){months.push({label,rows:[]});previous='';}
+    months.at(-1).rows.push(diaryRow(e,date!==previous));previous=date;
   }
-  const lastStop=stops[stops.length-1],end=point(lastStop),right=Math.floor((stops.length-1)/3)%2===0;
-  const endX=lastStop.offsetLeft+(right?lastStop.offsetWidth+16:-16);
-  path+=` H ${endX}`;
-  svg.setAttribute('viewBox',`0 0 ${track.clientWidth} ${track.clientHeight}`);
-  svg.querySelector('path').setAttribute('d',path);
-  svg.querySelectorAll('circle').forEach((circle,i)=>{circle.setAttribute('cx',i?endX:startX);circle.setAttribute('cy',i?end.y:first.y);});
-  updateHomeTimelineArrows();
+  track.innerHTML=months.map(m=>`<section class="diary-month"><h3>${esc(m.label)}</h3><ol class="diary-list">${m.rows.join('')}</ol></section>`).join('');
+  bindExperienceClicks(track);
 }
-function renderHomeTimeline(){
-  renderSerpentineTimeline($('homeTimelineTrack'),datedExperiences().slice(0,12));
-  updateHomeTimelineArrows();
-}
-
-function updateHomeTimelineArrows(){
-  const scroller=$('homeTimelineScroll');if(!scroller)return;
-  const prev=$('homeTimelinePrev'),next=$('homeTimelineNext');
-  if(prev)prev.disabled=scroller.scrollLeft<=2;
-  if(next)next.disabled=scroller.scrollLeft+scroller.clientWidth>=scroller.scrollWidth-3;
-}
-function scrollHomeTimeline(direction){
-  const viewport=$('homeTimelineScroll');if(!viewport)return;
-  viewport.scrollBy({left:direction*Math.max(210,Math.round(viewport.clientWidth*.76)),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
-}
-function renderRecent(){
-  const arr=db.experiences.filter(e=>experienceDate(e)&&e.status!=='planned').sort((a,b)=>experienceDate(b).localeCompare(experienceDate(a))).slice(0,9);
-  $('recentList').innerHTML=arr.length?arr.map(experienceCard).join(''):`<div class="empty">No dated experiences yet.</div>`;bindExperienceClicks($('recentList'));
-}
-function experienceCard(e){
-  const w=workFor(e.workId);if(!w)return'';
-  const when=[e.startDate&&e.endDate&&e.startDate!==e.endDate?`${dateLabel(e.startDate)} → ${dateLabel(e.endDate)}`:dateLabel(e.endDate||e.startDate),e.venue].filter(Boolean).join(' · ');
-  return `<article class="card"${coverAccentAttr(w,e)} data-exp="${e.id}">${coverHTML(w,'cover',e)}<div><div class="eyebrow">${esc(w.type.toUpperCase())}${w.liked?' <span class="liked">♥</span>':''}</div><h4>${esc(w.title)}</h4><div class="meta">${esc(w.creator)}${w.creator&&w.year?' · ':''}${esc(w.year)}</div><div>${statusPill(e.status)}${e.repeat?'<span class="pill">repeat</span>':''}</div><div class="meta">${esc(when||((e.status==='planned')?'Not started':'Date unknown'))}</div>${e.rating!==''?`<div class="rating">${stars(e.rating)}</div>`:''}${e.review?`<p class="review-snippet">${esc(e.review)}</p>`:''}</div></article>`;
-}
+$('diaryMoreBtn').onclick=()=>{
+  const next=diaryLimit;diaryLimit+=100;renderTimeline();
+  $('timelineList').querySelectorAll('[data-exp]')[next]?.focus();
+};
+const MEDIA_PLURALS={Book:'Books',Film:'Films',TV:'TV',Theatre:'Theatre',Videogame:'Videogames',Album:'Albums',Concert:'Concerts',Exhibition:'Exhibitions',Podcast:'Podcasts',Opera:'Opera',Other:'Other'};
+let libraryType='';
 function renderFilters(){
-  const current=$('typeFilter').value;const types=[...new Set(db.works.map(w=>w.type))].sort();
-  $('typeFilter').innerHTML='<option value="">All media</option>'+types.map(t=>`<option ${t===current?'selected':''}>${esc(t)}</option>`).join('');
+  const types=[...new Set(db.works.map(w=>w.type))].sort();if(!types.includes(libraryType))libraryType='';
+  $('typeChips').hidden=types.length<2;
+  $('typeChips').innerHTML=[['','All'],...types.map(t=>[t,MEDIA_PLURALS[t]||t])].map(([value,label])=>`<button type="button" class="media-chip-btn" data-type="${esc(value)}" aria-pressed="${value===libraryType}">${esc(label)}</button>`).join('');
 }
+$('typeChips').addEventListener('click',event=>{
+  const chip=event.target.closest('[data-type]');if(!chip)return;
+  libraryType=chip.dataset.type;renderFilters();renderLibrary();
+  [...$('typeChips').children].find(node=>node.dataset.type===libraryType)?.focus();
+});
 function workStatus(wid){
   const ex=experiencesFor(wid);if(ex.some(e=>e.status==='in-progress'))return'in-progress';if(ex.some(e=>e.status==='completed'))return'completed';if(ex.some(e=>e.status==='dnf'))return'dnf';if(ex.some(e=>e.status==='planned'))return'planned';return'';
 }
 function renderLibrary(){
-  const q=norm($('searchInput').value),type=$('typeFilter').value,status=$('statusFilter').value,content=$('libraryContentFilter')?.value||'',sort=$('librarySort')?.value||'title';
+  const q=norm($('searchInput').value),type=libraryType,status=$('statusFilter').value,content=$('libraryContentFilter')?.value||'',sort=$('librarySort')?.value||'title';
   let works=db.works.filter(w=>(!type||w.type===type)&&(!status||workStatus(w.id)===status)).filter(w=>{
     const ex=experiencesFor(w.id);
     if(content==='favorite'&&!w.liked)return false;
@@ -1215,27 +1405,45 @@ function renderLibrary(){
   else if(sort==='year')works.sort((a,b)=>(Number(b.year)||0)-(Number(a.year)||0)||a.title.localeCompare(b.title));
   else if(sort==='experiences')works.sort((a,b)=>experiencesFor(b.id).length-experiencesFor(a.id).length||a.title.localeCompare(b.title));
   else works.sort((a,b)=>a.title.localeCompare(b.title));
-  if($('libraryCount'))$('libraryCount').textContent=`Showing ${works.length} of ${db.works.length} works`;
+  if($('libraryCount'))$('libraryCount').textContent=works.length===db.works.length?`${db.works.length} work${db.works.length===1?'':'s'}`:`Showing ${works.length} of ${db.works.length} works`;
   $('libraryGrid').innerHTML=works.length?works.map(w=>{
     const ex=experiencesFor(w.id),latest=ex[0],st=workStatus(w.id),avg=workAverageRating(w.id);
-    return `<article class="work-card"${coverAccentAttr(w,latest)} data-work="${w.id}">${coverHTML(w,'work-cover',latest)}<div class="work-info"><div class="eyebrow">${esc(w.type.toUpperCase())}${w.liked?' <span class="liked">♥</span>':''}</div><h3>${esc(w.title)}</h3><div class="meta">${esc(w.creator)}${w.creator&&w.year?' · ':''}${esc(w.year)}</div><div>${statusPill(st)}</div><div class="meta">${ex.length>1?`${ex.length} experiences`:""}${avg!=null?`${ex.length>1?' · ':''}★ ${formatRating(avg)}/5`:''}</div></div></article>`;
+    return `<article class="work-card"${coverAccentAttr(w,latest)} data-work="${w.id}">${coverHTML(w,'work-cover',latest)}<div class="work-info"><div class="eyebrow">${esc(w.type.toUpperCase())}${w.liked?' <span class="liked">♥</span>':''}</div><h3>${esc(w.title)}</h3><div class="meta">${esc(w.creator)}${w.creator&&w.year?' · ':''}${esc(w.year)}</div><div>${statusPill(st)}</div>${avg!=null?`<div class="work-rating">${ratingPips(avg)}</div>`:''}${ex.length>1?`<div class="meta">${ex.length} experiences</div>`:''}</div></article>`;
   }).join(''):`<div class="empty">No matching works.</div>`;
   document.querySelectorAll('[data-work]').forEach(el=>el.onclick=()=>openWork(el.dataset.work));
 }
-function renderTimeline(){renderSerpentineTimeline($('timelineList'),datedExperiences());}
-function bindExperienceClicks(root){root.querySelectorAll('[data-exp]').forEach(el=>el.onclick=()=>openExperience(el.dataset.exp))}
+function bindExperienceClicks(root){root.querySelectorAll('[data-exp]').forEach(el=>el.onclick=()=>openExperiencePage(el.dataset.exp))}
+function openExperiencePage(id){const e=db.experiences.find(x=>x.id===id);if(e)openWork(e.workId,id)}
 function externalLinks(w){
   const parts=[];if(w.external?.letterboxd)parts.push(`<a class="source-link" href="${esc(w.external.letterboxd)}" target="_blank" rel="noopener">Open on Letterboxd ↗</a>`);if(w.external?.openlibraryKey)parts.push(`<a class="source-link" href="https://openlibrary.org${esc(w.external.openlibraryKey.startsWith('/')?w.external.openlibraryKey:'/'+w.external.openlibraryKey)}" target="_blank" rel="noopener">Open Library work ↗</a>`);if(w.external?.googleBooks)parts.push(`<a class="source-link" href="https://books.google.com/books?id=${encodeURIComponent(w.external.googleBooks)}" target="_blank" rel="noopener noreferrer">Google Books ↗</a>`);if(w.external?.tmdb)parts.push(`<a class="source-link" href="https://www.themoviedb.org/${w.type==='TV'?'tv':'movie'}/${esc(w.external.tmdb)}" target="_blank" rel="noopener">TMDB ↗</a>`);return parts.join('')
 }
 function editionSummary(ed){if(!ed)return'';return [ed.publisher,[ed.series,ed.seriesNumber?`n. ${ed.seriesNumber}`:''].filter(Boolean).join(' '),ed.publishYear,ed.language,ed.format,ed.pages?`${ed.pages} pp.`:'',ed.isbn?`ISBN ${ed.isbn}`:'',ed.ean?`EAN ${ed.ean}`:'',ed.identifierValue?`${ed.identifierType||'ID'} ${ed.identifierValue}`:'',ed.sourceId?`UID ${ed.sourceId}`:''].filter(Boolean).join(' · ')}
 function editionLinks(ed){if(!ed)return'';const links=[];if(ed.googleBooksId)links.push(`<a class="source-link" href="https://books.google.com/books?id=${encodeURIComponent(ed.googleBooksId)}" target="_blank" rel="noopener noreferrer">Exact edition on Google Books ↗</a>`);if(ed.olid)links.push(`<a class="source-link" href="https://openlibrary.org${esc(ed.olid.startsWith('/')?ed.olid:'/'+ed.olid)}" target="_blank" rel="noopener">Exact edition on Open Library ↗</a>`);else if(ed.isbn)links.push(`<a class="source-link" href="https://openlibrary.org/isbn/${esc(ed.isbn)}" target="_blank" rel="noopener">ISBN on Open Library ↗</a>`);return links.join('')}
-function openWork(id){
-  const w=workFor(id);if(!w)return;const ex=experiencesFor(id),latest=ex[0];$('workDialogTitle').innerHTML=`<div class="eyebrow">${esc(w.type.toUpperCase())}${w.liked?' <span class="liked">♥</span>':''}</div><h2>${esc(w.title)}</h2>`;
-  const runtime=w.sourceMetadata?.runtime?`${w.sourceMetadata.runtime} min`:'';const genres=Array.isArray(w.sourceMetadata?.genres)?w.sourceMetadata.genres.slice(0,4).join(', '):'';const metaBits=[w.creator,w.year,runtime,genres].filter(Boolean).join(' · ');
-
-  $('workDialogBody').innerHTML=`<div class="work-detail-top"${coverAccentAttr(w,latest)}>${coverHTML(w,'work-detail-cover',latest)}<div style="min-width:0;flex:1"><div class="meta">${esc(metaBits)}</div>${w.aliases?.length?`<div class="meta" style="margin-top:5px">Also known as: ${esc(w.aliases.slice(0,6).join(' · '))}</div>`:''}${externalLinks(w)}<div class="work-actions"><button class="btn" id="addAgain">Log again</button><button class="btn favorite-btn ${w.liked?'active':''}" id="favoriteWorkBtn">${w.liked?'♥ Favorite':'♡ Mark favorite'}</button></div></div></div><div class="work-detail-body"><div class="experience-list">${ex.length?ex.map(e=>`<article class="experience"${coverAccentAttr(w,e)} data-exp="${e.id}"><div><strong>${esc(dateLabel(e.endDate||e.startDate)||STATUS_LABELS[e.status]||'Undated')}</strong> ${statusPill(e.status)}${e.repeat?' <span class="pill">repeat</span>':''}</div><div class="meta">${e.startDate&&e.endDate&&e.startDate!==e.endDate?`${esc(dateLabel(e.startDate))} → ${esc(dateLabel(e.endDate))}`:''}${e.venue?` · ${esc(e.venue)}`:''}${e.source?` · imported from ${esc(e.source)}`:''}</div>${e.viewingLanguage?`<div class="experience-language"><strong>Viewing language:</strong> ${esc(e.viewingLanguage)}</div>`:''}${e.edition?`<div class="experience-edition"><strong>Edition:</strong> ${esc(editionSummary(e.edition)||'edition recorded')} ${editionLinks(e.edition)}</div>`:''}${e.sourceUrl?`<div class="experience-source">${sourcePageLink(e)}</div>`:''}${e.rating!==''?`<div class="rating">${stars(e.rating)}</div>`:''}${quotesForExperience(e).length?`<div class="experience-passages"><div class="eyebrow">PASSAGES</div>${quotesForExperience(e).map(q=>`<div class="saved-passage">${q.featured?'★ ':''}${esc(q.text).replace(/\n/g,'<br>')}${q.note?`<small>${esc(q.note)}</small>`:''}</div>`).join('')}</div>`:''}${e.review?`<p class="experience-review" style="font-family:Georgia,serif;line-height:1.55">${esc(e.review).replace(/\n/g,'<br>')}</p>`:''}${e.tags?.length?`<div class="tag-row">${e.tags.map(t=>`<span class="pill">${esc(t)}</span>`).join('')}</div>`:''}${e.loggedDate?`<div class="meta small" style="margin-top:8px">Logged/added: ${esc(dateLabel(e.loggedDate))}</div>`:''}</article>`).join(''):'<div class="empty">No experiences yet.</div>'}</div></div>`;
-  $('workDialog').showModal();bindExperienceClicks($('workDialogBody'));$('addAgain').onclick=()=>{if(!window.pathosCanEdit||archiveBusy){toast('The editor is unavailable');return;}$('workDialog').close();openEntryDialog({work:w})};$('favoriteWorkBtn').onclick=()=>{if(!window.pathosCanEdit||archiveBusy){toast('Sign in to edit');return;}w.liked=!w.liked;saveDb();renderAll();$('favoriteWorkBtn').classList.toggle('active',w.liked);$('favoriteWorkBtn').textContent=w.liked?'♥ Favorite':'♡ Mark favorite';$('workDialogTitle').innerHTML=`<div class="eyebrow">${esc(w.type.toUpperCase())}${w.liked?' <span class="liked">♥</span>':''}</div><h2>${esc(w.title)}</h2>`;toast(w.liked?'Added to favorites':'Removed from favorites')}
+function experienceHTML(w,e){
+  const range=e.startDate&&e.endDate&&e.startDate!==e.endDate?`${dateLabel(e.startDate)} → ${dateLabel(e.endDate)}`:'';
+  const facts=[range,e.venue,e.source?`imported from ${e.source}`:''].filter(Boolean).map(esc).join(' · ');
+  const quotes=quotesForExperience(e);
+  return `<article class="experience" id="experience-${esc(e.id)}"${coverAccentAttr(w,e)}><div class="experience-head"><strong class="experience-date">${esc(dateLabel(e.endDate||e.startDate)||STATUS_LABELS[e.status]||'Undated')}</strong>${statusPill(e.status)}${e.repeat?'<span class="pill">repeat</span>':''}${ratingPips(e.rating)}<button type="button" class="btn subtle experience-edit" data-edit="${esc(e.id)}">Edit</button></div>${facts?`<div class="experience-facts">${facts}</div>`:''}${e.viewingLanguage?`<div class="experience-language"><strong>Viewing language:</strong> ${esc(e.viewingLanguage)}</div>`:''}${e.edition?`<div class="experience-edition"><strong>Edition:</strong> ${esc(editionSummary(e.edition)||'edition recorded')} ${editionLinks(e.edition)}</div>`:''}${e.sourceUrl?`<div class="experience-source">${sourcePageLink(e)}</div>`:''}${e.review?`<p class="experience-review">${esc(e.review).replace(/\n/g,'<br>')}</p>`:''}${quotes.length?`<div class="experience-passages"><div class="eyebrow">PASSAGES</div>${quotes.map(q=>`<figure class="experience-quote saved-passage"><blockquote>${esc(q.text).replace(/\n/g,'<br>')}</blockquote>${q.note?`<figcaption>${esc(q.note)}</figcaption>`:''}</figure>`).join('')}</div>`:''}${e.tags?.length?`<div class="tag-row">${e.tags.map(t=>`<span class="pill">${esc(t)}</span>`).join('')}</div>`:''}${e.loggedDate?`<div class="meta small" style="margin-top:8px">Logged/added: ${esc(dateLabel(e.loggedDate))}</div>`:''}</article>`;
 }
+function renderWorkPage(id){
+  const w=workFor(id);if(!w)return false;const ex=experiencesFor(id),latest=ex[0];
+  const runtime=w.sourceMetadata?.runtime?`${w.sourceMetadata.runtime} min`:'';const genres=Array.isArray(w.sourceMetadata?.genres)?w.sourceMetadata.genres.slice(0,4).join(', '):'';const metaBits=[w.creator,w.year,runtime,genres].filter(Boolean).join(' · ');
+  // A passage marked "presentation" is the work's epigraph.
+  const epigraph=ex.flatMap(e=>quotesForExperience(e)).find(q=>q.featured);
+  $('workDialogBody').innerHTML=`<header class="work-hero"${coverAccentAttr(w,latest)}>${coverHTML(w,'work-detail-cover',latest)}<div class="work-hero-text"><div class="eyebrow">${esc(w.type.toUpperCase())}${w.liked?' <span class="liked">♥</span>':''}</div><h2 id="workPageTitle">${esc(w.title)}</h2>${metaBits?`<div class="work-hero-meta">${esc(metaBits)}</div>`:''}${w.aliases?.length?`<div class="meta">Also known as: ${esc(w.aliases.slice(0,6).join(' · '))}</div>`:''}${epigraph?`<blockquote class="work-epigraph">${esc(epigraph.text).replace(/\n/g,'<br>')}${epigraph.note?`<footer>${esc(epigraph.note)}</footer>`:''}</blockquote>`:''}<div class="work-links">${externalLinks(w)}</div><div class="work-actions"><button class="btn" id="addAgain">Log again</button><button class="btn favorite-btn ${w.liked?'active':''}" id="favoriteWorkBtn" aria-pressed="${Boolean(w.liked)}">${w.liked?'♥ Favorite':'♡ Mark favorite'}</button></div></div></header><div class="work-page-body"><div class="experience-list">${ex.length?ex.map(e=>experienceHTML(w,e)).join(''):'<div class="empty">No experiences yet.</div>'}</div></div>`;
+  $('addAgain').onclick=()=>{if(!window.pathosCanEdit||archiveBusy){toast('The editor is unavailable');return;}$('workDialog').close();openEntryDialog({work:w})};
+  $('favoriteWorkBtn').onclick=()=>{if(!window.pathosCanEdit||archiveBusy){toast('The editor is unavailable');return;}w.liked=!w.liked;saveDb();renderAll();renderWorkPage(id);$('favoriteWorkBtn').focus();toast(w.liked?'Added to favorites':'Removed from favorites')};
+  $('workDialogBody').querySelectorAll('[data-edit]').forEach(button=>button.onclick=()=>{if(!window.pathosCanEdit||archiveBusy){toast('The editor is unavailable');return;}$('workDialog').close();openExperience(button.dataset.edit)});
+  return true;
+}
+// A work page lists every experience; opening it from one experience scrolls to that one.
+function openWork(id,experienceId=null){
+  if(!renderWorkPage(id))return;
+  const dialog=$('workDialog');if(!dialog.open)dialog.showModal();dialog.scrollTop=0;
+  const focus=experienceId&&$('experience-'+experienceId);
+  if(focus&&focus!==dialog.querySelector('.experience'))focus.scrollIntoView({block:'start'});
+}
+window.addEventListener('pathos-owner-change',event=>{if(!event.detail?.active&&$('workDialog').open)$('workDialog').close()});
 let selectedCatalogItem=null;
 let catalogTimer=null;
 let catalogAbort=null;let catalogPage=null,catalogItems=[],catalogRevision=0;
@@ -1471,7 +1679,7 @@ function layoutNavigation(){
   const widths=new Map(available.map(tab=>[tab,tab.getBoundingClientRect().width]));
   const occupied=withMenu=>{const visible=available.filter(tab=>!tab.hidden);return visible.reduce((total,tab)=>total+widths.get(tab),0)+(withMenu?menu.getBoundingClientRect().width:0)+Math.max(0,visible.length+(withMenu?1:0)-1)*gap};
   if(occupied(false)<=width+.5)menu.hidden=true;
-  else for(const name of ['import','metadata','passages','insights','timeline','library']){
+  else for(const name of ['passages','insights','library']){
     if(occupied(true)<=width+.5)break;
     const tab=available.find(tab=>tab.dataset.view===name);if(tab)tab.hidden=true;
   }
@@ -1492,24 +1700,27 @@ document.fonts.ready.then(scheduleNavigation);
 scheduleNavigation();
 
 function showView(name){
+  // The former Timeline page is now Home's diary.
+  if(name==='timeline')name='home';
   document.querySelectorAll('.tab[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view===name));
   document.querySelectorAll('.menu-view').forEach(x=>x.classList.toggle('active',x.dataset.view===name));
   scheduleNavigation();
   document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===name));
   if($('moreMenu'))$('moreMenu').open=false;
-  requestAnimationFrame(()=>{document.querySelectorAll('.view.active .serpent-track').forEach(layoutSerpentineTimeline);});
+  const settings=$('settingsMenu');
+  if(settings){settings.open=false;settings.querySelector('summary').classList.toggle('active',['metadata','import'].includes(name));}
   window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
 }
-document.querySelectorAll('.tab[data-view],.menu-view').forEach(t=>t.onclick=()=>showView(t.dataset.view));if($('viewFullTimelineBtn'))$('viewFullTimelineBtn').onclick=()=>showView('timeline');if($('homeTimelinePrev'))$('homeTimelinePrev').onclick=()=>scrollHomeTimeline(-1);if($('homeTimelineNext'))$('homeTimelineNext').onclick=()=>scrollHomeTimeline(1);if($('homeTimelineScroll')){
-  const rail=$('homeTimelineScroll');
-  rail.addEventListener('scroll',updateHomeTimelineArrows,{passive:true});
-}
-window.addEventListener('resize',updateHomeTimelineArrows);
-const fullTimelineScroll=$('fullTimelineScroll');
-function updateFullTimelineArrows(){document.querySelectorAll('[data-timeline-pan]').forEach(button=>{button.disabled=Number(button.dataset.timelinePan)<0?fullTimelineScroll.scrollLeft<=2:fullTimelineScroll.scrollLeft+fullTimelineScroll.clientWidth>=fullTimelineScroll.scrollWidth-3;});}
-fullTimelineScroll.addEventListener('scroll',updateFullTimelineArrows,{passive:true});
-new ResizeObserver(updateFullTimelineArrows).observe(fullTimelineScroll);
-document.querySelectorAll('[data-timeline-pan]').forEach(button=>button.onclick=()=>fullTimelineScroll.scrollBy({left:Number(button.dataset.timelinePan)*Math.max(210,fullTimelineScroll.clientWidth*.76),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}));
+document.querySelectorAll('.tab[data-view],.menu-view').forEach(t=>t.onclick=()=>showView(t.dataset.view));
+$('navLogBtn').onclick=()=>openEntryDialog();
+// Menus close on an outside click or Escape.
+document.addEventListener('click',event=>{
+  for(const menu of document.querySelectorAll('details.more-menu[open],details.settings-menu[open]'))if(!menu.contains(event.target))menu.open=false;
+});
+document.addEventListener('keydown',event=>{
+  if(event.key!=='Escape')return;
+  for(const menu of document.querySelectorAll('details.more-menu[open],details.settings-menu[open]')){menu.open=false;menu.querySelector('summary').focus();}
+});
 
 attachCatalogueSearch();
 document.querySelectorAll('[data-today]').forEach(b=>b.addEventListener('click',()=>{const input=$(b.dataset.today);if(!input)return;input.value=localToday();input.dispatchEvent(new Event('input',{bubbles:true}));}));

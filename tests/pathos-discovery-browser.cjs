@@ -107,7 +107,9 @@ const moduleText=`export function createClient(){return {auth:{getUser:async()=>
   await page.setViewportSize({width,height:844});
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Owner header fits the phone');
-  const find=await page.locator('#discoverBtn').boundingBox(),add=await page.locator('#addBtn').boundingBox();assert(find.x+find.width<=add.x,'Find and Add do not overlap');
+  assert.equal(await page.locator('#addBtn').isVisible(),false);assert(await page.locator('#navLogBtn').isVisible(),'On phones, Log sits in the bottom bar');
+  const boxes=await page.locator('.top-actions button:visible,.top-actions summary:visible').evaluateAll(nodes=>nodes.map(node=>node.getBoundingClientRect()).map(({left,right,top,bottom})=>({left,right,top,bottom})));
+  assert(boxes.length>=3&&boxes.every((a,i)=>a.left>=0&&a.right<=width+1&&boxes.slice(i+1).every(b=>a.right<=b.left||b.right<=a.left||a.bottom<=b.top||b.bottom<=a.top)),'Header controls fit and do not overlap');
  }
  await page.locator('.pathos-auth-control').click();await page.waitForFunction(()=>!window.pathosCanEdit);
  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
