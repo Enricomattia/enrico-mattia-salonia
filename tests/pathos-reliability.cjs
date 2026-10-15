@@ -22,7 +22,10 @@ const pixel='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCA
 const fixture={schemaVersion:6,works:[{id:'book-1',title:'Synthetic book',type:'Book',creator:'Test author',cover:pixel,aliases:[],liked:true,external:{isbn:'9780140328721'},sourceMetadata:{}}],experiences:[{id:'reading-1',workId:'book-1',startDate:'2026-10-01',endDate:'2026-10-01',status:'completed',rating:4.5,review:'A review\nwith paragraphs.',quotes:[{id:'quote-1',text:'A saved passage',note:'p. 12',featured:true}],tags:['test'],isPublic:true,edition:{isbn:'9780140328721',ean:'9780140328721',identifierType:'catalogue',identifierValue:'custom-1',sourceId:'storygraph-test-uid',publisher:'Manual publisher',publishYear:'2020',language:'Italian',format:'Paperback',pages:'123',contributors:'Test translator',cover:pixel,source:'manual'}}]};
 const baseline={};
 if(process.env.PATHOS_UPDATE_BASELINE_REF){
-  for(const name of ['index.html','sw.js'])baseline[name]=execFileSync('git',['show',process.env.PATHOS_UPDATE_BASELINE_REF+':public/pathos-personal/'+name],{cwd:root,encoding:'utf8'});
+  for(const name of ['index.html','sw.js','cover-accent.mjs']){
+    try{baseline[name]=execFileSync('git',['show',process.env.PATHOS_UPDATE_BASELINE_REF+':public/pathos-personal/'+name],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','pipe']});}
+    catch(error){if(name!=='cover-accent.mjs')throw error;}
+  }
 }
 const server=http.createServer(async(req,res)=>{
   try{
@@ -30,7 +33,7 @@ const server=http.createServer(async(req,res)=>{
     if(!/^\/(pathos|pathos-personal)\/[a-z0-9.-]+$/i.test(pathname)){res.writeHead(404).end();return;}
     const name=path.basename(pathname);
     let bytes=await fsp.readFile(path.join(publicRoot,pathname));
-    if(pathname.startsWith('/pathos-personal/')&&['index.html','sw.js'].includes(name)){
+    if(pathname.startsWith('/pathos-personal/')&&['index.html','sw.js','cover-accent.mjs'].includes(name)){
       let source=release==='before'&&baseline[name]?baseline[name]:bytes.toString();
       if(name==='sw.js'&&!(release==='before'&&baseline[name]))source=source.replace(/pathos-personal-shell-v\d+/g,'pathos-personal-shell-test-'+release);
       if(name==='index.html')source=source.replace('</head>','<meta name="pathos-test-release" content="'+release+'"></head>');
@@ -307,6 +310,10 @@ async function checkArchiveViews(page){
     // Seed the old release using its own persistence path; no real user data.
     await app.evaluate(value=>{db=value;saveDb();},updateFixture);
     await app.waitForFunction(()=>pendingWrites===0);
+    if(baseline['cover-accent.mjs'])assert.equal(await app.evaluate(async()=>{
+      const cacheName=(await caches.keys()).find(name=>name.startsWith('pathos-personal-shell-'));
+      return (await(await caches.open(cacheName)).match('/pathos-personal/cover-accent.mjs')).text();
+    }),baseline['cover-accent.mjs'],'The old app runs the old cached presentation module');
     const peer=await personal(installed);
     release='current';
     await app.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();await r.update();});
@@ -319,6 +326,10 @@ async function checkArchiveViews(page){
     await app.waitForFunction(()=>document.querySelector('meta[name="pathos-test-release"]').content==='current');
     await app.waitForFunction(()=>window.pathosPersonalReady);
     assert.deepEqual((await archive(app)).experiences,updateFixture.experiences);
+    assert.equal(await app.evaluate(async()=>{
+      const cacheName=(await caches.keys()).find(name=>name.startsWith('pathos-personal-shell-'));
+      return (await(await caches.open(cacheName)).match('/pathos-personal/cover-accent.mjs')).text();
+    }),fs.readFileSync(path.join(publicRoot,'pathos-personal/cover-accent.mjs'),'utf8'),'Accepted update switches to the new cached presentation module');
     assert.equal(await peer.locator('meta[name="pathos-test-release"]').getAttribute('content'),'before');
     await peer.close();
     release='next';
