@@ -2,6 +2,7 @@
 const assert=require('node:assert/strict');
 const http=require('node:http'),fs=require('node:fs/promises'),path=require('node:path'),os=require('node:os');
 const {chromium}=require('playwright');
+const {checkNavigation}=require('./pathos-navigation.cjs');
 const root=path.resolve(__dirname,'../public');
 const server=http.createServer(async(req,res)=>{
  try{const pathname=new URL(req.url,'http://local').pathname;if(!/^\/pathos\/[a-z0-9.-]+$/i.test(pathname))throw new Error();
@@ -31,6 +32,7 @@ const moduleText=`export function createClient(){return {auth:{getUser:async()=>
  await context.addInitScript(value=>{window.__cloud=value;window.__rpc=[];window.__owner=false;},fixture);
  const guest=await context.newPage();guest.on('pageerror',e=>errors.push(e.message));
  await guest.goto(origin+'/pathos/app.html');await guest.waitForFunction(()=>document.querySelector('.pathos-sync-status')?.textContent==='Public archive');
+ await checkNavigation(guest,process.env.PATHOS_UI_SCREENSHOTS);
  assert.equal(await guest.locator('#discoverBtn').isVisible(),false);
  assert.equal(apiCalls.length,0,'Guests do not query the catalogue or load a model');
  // Spoofing the presentation flag cannot bypass the private auth closure.
@@ -49,6 +51,7 @@ const moduleText=`export function createClient(){return {auth:{getUser:async()=>
  };});
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
  await page.goto(origin+'/pathos/app.html');await page.waitForFunction(()=>window.pathosCanEdit);
+ await checkNavigation(page,process.env.PATHOS_UI_SCREENSHOTS);
  const before=await page.evaluate(()=>JSON.stringify(window.pathosBridge.getArchive()));
  await page.locator('#discoverBtn').click();await page.locator('#discoveryQuery').fill('An unfamiliar book');await page.locator('#discoveryForm button').click();
  await page.locator('.discover-result').click();await page.locator('#calculateMatch').waitFor();
@@ -102,10 +105,14 @@ const moduleText=`export function createClient(){return {auth:{getUser:async()=>
  await page.locator('#closeDiscovery').click();
  for(const width of [320,390]){
   await page.setViewportSize({width,height:844});
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Owner header fits the phone');
   const find=await page.locator('#discoverBtn').boundingBox(),add=await page.locator('#addBtn').boundingBox();assert(find.x+find.width<=add.x,'Find and Add do not overlap');
  }
  await page.locator('.pathos-auth-control').click();await page.waitForFunction(()=>!window.pathosCanEdit);
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ assert.equal(await page.locator('.tabs>.tab[data-view="metadata"]').isVisible(),false);assert.equal(await page.locator('.tabs>.tab[data-view="import"]').isVisible(),false);
+ assert.equal(await page.locator('#moreMenu').isVisible(),false,'Signing out leaves only pages that fit in the phone row');
  assert.equal(await page.locator('#discoverBtn').isVisible(),false);assert.equal(await page.locator('#discoveryPreview').textContent(),'');
  assert.equal(await page.evaluate(()=>window.__workers.every(w=>w.terminated)),true);
  if(process.env.PATHOS_REAL_MODEL==='1'){
