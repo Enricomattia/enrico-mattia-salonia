@@ -14,10 +14,7 @@ const courses: Course[] = [
     materials: [
       { label: "Study guide", href: "/docs/game_guide.pdf" },
       { label: "Syllabus", href: "/docs/game_syl.pdf" },
-      { label: "Ultimatum game", href: "/docs/note-ultimatum.pdf" },
-      { label: "Trust game", href: "/docs/note-trust.pdf" },
-      { label: "Public good game", href: "/docs/public-good.pdf" },
-      { label: "Guilt aversion", href: "/docs/guilt-aversion.pdf" },
+      { label: "note", href: "/docs/notes_game.pdf" },
       { label: "Exams 2026", href: "/docs/game-theory-exams-2026.pdf" },
     ],
   },
