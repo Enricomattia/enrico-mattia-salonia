@@ -1320,7 +1320,8 @@ function duplicateExperience(m){
 function workOwned(w){
   if(typeof w?.owned==='boolean')return w.owned;
   const legacy=[w?.sourceMetadata?.owned,...experiencesFor(w?.id).map(e=>e.details?.owned)];
-  return legacy.some(value=>/^(?:yes|true|1|owned)$/i.test(String(value||'').trim()));
+  for(const value of legacy){const text=String(value??'').trim();if(/^(?:yes|true|1|owned)$/i.test(text))return true;if(/^(?:no|false|0|not owned)$/i.test(text))return false;}
+  return false;
 }
 function fillWorkFlags(w,preserveEdits=false){
   const f=$('entryForm');f.dataset.flagsWorkId=w?.id||'';

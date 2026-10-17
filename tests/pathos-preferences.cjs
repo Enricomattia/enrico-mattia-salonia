@@ -19,6 +19,7 @@ async function checkPreferences(page,{backup,restore,outputDirectory}){
   ]};
   fixture.works.forEach(work=>work.aliases=[]);
   await page.evaluate(async value=>{db=value;await saveDb();showView('home');},fixture);
+  assert.equal(await page.evaluate(()=>{const e=db.experiences.find(e=>e.id==='pref-first');e.details={owned:'Yes'};const result=workOwned({id:'pref-book',sourceMetadata:{owned:'No'}});delete e.details;return result;}),false,'An explicit imported No takes precedence over an older Yes');
   assert.equal(await page.locator('#favouritesShelf button').count(),5,'One cover per favourite work, including rereads');
   assert.equal(await page.locator('#favouritesShelf [data-work="pref-book"] img').getAttribute('src'),newCover,'The shelf uses the latest recorded edition');
   assert(await page.locator('#favouritesShelf button').evaluateAll(nodes=>nodes.every(node=>node.children.length===1&&node.firstElementChild.classList.contains('favourite-cover'))),'Only cover artwork, without separate titles or metadata');
