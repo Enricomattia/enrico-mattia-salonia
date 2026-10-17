@@ -20,7 +20,7 @@ const courses: Course[] = [
   },
   {
     title: "Microeconomics I",
-    meta: "Fall 2025 · First-year PhD · Tor Vergata",
+    meta: "Fall 2025, 2026 · First-year PhD · Tor Vergata",
     materials: [
       { label: "Notes", href: "/docs/notes_micro.pdf" },
       { label: "Syllabus", href: "/docs/micro_syl.pdf" },
