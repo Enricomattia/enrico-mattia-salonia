@@ -569,9 +569,15 @@ body{font-family:var(--sans);font-size:15px}
 @container (max-width:46px){.gc-mark{display:none}}
 
 /* Favourite works: one cover per work, using its latest recorded edition. */
-.favourites-section{margin:0 0 38px}
+.home-highlights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px;align-items:start;margin-bottom:36px}
+.home-highlights>section{min-width:0}
+.home-highlights>#currentSection:not(.hidden),.home-highlights>.favourites-section{margin:0}
+.home-highlights:has(#currentSection.hidden)>.favourites-section,.home-highlights:has(#favouritesSection[hidden])>#currentSection{grid-column:1/-1}
+.home-highlights:has(#currentSection.hidden):has(#favouritesSection[hidden]){display:none}
+@media(max-width:850px){.home-highlights{grid-template-columns:minmax(0,1fr);gap:28px;margin-bottom:32px}}
+.favourites-section{margin:0}
 .favourites-section[hidden]{display:none}
-.favourites-section>.section-head{margin:0 0 16px}
+#home .home-highlights .section-head{margin:0 0 16px}
 .favourite-shelf{display:flex;align-items:flex-end;gap:18px;max-width:100%;overflow-x:auto;padding:4px 4px 14px;border-bottom:1px solid var(--line);scroll-snap-type:x proximity;scrollbar-width:thin}
 .favourite-cover-btn{flex:none;padding:0;border:0;border-radius:2px;background:transparent;color:inherit;cursor:pointer;scroll-snap-align:start}
 .favourite-cover-btn:focus-visible{outline:2px solid #387d82;outline-offset:3px}
@@ -593,7 +599,6 @@ body{font-family:var(--sans);font-size:15px}
 .current-title{font:500 21px/1.2 var(--serif);overflow-wrap:anywhere}
 .current-meta{font-size:13px;color:var(--muted)}
 .diary-section{max-width:none}
-#currentSection:not(.hidden)+.diary-section{margin-top:14px}
 .diary-month{margin:0 0 44px}
 .diary-month>h3{margin:0 0 22px;padding-bottom:12px;border-bottom:1px solid var(--ink);font:500 30px/1.2 var(--serif);letter-spacing:-.01em}
 .diary-month-track{position:relative;padding:0 30px}
@@ -777,14 +782,16 @@ body:not(.pathos-owner) .experience-edit{display:none}
 </nav>
 <main>
 <section id="home" class="view active">
-  <section id="favouritesSection" class="favourites-section" hidden aria-labelledby="favouritesHeading">
-    <div class="section-head"><h3 id="favouritesHeading">Favourites</h3></div>
-    <div id="favouritesShelf" class="favourite-shelf"></div>
-  </section>
-  <section id="currentSection" class="hidden">
-    <div class="section-head"><div><h3>Current</h3></div></div>
-    <div id="currentList" class="current-cards"></div>
-  </section>
+  <div class="home-highlights">
+    <section id="currentSection" class="hidden">
+      <div class="section-head"><div><h3>Current</h3></div></div>
+      <div id="currentList" class="current-cards"></div>
+    </section>
+    <section id="favouritesSection" class="favourites-section" hidden aria-labelledby="favouritesHeading">
+      <div class="section-head"><h3 id="favouritesHeading">Favourites</h3></div>
+      <div id="favouritesShelf" class="favourite-shelf"></div>
+    </section>
+  </div>
   <section class="home-timeline-section diary-section" aria-label="Diary, newest first">
     <div id="timelineList" class="diary"></div>
     <div class="diary-more"><button type="button" class="btn" id="diaryMoreBtn" hidden>Show earlier entries</button></div>

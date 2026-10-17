@@ -23,7 +23,7 @@ async function checkPreferences(page,{backup,restore,outputDirectory}){
   assert.equal(await page.locator('#favouritesShelf button').count(),5,'One cover per favourite work, including rereads');
   assert.equal(await page.locator('#favouritesShelf [data-work="pref-book"] img').getAttribute('src'),newCover,'The shelf uses the latest recorded edition');
   assert(await page.locator('#favouritesShelf button').evaluateAll(nodes=>nodes.every(node=>node.children.length===1&&node.firstElementChild.classList.contains('favourite-cover'))),'Only cover artwork, without separate titles or metadata');
-  assert(await page.evaluate(()=>document.getElementById('favouritesSection').getBoundingClientRect().bottom<document.getElementById('currentSection').getBoundingClientRect().top),'Favourites precede Current');
+  assert.deepEqual(await page.locator('.home-highlights>section').evaluateAll(nodes=>nodes.map(node=>node.id)),['currentSection','favouritesSection'],'Reading and focus order follow Current, then Favourites');
   const beforeReading=await page.evaluate(()=>JSON.stringify(db));
   await page.locator('#favouritesShelf [data-work="pref-book"]').click();
   assert.equal(await page.locator('#workPageTitle').innerText(),'The waves');
@@ -86,17 +86,25 @@ async function checkPreferences(page,{backup,restore,outputDirectory}){
     assert.equal(await page.locator('#favouritesShelf button').count(),6);
     await page.context().setOffline(false);
   }
-  for(const width of [1280,390,320]){
+  for(const width of [1280,900,850,768,390,320]){
     await page.setViewportSize({width,height:844});await page.evaluate(()=>showView('home'));
+    const current=await page.locator('#currentSection').boundingBox(),favourites=await page.locator('#favouritesSection').boundingBox();
+    if(width>850){assert(Math.abs(current.y-favourites.y)<=1,'Current and Favourites share the top row');assert(favourites.x>=current.x+current.width+24,'Favourites sit to the right of Current');const a=await page.locator('#currentSection h3').boundingBox(),b=await page.locator('#favouritesHeading').boundingBox();assert(Math.abs(a.y-b.y)<=1,'Both headings align on the same line');}
+    else assert(favourites.y>=current.y+current.height+20,'Narrow layouts stack Current before Favourites');
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'The shelf scrolls inside the page');
     if(width<=390)assert(await page.locator('#favouritesShelf').evaluate(node=>node.scrollWidth>node.clientWidth));
-    if(outputDirectory&&width!==320){await fs.mkdir(outputDirectory,{recursive:true});await page.screenshot({path:path.join(outputDirectory,variant+'-favourites-'+width+'.png')});}
+    if(outputDirectory&&[1280,390].includes(width)){await fs.mkdir(outputDirectory,{recursive:true});await page.screenshot({path:path.join(outputDirectory,variant+'-favourites-'+width+'.png')});}
     await page.evaluate(()=>{showView('insights');insightPeriod='all';renderInsights();});
     assert.match(await page.locator('#insightHeadline').innerText(),/^\d+ experiences$/);
     assert(await page.locator('#insightHeadline').evaluate(node=>parseFloat(getComputedStyle(node).fontSize)<=24),'A quiet opening instead of the large breakdown');
-    if(outputDirectory&&width!==320)await page.screenshot({path:path.join(outputDirectory,variant+'-insights-'+width+'.png')});
+    if(outputDirectory&&[1280,390].includes(width))await page.screenshot({path:path.join(outputDirectory,variant+'-insights-'+width+'.png')});
   }
   await page.setViewportSize({width:1280,height:844});
+  for(const visible of ['current','favourites','neither']){
+    await page.evaluate(visible=>{showView('home');document.getElementById('currentSection').classList.toggle('hidden',visible!=='current');document.getElementById('favouritesSection').hidden=visible!=='favourites';},visible);
+    if(visible==='neither')assert.equal(await page.locator('.home-highlights').isVisible(),false,'No empty row when both sections are hidden');
+    else{const row=await page.locator('.home-highlights').boundingBox(),section=await page.locator(visible==='current'?'#currentSection':'#favouritesSection').boundingBox();assert(Math.abs(section.width-row.width)<=1,'A single section uses the full row');}
+  }
   await page.evaluate(async value=>{db=value;await saveDb();showView('home');},original);
 }
 module.exports={checkPreferences};
