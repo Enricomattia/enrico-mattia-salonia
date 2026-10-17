@@ -59,7 +59,7 @@ export function combineEditions(items) {
     const match = result.find(other => {
       if (item.olid && other.olid === item.olid || item.googleBooksId && other.googleBooksId === item.googleBooksId) return true;
       if (!isbn13(item.isbn) || isbn13(item.isbn) !== isbn13(other.isbn)) return false;
-      return ['publisher','language','publishYear','format'].every(key => !item[key] || !other[key] || (key === 'language' ? languageIdentity(item[key]) === languageIdentity(other[key]) : normal(item[key]) === normal(other[key])));
+      return ['publisher','language','publishYear','format','pages','printing'].every(key => !item[key] || !other[key] || (key === 'language' ? languageIdentity(item[key]) === languageIdentity(other[key]) : normal(item[key]) === normal(other[key])));
     });
     if (!match) result.push({...item});
     else for (const [key,value] of Object.entries(item)) if (!match[key] && value) match[key] = value;
@@ -71,19 +71,28 @@ export function combineBooks(items) {
   // Work and edition results are deliberately not collapsed by title alone.
   return items.filter(Boolean).filter(item => {const key = item.provider + ':' + item.id;if (seen.has(key)) return false;seen.add(key);return true;});
 }
-export async function fetchBookJson(url, { signal } = {}) {
+export async function fetchBookJson(url, { signal, method = 'GET', body } = {}) {
   const controller = new AbortController(), abort = () => controller.abort();
   signal?.addEventListener('abort', abort, { once: true });
   if (signal?.aborted) controller.abort();
   const timer = setTimeout(abort, 8000);
   try {
-    const response = await fetch(url, { signal: controller.signal, credentials: 'omit', redirect: 'error', referrerPolicy: new URL(url).hostname === 'www.googleapis.com' ? 'strict-origin-when-cross-origin' : 'no-referrer' });
+    const response = await fetch(url, { method, body, headers: body ? {'Content-Type':'application/json'} : undefined, signal: controller.signal, credentials: 'omit', redirect: 'error', referrerPolicy: new URL(url,'https://pathos.invalid').hostname === 'www.googleapis.com' ? 'strict-origin-when-cross-origin' : 'no-referrer' });
     if (!response.ok) {const error=new Error('Catalogue unavailable');error.status=response.status;throw error;}
     const reader = response.body.getReader();let size = 0;const chunks = [];
     while (true) {const {done,value} = await reader.read();if (done) break;size += value.length;if (size > 2*1024*1024) {await reader.cancel();throw new Error('Catalogue response too large');}chunks.push(value);}
     const bytes = new Uint8Array(size);let offset = 0;for (const chunk of chunks) {bytes.set(chunk,offset);offset += chunk.length;}
     return JSON.parse(new TextDecoder().decode(bytes));
   } finally {clearTimeout(timer);signal?.removeEventListener('abort',abort);}
+}
+export async function fetchIsbnFallback(raw, { signal } = {}) {
+  const isbn = isbn13(raw); if (!isbn) throw new Error('Enter a valid ISBN');
+  const result = await fetchBookJson('/api/pathos/isbn-fallback', {signal,method:'POST',body:JSON.stringify({isbn})});
+  return (Array.isArray(result.items) ? result.items : []).filter(item=>item && isbn13(item.isbn)===isbn && item.source==='Hoepli');
+}
+function fallbackBook(edition) {
+  return {provider:'hoepli',id:edition.isbn,type:'Book',title:edition.title,creator:edition.creator||'',year:'',cover:edition.cover||'',description:'',genres:[],
+    sourceUrl:edition.sourceUrl||'',label:'Hoepli · exact ISBN',external:{},sourceMetadata:{},suggestedEdition:edition};
 }
 const fields = 'key,title,author_name,first_publish_year,cover_i,subject,editions,editions.key,editions.title,editions.isbn,editions.publisher,editions.publish_date,editions.language,editions.cover_i';
 function options(input) {
@@ -109,9 +118,14 @@ export async function searchBooks(query, input = {}) {
   const results=await Promise.allSettled(sources.map(source=>source.load()));
   if(input.signal?.aborted)throw new DOMException('Lookup cancelled','AbortError');
   const successful=results.filter(result=>result.status==='fulfilled');
-  if(!successful.length)throw new Error('Book catalogues are unavailable. Manual entry still works.');
-  return {items:combineBooks(successful.flatMap(result=>result.value.items)),nextPage:opt.page<99&&successful.some(result=>result.value.more)?opt.page+1:null,
-    warnings:results.flatMap((result,i)=>result.status==='rejected'?[sources[i].name+' is unavailable.']:[])};
+  const items=combineBooks(successful.flatMap(result=>result.value.items));
+  const warnings=results.flatMap((result,i)=>result.status==='rejected'?[sources[i].name+' is unavailable.']:[]);
+  if(isbn&&opt.page===0&&!items.length&&opt.isbnFallback){
+    try{const editions=await opt.isbnFallback(isbn);if(input.signal?.aborted)throw new DOMException('Lookup cancelled','AbortError');items.push(...editions.filter(e=>isbn13(e.isbn)===isbn&&e.title).map(fallbackBook));}
+    catch(error){if(input.signal?.aborted)throw new DOMException('Lookup cancelled','AbortError');warnings.push('The additional ISBN catalogue is unavailable.');}
+  }
+  if(!successful.length&&!items.length)throw new Error('Book catalogues are unavailable. Manual entry still works.');
+  return {items,nextPage:opt.page<99&&successful.some(result=>result.value.more)?opt.page+1:null,warnings};
 }
 export async function isbnEditions(raw, input = {}) {
   const opt=options(input), isbn=isbn13(raw);if(!isbn)throw new Error('Enter a valid ISBN');
@@ -127,8 +141,12 @@ export async function isbnEditions(raw, input = {}) {
   if(opt.googleKey)sources.push(async()=>{const data=await opt.getJson('https://www.googleapis.com/books/v1/volumes?'+new URLSearchParams({q:'isbn:'+isbn,maxResults:'20',key:opt.googleKey}));return(data.items||[]).map(googleBook).filter(item=>item&&isbn13(item.suggestedEdition.isbn)===isbn).map(item=>item.suggestedEdition);});
   const results=await Promise.allSettled(sources.map(load=>load()));
   if(input.signal?.aborted)throw new DOMException('Lookup cancelled','AbortError');
-  if(results.every(result=>result.status==='rejected'))throw new Error('Book catalogues are unavailable. Manual entry still works.');
   const editions=combineEditions(results.flatMap(result=>result.status==='fulfilled'?result.value:[]));
+  if(!editions.length&&opt.isbnFallback){
+    try{const extra=await opt.isbnFallback(isbn);if(input.signal?.aborted)throw new DOMException('Lookup cancelled','AbortError');editions.push(...combineEditions(extra.filter(e=>isbn13(e.isbn)===isbn)));}
+    catch{if(input.signal?.aborted)throw new DOMException('Lookup cancelled','AbortError');throw new Error('No catalogue could supply this edition. Manual entry still works.');}
+  }
+  if(!editions.length&&results.every(result=>result.status==='rejected'))throw new Error('Book catalogues are unavailable. Manual entry still works.');
   if(!editions.length)throw new Error('No exact ISBN match found. Check the number or enter the edition manually.');
   return editions;
 }
