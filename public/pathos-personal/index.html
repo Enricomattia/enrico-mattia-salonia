@@ -583,8 +583,8 @@ body{font-family:var(--sans);font-size:15px}
 @media(forced-colors:active){.pip{border:1px solid CanvasText;background:Canvas}.pip.full,.pip.half{background:CanvasText}}
 
 /* Typographic covers: drawn from the title when no artwork exists or loads. */
-.cover,.work-cover,.work-detail-cover,.mini-cover,.review-list-cover,.timeline-cover,.diary-cover,.insight-cover{position:relative;overflow:hidden;container-type:inline-size}
-.cover>img,.work-cover>img,.work-detail-cover>img,.mini-cover>img,.review-list-cover>img,.timeline-cover>img,.diary-cover>img,.insight-cover>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.favourite-cover,.cover,.work-cover,.work-detail-cover,.mini-cover,.review-list-cover,.timeline-cover,.diary-cover,.insight-cover{position:relative;overflow:hidden;container-type:inline-size}
+.favourite-cover>img,.cover>img,.work-cover>img,.work-detail-cover>img,.mini-cover>img,.review-list-cover>img,.timeline-cover>img,.diary-cover>img,.insight-cover>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .generated-cover{position:absolute;inset:0;display:flex;flex-direction:column;background:#fbfaf6;color:var(--ink);text-align:left;box-shadow:inset 0 0 0 1px rgba(48,51,52,.12)}
 .gc-band{flex:0 0 30%;background:var(--gc)}
 .gc-text{display:none;flex:1 1 auto;flex-direction:column;gap:.45em;min-height:0;overflow:hidden;padding:10% 10% 0;font-size:clamp(12px,11cqi,24px)}
@@ -593,6 +593,19 @@ body{font-family:var(--sans);font-size:15px}
 .gc-mark{margin-top:auto;padding:0 0 9% 10%;font:400 12px/1 var(--serif);color:var(--muted)}
 @container (min-width:96px){.gc-text{display:flex}}
 @container (max-width:46px){.gc-mark{display:none}}
+
+/* Favourite works: one cover per work, using its latest recorded edition. */
+.favourites-section{margin:0 0 38px}
+.favourites-section[hidden]{display:none}
+.favourites-section>.section-head{margin:0 0 16px}
+.favourite-shelf{display:flex;align-items:flex-end;gap:18px;max-width:100%;overflow-x:auto;padding:4px 4px 14px;border-bottom:1px solid var(--line);scroll-snap-type:x proximity;scrollbar-width:thin}
+.favourite-cover-btn{flex:none;padding:0;border:0;border-radius:2px;background:transparent;color:inherit;cursor:pointer;scroll-snap-align:start}
+.favourite-cover-btn:focus-visible{outline:2px solid #387d82;outline-offset:3px}
+.favourite-cover{width:104px;height:156px;border-radius:2px;box-shadow:0 2px 4px rgba(30,30,30,.17)}
+.entry-flags{display:flex;flex-wrap:wrap;gap:12px 28px}
+.entry-flags .check{margin:0;min-height:44px;align-items:center}
+.work-owned{font-size:13px;color:var(--muted)}
+@media(max-width:600px){.favourites-section{margin-bottom:28px}.favourite-shelf{gap:14px}.favourite-cover{width:76px;height:114px}}
 
 /* Home: the month diary follows a winding, cover-coloured thread. */
 #currentSection .section-head{margin:0 0 16px}
@@ -694,11 +707,11 @@ dialog.work-page{width:min(1040px,calc(100vw - 32px));max-height:calc(100dvh - 4
 body:not(.pathos-owner) .experience-edit{display:none}
 
 /* Insights: one period, one sentence, then the charts. */
-.insight-top{display:flex;flex-direction:column;align-items:flex-start;gap:26px;margin:4px 0 56px}
+.insight-top{display:flex;flex-direction:column;align-items:flex-start;gap:18px;margin:4px 0 36px}
 .period-switch{display:inline-flex;padding:4px;border:1px solid var(--line);border-radius:999px;background:var(--paper)}
 .period-switch button{min-height:40px;padding:0 18px;border:0;border-radius:999px;background:transparent;color:var(--ink);font:500 13px var(--sans);cursor:pointer}
 .period-switch button[aria-pressed="true"]{background:var(--ink);color:#fff}
-.insight-headline{margin:0;max-width:22ch;font:400 clamp(32px,5vw,56px)/1.1 var(--serif);letter-spacing:-.02em}
+.insight-headline{margin:0;font:400 24px/1.35 var(--serif);letter-spacing:0;color:var(--muted)}
 .insight-stat-row{display:flex;flex-wrap:wrap;gap:12px 44px;align-self:stretch;padding-top:22px;border-top:1px solid var(--ink)}
 .insight-stat,.insight-stat.insight-stat-action{display:flex;flex-direction:column;gap:2px;width:auto;min-width:110px;margin:-4px -8px;padding:4px 8px;border:0;border-radius:4px;background:transparent;color:inherit;font:inherit;text-align:left}
 .insight-stat strong{font:400 34px/1.15 var(--serif);font-variant-numeric:lining-nums}
@@ -789,6 +802,10 @@ body:not(.pathos-owner) .experience-edit{display:none}
 </nav>
 <main>
 <section id="home" class="view active">
+  <section id="favouritesSection" class="favourites-section" hidden aria-labelledby="favouritesHeading">
+    <div class="section-head"><h3 id="favouritesHeading">Favourites</h3></div>
+    <div id="favouritesShelf" class="favourite-shelf"></div>
+  </section>
   <section id="currentSection" class="hidden">
     <div class="section-head"><div><h3>Current</h3></div></div>
     <div id="currentList" class="current-cards"></div>
@@ -810,7 +827,7 @@ body:not(.pathos-owner) .experience-edit{display:none}
         <option value="">All statuses</option><option value="completed">Completed</option><option value="in-progress">In progress</option><option value="planned">Planned</option><option value="dnf">Did not finish</option>
       </select>
       <select id="libraryContentFilter" class="input">
-        <option value="">Everything</option><option value="favorite">Favorites</option><option value="reviewed">With a review</option><option value="unreviewed">Without a review</option>
+        <option value="">Everything</option><option value="favorite">Favourites</option><option value="reviewed">With a review</option><option value="unreviewed">Without a review</option>
       </select>
       </div></details>
       <select id="librarySort" class="input">
@@ -935,6 +952,7 @@ body:not(.pathos-owner) .experience-edit{display:none}
       <label class="field">Rating (0–5)<input class="input" type="number" min="0" max="5" step="0.25" name="rating" placeholder="Optional"></label>
       <label class="field">Venue / platform<input class="input" name="venue" placeholder="Optional"></label>
       <label class="field span-2 hidden" id="viewingLanguageField">Viewing language<input class="input" name="viewingLanguage" placeholder="e.g. Italian, English"></label>
+      <div class="entry-flags span-2"><label class="check"><input type="checkbox" name="liked"> Favourite</label><label class="check" id="bookOwnedField"><input type="checkbox" name="owned"> I own this book</label></div>
       <label class="field span-2">Review<textarea class="input textarea" name="review" placeholder="What stayed with you?"></textarea></label>
       <details class="entry-details span-2" id="passagesDetails"><summary>Saved passages <span id="passageFormCount" class="entry-summary-note">Optional</span></summary>
         <div class="details-inner"><div class="quote-editor">
@@ -948,7 +966,7 @@ body:not(.pathos-owner) .experience-edit{display:none}
           <div id="editionPanel" class="edition-panel hidden">
             <div class="edition-head"><div><strong>Book edition</strong><div class="catalog-hint">Each reading can use a different edition and cover.</div></div></div>
             <div class="edition-search-row"><input id="editionSearch" class="input" autocomplete="off" aria-label="Filter editions or enter ISBN" placeholder="Filter editions or enter an ISBN…"><button id="editionLookupBtn" type="button" class="btn">Find editions</button></div>
-            <div class="edition-search-row"><label class="field">Language<select id="editionLanguageFilter" class="input"><option value="">Any language</option><option value="ita">Italian</option><option value="eng">English</option><option value="fre">French</option><option value="ger">German</option><option value="spa">Spanish</option><option value="por">Portuguese</option></select></label><label class="field">Publisher<input id="editionPublisherFilter" class="input" placeholder="e.g. Einaudi"></label></div>
+            <div class="edition-search-row"><label class="field">Language<input id="editionLanguageFilter" class="input" name="editionLanguage" list="bookLanguages" placeholder="e.g. Italian"><datalist id="bookLanguages"><option value="Italian"><option value="English"><option value="French"><option value="German"><option value="Spanish"><option value="Portuguese"></datalist></label><label class="field">Publisher<input id="editionPublisherFilter" class="input" placeholder="e.g. Einaudi"></label></div>
             <div id="editionResults" class="edition-results hidden"></div>
             <div class="edition-fields">
               <input type="hidden" name="editionTitle"><input type="hidden" name="editionGoogleBooksId"><input type="hidden" name="editionSourceUrl"><input type="hidden" name="editionOlid"><input type="hidden" name="editionWorkKey">
@@ -961,7 +979,6 @@ body:not(.pathos-owner) .experience-edit{display:none}
               <label class="field">Publication series<input class="input" name="editionSeries" placeholder="e.g. Nuovi Coralli"></label>
               <label class="field">Series number<input class="input" name="editionSeriesNumber" placeholder="e.g. 15"></label>
               <label class="field">Edition year<input class="input" name="editionYear" inputmode="numeric"></label>
-              <label class="field">Language<input class="input" name="editionLanguage" placeholder="e.g. Italian"></label>
               <label class="field">Format<input class="input" name="editionFormat" placeholder="paperback, digital…"></label>
               <label class="field">Pages<input class="input" name="editionPages" inputmode="numeric"></label>
               <label class="field span-3">Exact edition cover URL<input id="editionCoverInput" class="input" name="editionCover"></label>
@@ -1103,6 +1120,8 @@ function prepareBackup(value){
     ids.add(w.id);
     if(typeof w.title!=='string'||!w.title.trim())throw new Error('Every work needs a title.');
     textFields(w,['type','creator','cover']);
+    if(w.owned!=null&&typeof w.owned!=='boolean')throw new Error('Invalid ownership setting.');
+    if(w.liked!=null&&typeof w.liked!=='boolean')throw new Error('Invalid favourite setting.');
     if(w.aliases!=null&&(!Array.isArray(w.aliases)||w.aliases.some(x=>typeof x!=='string')))throw new Error('Invalid work aliases.');
     for(const key of ['external','sourceMetadata'])if(w[key]!=null&&!object(w[key]))throw new Error('Invalid work metadata.');
   }
@@ -1298,7 +1317,32 @@ function duplicateExperience(m){
   return db.experiences.some(e=>e.workId===w.id&&String(e.status||'completed')===String(m.status||'completed')&&String(e.startDate||'')===String(m.startDate||'')&&String(e.endDate||'')===String(m.endDate||'')&&String(e.rating??'')===String(m.rating??'')&&norm(e.review)===norm(m.review));
 }
 
-function renderAll(){renderCurrent();renderFilters();renderLibrary();renderTimeline();renderPassageFilters();renderPassages();renderInsights();renderMetadataKpis()}
+function workOwned(w){
+  if(typeof w?.owned==='boolean')return w.owned;
+  const legacy=[w?.sourceMetadata?.owned,...experiencesFor(w?.id).map(e=>e.details?.owned)];
+  return legacy.some(value=>/^(?:yes|true|1|owned)$/i.test(String(value||'').trim()));
+}
+function fillWorkFlags(w,preserveEdits=false){
+  const f=$('entryForm');f.dataset.flagsWorkId=w?.id||'';
+  for(const [key,value] of [['liked',Boolean(w?.liked)],['owned',w?.type==='Book'&&workOwned(w)]]){
+    const input=f.elements[key];if(!preserveEdits||!input.dataset.changed)input.checked=Boolean(value);
+    if(!preserveEdits)delete input.dataset.changed;
+  }
+}
+for(const key of ['liked','owned'])$('entryForm').elements[key].addEventListener('change',event=>event.target.dataset.changed='true');
+function saveWorkFlags(w,data){
+  if(!w)return;const f=$('entryForm'),known=f.dataset.flagsWorkId===w.id;
+  if(known||f.elements.liked.dataset.changed||data.liked)w.liked=Boolean(data.liked);
+  if(w.type==='Book'&&(known||f.elements.owned.dataset.changed||data.owned))w.owned=Boolean(data.owned);
+}
+function renderFavourites(){
+  const works=(window.pathosCanEdit?db.works:[]).filter(w=>w.liked).sort((a,b)=>workLatestDate(b.id).localeCompare(workLatestDate(a.id))||a.title.localeCompare(b.title));
+  $('favouritesSection').hidden=!works.length;
+  $('favouritesShelf').innerHTML=works.map(w=>{const e=experiencesFor(w.id)[0];return `<button type="button" class="favourite-cover-btn" data-work="${esc(w.id)}" title="${esc(w.title)}" aria-label="Open ${esc(w.title)}">${coverHTML(w,'favourite-cover',e)}</button>`}).join('');
+  $('favouritesShelf').querySelectorAll('[data-work]').forEach(button=>button.onclick=()=>openWork(button.dataset.work));
+}
+window.addEventListener('pathos-owner-change',renderFavourites);
+function renderAll(){renderFavourites();renderCurrent();renderFilters();renderLibrary();renderTimeline();renderPassageFilters();renderPassages();renderInsights();renderMetadataKpis()}
 function workAverageRating(wid){const a=experiencesFor(wid).filter(e=>e.rating!==''&&e.rating!=null).map(e=>Number(e.rating));return a.length?a.reduce((s,x)=>s+x,0)/a.length:null}
 function workLatestDate(wid){return experiencesFor(wid).map(experienceDate).filter(Boolean).sort().pop()||''}
 function reviewWords(e){return String(e.review||'').trim()?String(e.review).trim().split(/\s+/).length:0}
@@ -1336,12 +1380,7 @@ function renderInsights(){
   const rated=experienced.filter(insightHasRating),reviewed=experienced.filter(insightReview);
   const words=reviewed.reduce((sum,e)=>sum+reviewWords(e),0),five=rated.filter(e=>Number(e.rating)===5).length;
   const avg=rated.length?(rated.reduce((sum,e)=>sum+Number(e.rating),0)/rated.length).toFixed(2):'—';
-  if(allTime)$('insightHeadline').textContent=db.works.length?`${countNoun(db.works.length,['work','works'])} across ${countNoun(experienced.length,['experience','experiences'])}.`:'Nothing recorded yet.';
-  else{
-    const byType={};experienced.forEach(e=>{const type=workFor(e.workId)?.type;if(type)byType[type]=(byType[type]||0)+1});
-    const parts=Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([type,n])=>countNoun(n,MEDIA_NOUNS[type]||[type,type]));
-    $('insightHeadline').textContent=experienced.length?`${countNoun(experienced.length,['experience','experiences'])} so far in ${year}: ${new Intl.ListFormat('en',{style:'long',type:'conjunction'}).format(parts)}.`:`Nothing recorded in ${year} yet.`;
-  }
+  $('insightHeadline').textContent=countNoun(experienced.length,['experience','experiences']);
   const stat=(value,label,drill)=>drill?`<button type="button" class="insight-stat insight-stat-action" data-drill="${drill}"><strong>${value}</strong><span>${label}</span></button>`:`<div class="insight-stat"><strong>${value}</strong><span>${label}</span></div>`;
   $('insightStats').innerHTML=[
     stat(avg,'average rating',''),
@@ -1559,22 +1598,22 @@ function openExperiencePage(id){const e=db.experiences.find(x=>x.id===id);if(e)o
 function externalLinks(w){
   const parts=[];if(w.external?.letterboxd)parts.push(`<a class="source-link" href="${esc(w.external.letterboxd)}" target="_blank" rel="noopener">Open on Letterboxd ↗</a>`);if(w.external?.openlibraryKey)parts.push(`<a class="source-link" href="https://openlibrary.org${esc(w.external.openlibraryKey.startsWith('/')?w.external.openlibraryKey:'/'+w.external.openlibraryKey)}" target="_blank" rel="noopener">Open Library work ↗</a>`);if(w.external?.googleBooks)parts.push(`<a class="source-link" href="https://books.google.com/books?id=${encodeURIComponent(w.external.googleBooks)}" target="_blank" rel="noopener noreferrer">Google Books ↗</a>`);if(w.external?.tmdb)parts.push(`<a class="source-link" href="https://www.themoviedb.org/${w.type==='TV'?'tv':'movie'}/${esc(w.external.tmdb)}" target="_blank" rel="noopener">TMDB ↗</a>`);return parts.join('')
 }
-function editionSummary(ed){if(!ed)return'';return [ed.publisher,[ed.series,ed.seriesNumber?`n. ${ed.seriesNumber}`:''].filter(Boolean).join(' '),ed.publishYear,ed.language,ed.format,ed.pages?`${ed.pages} pp.`:'',ed.isbn?`ISBN ${ed.isbn}`:'',ed.ean?`EAN ${ed.ean}`:'',ed.identifierValue?`${ed.identifierType||'ID'} ${ed.identifierValue}`:'',ed.sourceId?`UID ${ed.sourceId}`:''].filter(Boolean).join(' · ')}
+function editionSummary(ed,includeIdentifiers=true){if(!ed)return'';return [ed.publisher,[ed.series,ed.seriesNumber?`n. ${ed.seriesNumber}`:''].filter(Boolean).join(' '),ed.publishYear,ed.language,ed.format,ed.pages?`${ed.pages} pp.`:'',includeIdentifiers&&ed.isbn?`ISBN ${ed.isbn}`:'',includeIdentifiers&&ed.ean?`EAN ${ed.ean}`:'',includeIdentifiers&&ed.identifierValue?`${ed.identifierType||'ID'} ${ed.identifierValue}`:'',includeIdentifiers&&ed.sourceId?`UID ${ed.sourceId}`:''].filter(Boolean).join(' · ')}
 function editionLinks(ed){if(!ed)return'';const links=[];if(ed.googleBooksId)links.push(`<a class="source-link" href="https://books.google.com/books?id=${encodeURIComponent(ed.googleBooksId)}" target="_blank" rel="noopener noreferrer">Exact edition on Google Books ↗</a>`);if(ed.olid)links.push(`<a class="source-link" href="https://openlibrary.org${esc(ed.olid.startsWith('/')?ed.olid:'/'+ed.olid)}" target="_blank" rel="noopener">Exact edition on Open Library ↗</a>`);else if(ed.isbn)links.push(`<a class="source-link" href="https://openlibrary.org/isbn/${esc(ed.isbn)}" target="_blank" rel="noopener">ISBN on Open Library ↗</a>`);return links.join('')}
 function experienceHTML(w,e){
   const range=e.startDate&&e.endDate&&e.startDate!==e.endDate?`${dateLabel(e.startDate)} → ${dateLabel(e.endDate)}`:'';
-  const facts=[range,e.venue,e.source?`imported from ${e.source}`:''].filter(Boolean).map(esc).join(' · ');
+  const facts=[range,e.venue].filter(Boolean).map(esc).join(' · ');
   const quotes=quotesForExperience(e);
-  return `<article class="experience" id="experience-${esc(e.id)}"${coverAccentAttr(w,e)}><div class="experience-head"><strong class="experience-date">${esc(dateLabel(e.endDate||e.startDate)||STATUS_LABELS[e.status]||'Undated')}</strong>${statusPill(e.status)}${e.repeat?'<span class="pill">repeat</span>':''}${ratingPips(e.rating)}<button type="button" class="btn subtle experience-edit" data-edit="${esc(e.id)}">Edit</button></div>${facts?`<div class="experience-facts">${facts}</div>`:''}${e.viewingLanguage?`<div class="experience-language"><strong>Viewing language:</strong> ${esc(e.viewingLanguage)}</div>`:''}${e.edition?`<div class="experience-edition"><strong>Edition:</strong> ${esc(editionSummary(e.edition)||'edition recorded')} ${editionLinks(e.edition)}</div>`:''}${e.sourceUrl?`<div class="experience-source">${sourcePageLink(e)}</div>`:''}${e.review?`<p class="experience-review">${esc(e.review).replace(/\n/g,'<br>')}</p>`:''}${quotes.length?`<div class="experience-passages"><div class="eyebrow">PASSAGES</div>${quotes.map(q=>`<figure class="experience-quote saved-passage"><blockquote>${esc(q.text).replace(/\n/g,'<br>')}</blockquote>${q.note?`<figcaption>${esc(q.note)}</figcaption>`:''}</figure>`).join('')}</div>`:''}${e.tags?.length?`<div class="tag-row">${e.tags.map(t=>`<span class="pill">${esc(t)}</span>`).join('')}</div>`:''}${e.loggedDate?`<div class="meta small" style="margin-top:8px">Logged/added: ${esc(dateLabel(e.loggedDate))}</div>`:''}</article>`;
+  return `<article class="experience" id="experience-${esc(e.id)}"${coverAccentAttr(w,e)}><div class="experience-head"><strong class="experience-date">${esc(dateLabel(e.endDate||e.startDate)||STATUS_LABELS[e.status]||'Undated')}</strong>${statusPill(e.status)}${e.repeat?'<span class="pill">repeat</span>':''}${ratingPips(e.rating)}<button type="button" class="btn subtle experience-edit" data-edit="${esc(e.id)}">Edit</button></div>${facts?`<div class="experience-facts">${facts}</div>`:''}${e.viewingLanguage?`<div class="experience-language"><strong>Viewing language:</strong> ${esc(e.viewingLanguage)}</div>`:''}${e.edition?`<div class="experience-edition"><strong>Edition:</strong> ${esc(editionSummary(e.edition,false)||'edition recorded')}</div>`:''}${e.sourceUrl?`<div class="experience-source">${sourcePageLink(e)}</div>`:''}${e.review?`<p class="experience-review">${esc(e.review).replace(/\n/g,'<br>')}</p>`:''}${quotes.length?`<div class="experience-passages"><div class="eyebrow">PASSAGES</div>${quotes.map(q=>`<figure class="experience-quote saved-passage"><blockquote>${esc(q.text).replace(/\n/g,'<br>')}</blockquote>${q.note?`<figcaption>${esc(q.note)}</figcaption>`:''}</figure>`).join('')}</div>`:''}${e.tags?.length?`<div class="tag-row">${e.tags.map(t=>`<span class="pill">${esc(t)}</span>`).join('')}</div>`:''}${e.loggedDate?`<div class="meta small" style="margin-top:8px">Logged/added: ${esc(dateLabel(e.loggedDate))}</div>`:''}</article>`;
 }
 function renderWorkPage(id){
   const w=workFor(id);if(!w)return false;const ex=experiencesFor(id),latest=ex[0];
   const runtime=w.sourceMetadata?.runtime?`${w.sourceMetadata.runtime} min`:'';const genres=Array.isArray(w.sourceMetadata?.genres)?w.sourceMetadata.genres.slice(0,4).join(', '):'';const metaBits=[w.creator,w.year,runtime,genres].filter(Boolean).join(' · ');
   // A passage marked "presentation" is the work's epigraph.
   const epigraph=ex.flatMap(e=>quotesForExperience(e)).find(q=>q.featured);
-  $('workDialogBody').innerHTML=`<header class="work-hero"${coverAccentAttr(w,latest)}>${coverHTML(w,'work-detail-cover',latest)}<div class="work-hero-text"><div class="eyebrow">${esc(w.type.toUpperCase())}${w.liked?' <span class="liked">♥</span>':''}</div><h2 id="workPageTitle">${esc(w.title)}</h2>${metaBits?`<div class="work-hero-meta">${esc(metaBits)}</div>`:''}${w.aliases?.length?`<div class="meta">Also known as: ${esc(w.aliases.slice(0,6).join(' · '))}</div>`:''}${epigraph?`<blockquote class="work-epigraph">${esc(epigraph.text).replace(/\n/g,'<br>')}${epigraph.note?`<footer>${esc(epigraph.note)}</footer>`:''}</blockquote>`:''}<div class="work-links">${externalLinks(w)}</div><div class="work-actions"><button class="btn" id="addAgain">Log again</button><button class="btn favorite-btn ${w.liked?'active':''}" id="favoriteWorkBtn" aria-pressed="${Boolean(w.liked)}">${w.liked?'♥ Favorite':'♡ Mark favorite'}</button></div></div></header><div class="work-page-body"><div class="experience-list">${ex.length?ex.map(e=>experienceHTML(w,e)).join(''):'<div class="empty">No experiences yet.</div>'}</div></div>`;
+  $('workDialogBody').innerHTML=`<header class="work-hero"${coverAccentAttr(w,latest)}>${coverHTML(w,'work-detail-cover',latest)}<div class="work-hero-text"><div class="eyebrow">${esc(w.type.toUpperCase())}${w.liked?' <span class="liked">♥</span>':''}</div><h2 id="workPageTitle">${esc(w.title)}</h2>${metaBits?`<div class="work-hero-meta">${esc(metaBits)}</div>`:''}${w.aliases?.length?`<div class="meta">Also known as: ${esc(w.aliases.slice(0,6).join(' · '))}</div>`:''}${epigraph?`<blockquote class="work-epigraph">${esc(epigraph.text).replace(/\n/g,'<br>')}${epigraph.note?`<footer>${esc(epigraph.note)}</footer>`:''}</blockquote>`:''}<div class="work-links">${externalLinks(w)}</div>${window.pathosCanEdit&&w.type==='Book'&&workOwned(w)?'<div class="work-owned">In your collection</div>':''}<div class="work-actions"><button class="btn" id="addAgain">Log again</button><button class="btn favorite-btn ${w.liked?'active':''}" id="favoriteWorkBtn" aria-pressed="${Boolean(w.liked)}">${w.liked?'♥ Favourite':'♡ Favourite'}</button></div></div></header><div class="work-page-body"><div class="experience-list">${ex.length?ex.map(e=>experienceHTML(w,e)).join(''):'<div class="empty">No experiences yet.</div>'}</div></div>`;
   $('addAgain').onclick=()=>{if(!window.pathosCanEdit||archiveBusy){toast('Local archive is busy');return;}$('workDialog').close();openEntryDialog({work:w})};
-  $('favoriteWorkBtn').onclick=()=>{if(!window.pathosCanEdit||archiveBusy){toast('Local archive is still loading');return;}w.liked=!w.liked;saveDb();renderAll();renderWorkPage(id);$('favoriteWorkBtn').focus();toast(w.liked?'Added to favorites':'Removed from favorites')};
+  $('favoriteWorkBtn').onclick=()=>{if(!window.pathosCanEdit||archiveBusy){toast('Local archive is still loading');return;}w.liked=!w.liked;saveDb();renderAll();renderWorkPage(id);$('favoriteWorkBtn').focus();toast(w.liked?'Added to favourites':'Removed from favourites')};
   $('workDialogBody').querySelectorAll('[data-edit]').forEach(button=>button.onclick=()=>{if(!window.pathosCanEdit||archiveBusy){toast('Local archive is busy');return;}$('workDialog').close();openExperience(button.dataset.edit)});
   return true;
 }
@@ -1622,7 +1661,7 @@ async function hydrateTmdbSelection(item){
   catch{}return item
 }
 async function selectCatalogItem(item){
-  cancelCatalogue();const current=catalogRevision;if(item.provider==='tmdb')item=await hydrateTmdbSelection({...item});if(current!==catalogRevision)return;selectedCatalogItem=item;const f=$('entryForm');f.elements.title.value=item.title||'';f.elements.creator.value=item.creator||'';f.elements.year.value=item.year||'';f.elements.cover.value=item.type==='Book'?(item.provider==='local'?item.cover||'':''):item.cover||'';renderCatalogResults([]);updateEditionPanel();
+  cancelCatalogue();const current=catalogRevision;if(item.provider==='tmdb')item=await hydrateTmdbSelection({...item});if(current!==catalogRevision)return;selectedCatalogItem=item;const f=$('entryForm');if(item.provider==='local')fillWorkFlags(workFor(item.id),true);f.elements.title.value=item.title||'';f.elements.creator.value=item.creator||'';f.elements.year.value=item.year||'';f.elements.cover.value=item.type==='Book'?(item.provider==='local'?item.cover||'':''):item.cover||'';renderCatalogResults([]);updateEditionPanel();
   if(item.type==='Book'){
     clearEditionForm();const localW=item.provider==='local'?workFor(item.id):null;const localEd=localW?experiencesFor(localW.id).find(e=>e.edition)?.edition:null;if(localEd)fillEditionForm(localEd);
     const workKey=item.external?.openlibraryKey||localEd?.workKey||'';if(workKey)loadEditionsForWork(workKey,item.suggestedEdition);else if(item.suggestedEdition){editionCandidates=[normalizeEdition(item.suggestedEdition)];renderEditionResults('');$('editionCurrent').textContent='Select this edition if it matches your copy, or search its ISBN.'}else $('editionCurrent').textContent='Enter the exact edition manually or look it up by ISBN.';
@@ -1707,14 +1746,14 @@ function validateDateOrder(report=false){
   end.setCustomValidity(bad?'Finish date cannot be earlier than the start date.':'');err?.classList.toggle('hidden',!bad);
   if(bad&&report)end.reportValidity();return !bad;
 }
-function updateEditionPanel(){const f=$('entryForm');if(!f)return;$('viewingLanguageField').classList.toggle('hidden',f.elements.type.value!=='Film');const show=f.elements.type.value==='Book';$('bookEditionDetails')?.classList.toggle('hidden',!show);$('editionPanel')?.classList.toggle('hidden',!show);if(show)renderEditionPreview()}
+function updateEditionPanel(){const f=$('entryForm');if(!f)return;$('viewingLanguageField').classList.toggle('hidden',f.elements.type.value!=='Film');const show=f.elements.type.value==='Book';$('bookOwnedField').classList.toggle('hidden',!show);$('bookEditionDetails')?.classList.toggle('hidden',!show);$('editionPanel')?.classList.toggle('hidden',!show);if(show)renderEditionPreview()}
 function clearEditionForm(){const f=$('entryForm');if(!f)return;['editionTitle','editionGoogleBooksId','editionSourceUrl','editionIsbn','editionEan','editionOtherType','editionOtherId','editionSourceId','editionPublisher','editionSeries','editionSeriesNumber','editionYear','editionLanguage','editionFormat','editionPages','editionCover','editionOlid','editionWorkKey'].forEach(k=>{if(f.elements[k])f.elements[k].value=''});selectedEdition=null;cancelEditionLookup();editionCandidates=[];editionWorkKey='';editionNext=null;editionVisible=30;$('editionSearch').value='';$('editionLanguageFilter').value='';$('editionPublisherFilter').value='';$('editionResults')?.classList.add('hidden');if($('editionResults'))$('editionResults').innerHTML='';if($('editionCurrent'))$('editionCurrent').textContent='';renderEditionPreview()}
 function editionFromForm(){const f=$('entryForm');return normalizeEdition({title:f.elements.editionTitle?.value,googleBooksId:f.elements.editionGoogleBooksId?.value,sourceUrl:f.elements.editionSourceUrl?.value,isbn:f.elements.editionIsbn?.value,ean:f.elements.editionEan?.value,identifierType:f.elements.editionOtherType?.value,identifierValue:f.elements.editionOtherId?.value,sourceId:f.elements.editionSourceId?.value,publisher:f.elements.editionPublisher?.value,series:f.elements.editionSeries?.value,seriesNumber:f.elements.editionSeriesNumber?.value,publishYear:f.elements.editionYear?.value,language:f.elements.editionLanguage?.value,format:f.elements.editionFormat?.value,pages:f.elements.editionPages?.value,cover:f.elements.editionCover?.value,olid:f.elements.editionOlid?.value,workKey:f.elements.editionWorkKey?.value,contributors:selectedEdition?.contributors||'',source:selectedEdition?.source||'manual'})}
 function renderEditionPreview(){const box=$('editionCoverPreview');if(!box)return;const url=$('entryForm')?.elements?.editionCover?.value?.trim()||'';box.innerHTML=url?`<img src="${esc(url)}" alt="">`:'📚';const img=box.querySelector('img');if(img){img.onload=()=>{box.title='Exact edition cover'};img.onerror=()=>{box.textContent='📚';box.title='That cover URL did not return an image';const cur=$('editionCurrent');if(cur&&!/Loading|Looking up/.test(cur.textContent||''))cur.textContent='That cover URL does not return an image. You can choose your own cover below.'}}}
 function fillEditionForm(ed){ed=normalizeEdition(ed);if(!ed)return;selectedEdition=ed;const f=$('entryForm');const vals={editionTitle:ed.title,editionGoogleBooksId:ed.googleBooksId,editionSourceUrl:ed.sourceUrl,editionIsbn:ed.isbn,editionEan:ed.ean,editionOtherType:ed.identifierType,editionOtherId:ed.identifierValue,editionSourceId:ed.sourceId,editionPublisher:ed.publisher,editionSeries:ed.series,editionSeriesNumber:ed.seriesNumber,editionYear:ed.publishYear,editionLanguage:languageLabel(ed.language),editionFormat:ed.format,editionPages:ed.pages,editionCover:ed.cover,editionOlid:ed.olid,editionWorkKey:ed.workKey};Object.entries(vals).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v||''});$('editionCurrent').textContent=editionSummary(ed)||'Edition selected';renderEditionPreview()}
 function editionSearchText(ed){return norm([ed.isbn,ed.ean,ed.identifierType,ed.identifierValue,ed.sourceId,ed.title,ed.googleBooksId,ed.publisher,ed.series,ed.seriesNumber,ed.publishYear,ed.language,languageLabel(ed.language),ed.format,ed.pages,ed.olid].filter(Boolean).join(' '))}
-function renderEditionResults(filter=''){
-  const box=$('editionResults'),filters=editionFilters(),q=norm(filter);let matches=editionCandidates.filter(ed=>(!q||editionSearchText(ed).includes(q))&&(!filters.language||norm(languageLabel(ed.language))===norm(languageLabel(filters.language)))&&(!filters.publisher||norm(ed.publisher).includes(norm(filters.publisher))));const arr=matches.slice(0,editionVisible);
+function renderEditionResults(filter='',ignoreFilters=false){
+  const box=$('editionResults'),filters=ignoreFilters?{language:'',publisher:''}:editionFilters(),q=norm(filter);let matches=editionCandidates.filter(ed=>(!q||editionSearchText(ed).includes(q))&&(!filters.language||norm(languageLabel(ed.language))===norm(languageLabel(filters.language)))&&(!filters.publisher||norm(ed.publisher).includes(norm(filters.publisher))));const arr=matches.slice(0,editionVisible);
   box.innerHTML=arr.length?arr.map((ed,i)=>`<button type="button" class="edition-result" data-ed="${i}"><span class="edition-thumb">${ed.cover?`<img src="${esc(ed.cover)}" alt="">`:'📚'}</span><span><strong>${esc(ed.title||ed.publisher||'Edition')}</strong><span class="meta">${esc([ed.publisher,ed.publishYear,languageLabel(ed.language),ed.format,ed.pages?ed.pages+' pp.':'',ed.isbn?'ISBN '+ed.isbn:'',ed.source].filter(Boolean).join(' · '))}</span></span></button>`).join(''):'<div class="catalog-message">No matching edition loaded. Try Find editions, load more, or enter it manually.</div>';
   box.classList.remove('hidden');box.querySelectorAll('[data-ed]').forEach((button,i)=>button.onclick=()=>{cancelEditionLookup();fillEditionForm(arr[i]);box.classList.add('hidden')});
   if(matches.length>editionVisible||editionNext!==null){const more=document.createElement('button');more.type='button';more.className='btn';more.textContent=matches.length>editionVisible?'Show more editions':'Load more editions';more.onclick=()=>{if(matches.length>editionVisible){editionVisible+=30;renderEditionResults($('editionSearch').value)}else loadEditionsForWork(editionWorkKey,null,editionNext)};box.append(more)}
@@ -1729,7 +1768,7 @@ async function editionLookup(){
   const q=$('editionSearch').value.trim(),api=await bookCatalogue;
   if(/^(?:97[89])?[0-9Xx\- ]{10,17}$/.test(q)){
     cancelEditionLookup();editionAbort=new AbortController();const current=editionRevision,signal=editionAbort.signal;$('editionLookupBtn').disabled=true;$('editionCurrent').textContent='Looking up exact ISBN…';
-    try{const editions=await api.isbnEditions(q,bookOptions(signal));if(current!==editionRevision||signal.aborted)return;editionCandidates=editions.map(normalizeEdition);editionNext=null;editionVisible=30;$('editionLanguageFilter').value='';$('editionPublisherFilter').value='';$('editionCurrent').textContent='Select the edition matching your copy.';renderEditionResults('')}catch(e){if(current===editionRevision&&e.name!=='AbortError')$('editionCurrent').textContent=e.message}finally{if(current===editionRevision)$('editionLookupBtn').disabled=false}return;
+    try{const editions=await api.isbnEditions(q,bookOptions(signal));if(current!==editionRevision||signal.aborted)return;editionCandidates=editions.map(normalizeEdition);editionNext=null;editionVisible=30;$('editionCurrent').textContent='Select the edition matching your copy.';renderEditionResults('',true)}catch(e){if(current===editionRevision&&e.name!=='AbortError')$('editionCurrent').textContent=e.message}finally{if(current===editionRevision)$('editionLookupBtn').disabled=false}return;
   }
   const wk=editionWorkKey||$('entryForm').elements.editionWorkKey?.value||selectedCatalogItem?.external?.openlibraryKey||'';if(wk)await loadEditionsForWork(wk);else $('editionCurrent').textContent='Choose an Open Library work or enter an ISBN. You can also enter the edition manually.';
 }
@@ -1792,17 +1831,17 @@ function openEntryDialog(opts={}){
   if(!window.pathosCanEdit||archiveBusy){toast('Local archive is still loading');return;}
   editingExperienceId=null;selectedCatalogItem=null;$('deleteBtn').classList.add('hidden');$('entryForm').reset();clearEditionForm();renderQuoteEditor([]);const w=opts.work;
   if(w){['title','type','creator','year','cover'].forEach(k=>{if($('entryForm').elements[k])$('entryForm').elements[k].value=w[k]||''});$('entryForm').elements.repeat.checked=true;selectedCatalogItem=localItemFromWork(w);const lastEd=experiencesFor(w.id).find(e=>e.edition)?.edition;if(lastEd)fillEditionForm(lastEd)}
-  attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(false);$('entryDialog').showModal();
+  fillWorkFlags(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(false);$('entryDialog').showModal();
 }
 function openExperience(id){
   if(archiveBusy)return;
   if(!window.pathosCanEdit){const item=db.experiences.find(x=>x.id===id);if(item)openWork(item.workId);return;}
-  const e=db.experiences.find(x=>x.id===id);if(!e)return;const w=workFor(e.workId);if(!w)return;editingExperienceId=id;const f=$('entryForm');f.reset();clearEditionForm();Object.entries({title:w.title,type:w.type,creator:w.creator,year:w.year,cover:w.cover,status:e.status||'completed',startDate:e.startDate,endDate:e.endDate,rating:e.rating,venue:e.venue,viewingLanguage:e.viewingLanguage,sourceUrl:e.sourceUrl||'',tags:(e.tags||[]).join(', '),review:e.review}).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??''});f.elements.repeat.checked=e.repeat;renderQuoteEditor(e.quotes||[]);if(e.edition)fillEditionForm(e.edition);selectedCatalogItem=localItemFromWork(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(true);$('deleteBtn').classList.remove('hidden');$('entryDialog').showModal();void findPageImages(true);
+  const e=db.experiences.find(x=>x.id===id);if(!e)return;const w=workFor(e.workId);if(!w)return;editingExperienceId=id;const f=$('entryForm');f.reset();clearEditionForm();Object.entries({title:w.title,type:w.type,creator:w.creator,year:w.year,cover:w.cover,status:e.status||'completed',startDate:e.startDate,endDate:e.endDate,rating:e.rating,venue:e.venue,viewingLanguage:e.viewingLanguage,sourceUrl:e.sourceUrl||'',tags:(e.tags||[]).join(', '),review:e.review}).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??''});fillWorkFlags(w);f.elements.repeat.checked=e.repeat;renderQuoteEditor(e.quotes||[]);if(e.edition)fillEditionForm(e.edition);selectedCatalogItem=localItemFromWork(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(true);$('deleteBtn').classList.remove('hidden');$('entryDialog').showModal();void findPageImages(true);
 }
 $('entryForm').addEventListener('submit',ev=>{if(!window.pathosCanEdit||archiveBusy){ev.preventDefault();return;}
-  ev.preventDefault();const f=new FormData(ev.currentTarget);let data=Object.fromEntries(f.entries());if(SINGLE_DATE_MEDIA[data.type])data.startDate='';if(!validateDateOrder(true))return;data.repeat=f.get('repeat')==='on';data.quotes=quotesFromEditor();data=mergeSelectedCatalog(data);if(data.type==='Book')data.edition=editionFromForm();
-  if(editingExperienceId){const e=db.experiences.find(x=>x.id===editingExperienceId);const oldWork=workFor(e.workId);if(oldWork&&norm(oldWork.title)===norm(data.title)){Object.assign(oldWork,{title:data.title,type:data.type,creator:data.creator,year:data.year,cover:data.cover||oldWork.cover});oldWork.external=Object.assign(oldWork.external||{},data.external||{});oldWork.sourceMetadata=Object.assign(oldWork.sourceMetadata||{},data.sourceMetadata||{});oldWork.aliases=uniqueText([...(oldWork.aliases||[]),...(data.aliases||[])])}else e.workId=findOrCreateWork(data).id;Object.assign(e,{startDate:data.startDate,endDate:data.endDate,rating:data.rating===''?'':Number(data.rating),venue:data.venue,viewingLanguage:data.type==='Film'?String(data.viewingLanguage||'').trim():'',sourceUrl:safeWebUrl(data.sourceUrl||''),review:data.review,tags:String(data.tags||'').split(',').map(s=>s.trim()).filter(Boolean),repeat:data.repeat,status:data.status||'completed',quotes:normalizeQuotes(data.quotes||[]),edition:data.type==='Book'?normalizeEdition(data.edition):null});const w=workFor(e.workId);if(e.edition?.cover&&w)w.cover=e.edition.cover;toast('Saving changes…')}
-  else{addExperience(data);toast('Saving experience…')}$('entryDialog').close();saveDb();
+  ev.preventDefault();const f=new FormData(ev.currentTarget);let data=Object.fromEntries(f.entries());if(SINGLE_DATE_MEDIA[data.type])data.startDate='';if(!validateDateOrder(true))return;data.repeat=f.get('repeat')==='on';data.liked=f.get('liked')==='on';data.owned=f.get('owned')==='on';data.quotes=quotesFromEditor();data=mergeSelectedCatalog(data);if(data.type==='Book')data.edition=editionFromForm();
+  if(editingExperienceId){const e=db.experiences.find(x=>x.id===editingExperienceId);const oldWork=workFor(e.workId);if(oldWork&&norm(oldWork.title)===norm(data.title)){Object.assign(oldWork,{title:data.title,type:data.type,creator:data.creator,year:data.year,cover:data.cover||oldWork.cover});oldWork.external=Object.assign(oldWork.external||{},data.external||{});oldWork.sourceMetadata=Object.assign(oldWork.sourceMetadata||{},data.sourceMetadata||{});oldWork.aliases=uniqueText([...(oldWork.aliases||[]),...(data.aliases||[])])}else e.workId=findOrCreateWork(data).id;Object.assign(e,{startDate:data.startDate,endDate:data.endDate,rating:data.rating===''?'':Number(data.rating),venue:data.venue,viewingLanguage:data.type==='Film'?String(data.viewingLanguage||'').trim():'',sourceUrl:safeWebUrl(data.sourceUrl||''),review:data.review,tags:String(data.tags||'').split(',').map(s=>s.trim()).filter(Boolean),repeat:data.repeat,status:data.status||'completed',quotes:normalizeQuotes(data.quotes||[]),edition:data.type==='Book'?normalizeEdition(data.edition):null});const w=workFor(e.workId);saveWorkFlags(w,data);if(e.edition?.cover&&w)w.cover=e.edition.cover;toast('Saving changes…')}
+  else{const added=addExperience(data);saveWorkFlags(workFor(added.workId),data);toast('Saving experience…')}$('entryDialog').close();saveDb();
 });
 $('deleteBtn').onclick=()=>{if(!window.pathosCanEdit||archiveBusy)return;if(!editingExperienceId)return;if(confirm('Delete this experience?')){const e=db.experiences.find(x=>x.id===editingExperienceId);db.experiences=db.experiences.filter(x=>x.id!==editingExperienceId);if(e&&!db.experiences.some(x=>x.workId===e.workId))db.works=db.works.filter(w=>w.id!==e.workId);$('entryDialog').close();saveDb();toast('Deleting locally…')}};
 $('addQuoteBtn').onclick=()=>appendQuoteRow();$('addBtn').onclick=()=>openEntryDialog();if($('heroAddBtn'))$('heroAddBtn').onclick=()=>openEntryDialog();$('closeDialog').onclick=$('cancelBtn').onclick=()=>$('entryDialog').close();$('closeWorkDialog').onclick=()=>$('workDialog').close();

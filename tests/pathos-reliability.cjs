@@ -14,13 +14,14 @@ const {checkTimeline}=require('./pathos-timeline.cjs');
 const {checkEntryDetails}=require('./pathos-entry-details.cjs');
 const {checkCoverAccents}=require('./pathos-cover-accent.cjs');
 const {checkNavigation,navigatePage}=require('./pathos-navigation.cjs');
+const {checkPreferences}=require('./pathos-preferences.cjs');
 const root=path.resolve(__dirname,'..');
 const publicRoot=path.join(root,'public');
 const launch={headless:true,...(process.env.PATHOS_BROWSER==='chromium'?{}:{channel:process.env.PATHOS_BROWSER||'msedge'})};
 let release='current';
 const copy=x=>JSON.parse(JSON.stringify(x));
 const pixel='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6v7sAAAAASUVORK5CYII=';
-const fixture={schemaVersion:6,works:[{id:'book-1',title:'Synthetic book',type:'Book',creator:'Test author',cover:pixel,aliases:[],liked:true,external:{isbn:'9780140328721'},sourceMetadata:{}}],experiences:[{id:'reading-1',workId:'book-1',startDate:'2026-10-01',endDate:'2026-10-01',status:'completed',rating:4.5,review:'A review\nwith paragraphs.',quotes:[{id:'quote-1',text:'A saved passage',note:'p. 12',featured:true}],tags:['test'],isPublic:true,edition:{isbn:'9780140328721',ean:'9780140328721',identifierType:'catalogue',identifierValue:'custom-1',sourceId:'storygraph-test-uid',publisher:'Manual publisher',publishYear:'2020',language:'Italian',format:'Paperback',pages:'123',contributors:'Test translator',cover:pixel,source:'manual'}}]};
+const fixture={schemaVersion:6,works:[{id:'book-1',title:'Synthetic book',type:'Book',creator:'Test author',cover:pixel,aliases:[],liked:true,owned:true,external:{isbn:'9780140328721'},sourceMetadata:{}}],experiences:[{id:'reading-1',workId:'book-1',startDate:'2026-10-01',endDate:'2026-10-01',status:'completed',rating:4.5,review:'A review\nwith paragraphs.',quotes:[{id:'quote-1',text:'A saved passage',note:'p. 12',featured:true}],tags:['test'],isPublic:true,edition:{isbn:'9780140328721',ean:'9780140328721',identifierType:'catalogue',identifierValue:'custom-1',sourceId:'storygraph-test-uid',publisher:'Manual publisher',publishYear:'2020',language:'Italian',format:'Paperback',pages:'123',contributors:'Test translator',cover:pixel,source:'manual'}}]};
 const baseline={};
 if(process.env.PATHOS_UPDATE_BASELINE_REF){
   for(const name of ['index.html','sw.js','cover-accent.mjs','book-catalogue.mjs']){
@@ -158,6 +159,7 @@ async function checkArchiveViews(page){
     assert.equal((await disk(page)).experiences.length,0);
   });
   await run('movie language, edition series, repeat isolation, round trip and offline reload',()=>checkEntryDetails(page,{backup,restore}));
+  await run('favourite shelf, book ownership, single language field, quiet insights and clean reading pages',()=>checkPreferences(page,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS}));
   await run('restore/export round trip, preserved edition and passage IDs, cancellation and durable undo',async()=>{
     await restore(page,fixture);assert.deepEqual((await archive(page)).experiences,fixture.experiences);
     const exported=await backup(page);assert.deepEqual(exported.experiences,fixture.experiences);
@@ -390,6 +392,7 @@ async function checkArchiveViews(page){
     await owner.waitForFunction(()=>window.pathosCanEdit);
     await checkNavigation(owner,process.env.PATHOS_UI_SCREENSHOTS);
     await checkEntryDetails(owner,{backup,restore});
+    await checkPreferences(owner,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS});
     await owner.evaluate(()=>{db.experiences[0].review='Cloud edit';return saveDb();});
     assert.equal(await owner.evaluate(()=>window.mockCloud.experiences[0].review),'Cloud edit');
     assert.deepEqual(await owner.evaluate(()=>{db.experiences[0].review='Queued A';const a=saveDb();db.experiences[0].review='Queued B';return Promise.all([a,saveDb()]);}),[true,true]);
