@@ -1,5 +1,5 @@
 /* Πathos Personal offline application shell. No access to /pathos or Supabase. */
-const CACHE='pathos-personal-shell-v15';
+const CACHE='pathos-personal-shell-v20';
 const COVERS='pathos-personal-covers-v1';
 const SHELL=[
  '/pathos-personal/index.html',
@@ -43,7 +43,7 @@ self.addEventListener('fetch',event=>{
    }
    return;
  }
- if(req.destination==='image'&&['covers.openlibrary.org','image.tmdb.org','books.google.com','books.googleusercontent.com'].includes(url.hostname)){
+ if(req.destination==='image'&&['covers.openlibrary.org','image.tmdb.org','books.google.com','books.googleusercontent.com','copertine.hoepli.it'].includes(url.hostname)){
    event.respondWith(caches.open(COVERS).then(async cache=>{
      const cached=await cache.match(req);
      if(cached)return cached;

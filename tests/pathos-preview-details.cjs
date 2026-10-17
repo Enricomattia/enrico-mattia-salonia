@@ -7,6 +7,8 @@ const {chromium}=require('playwright');
 const {checkEntryDetails}=require('./pathos-entry-details.cjs');
 const {checkCoverAccents}=require('./pathos-cover-accent.cjs');
 const {checkNavigation}=require('./pathos-navigation.cjs');
+const {checkTimeline}=require('./pathos-timeline.cjs');
+const {checkPreferences}=require('./pathos-preferences.cjs');
 const target=new URL(process.env.PATHOS_PREVIEW_URL||'https://invalid.invalid');
 assert.match(target.hostname,/^deploy-preview-\d+--[a-z0-9-]+\.netlify\.app$/,'Only a Netlify PR preview is allowed');
 const moduleSource=`export function createClient(){return {auth:{getUser:async()=>({data:{user:{id:window.PATHOS_CONFIG.ownerUserId}}})},rpc:async(name,args)=>{if(name==='pathos_replace_my_archive'){window.testCloud=JSON.parse(JSON.stringify(args.p_archive));return{};}return{data:window.testCloud};}}}`;
@@ -44,12 +46,14 @@ async function restore(page,value){
     if(variant==='personal'){
       await page.evaluate(()=>navigator.serviceWorker.ready);
       await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
-      assert((await page.evaluate(()=>caches.keys())).includes('pathos-personal-shell-v15'));
+      assert((await page.evaluate(()=>caches.keys())).includes('pathos-personal-shell-v20'));
     }
     assert.equal(await page.locator('#reviews,[data-view="reviews"]').count(),0);
     await page.evaluate(()=>showView('timeline'));
     assert(await page.locator('#home').isVisible());
     await checkCoverAccents(page);
+    await checkTimeline(page,process.env.PATHOS_UI_SCREENSHOTS);
+    await checkPreferences(page,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS});
     await checkEntryDetails(page,{backup,restore});
     await page.locator('#addBtn').click();
     await page.locator('[name="type"]').selectOption('Film');
