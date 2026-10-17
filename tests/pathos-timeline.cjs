@@ -1,4 +1,4 @@
-/* Home diary checks. UI-only synthetic fixtures; no saves and no live archive requests. */
+/* Winding month diary checks. Synthetic fixtures; no saves or live archive requests. */
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const fs=require('node:fs/promises');
@@ -36,8 +36,21 @@ async function checkTimeline(page,outputDirectory){
     assert.deepEqual(order,ids,'DOM/focus order is chronological, newest first, and includes every dated entry');
     assert.equal(await page.locator('#timelineList .diary-month').count(),2,'Entries are grouped by month');
     assert.equal(await page.locator('#timelineList .diary-month').first().locator('[data-exp]').count(),10);
-    assert.equal(await page.locator('#timelineList time.diary-day').count(),titles.length-1,'A shared day is shown once');
-    assert.equal(await page.locator('#timelineList .diary-row.is-compact').count(),fixture.experiences.filter(e=>!e.review).length,'Entries without a review are compact');
+    assert.equal(await page.locator('#timelineList time.diary-date').count(),titles.length,'Each stop has a date, including shared days');
+    assert.equal(await page.locator('#timelineList .diary-row.is-compact').count(),fixture.experiences.filter(e=>!e.review).length,'Reviewless cards keep their content minimal');
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+    const geometry=await page.locator('#timelineList .diary-list').first().evaluate(list=>({cols:Number(getComputedStyle(list).getPropertyValue('--diary-columns')),boxes:[...list.children].map(n=>{const b=n.getBoundingClientRect();return{x:b.x,y:b.y,right:b.right,bottom:b.bottom};}),path:list.parentElement.querySelector('path').getAttribute('d')}));
+    assert.equal(geometry.cols,width>1100?3:width>600?2:1);
+    const {boxes,cols}=geometry;
+    for(let i=1;i<boxes.length;i++){
+      const a=boxes[i-1],b=boxes[i],row=Math.floor(i/cols);
+      if(row===Math.floor((i-1)/cols))assert(row%2===0?b.x>a.x:b.x<a.x,'Alternating rows follow the snake');
+      else assert(b.y>=a.bottom+20,'The next row leaves room for the turn');
+      assert(b.x>=0&&b.right<=width+1,'Every stop fits the viewport');
+    }
+    assert.equal(Boolean(geometry.path),width>600,'Desktop draws the winding path; phones use a vertical thread');
+    if(width>600)assert(geometry.path.includes(' Q '),'Rounded turns connect the rows');
+    assert(await page.locator('#timelineList [data-exp="ui-exp-5"]').evaluate(n=>{const s=getComputedStyle(n);return s.backgroundImage.includes('gradient')&&s.boxShadow!=='none';}),'Missing artwork still has a visible card tint');
     assert.match(await page.locator('#timelineList img').first().getAttribute('src'),/#exact-edition$/);
     assert.equal(await page.locator('#timelineList [data-exp="ui-exp-5"] img').count(),0);
     assert.equal(await page.locator('#timelineList [data-exp="ui-exp-5"] .generated-cover').count(),1,'Missing artwork draws a typographic cover');
@@ -69,11 +82,12 @@ async function checkTimeline(page,outputDirectory){
       await page.screenshot({path:path.join(outputDirectory,variant+'-home-'+width+'.png'),fullPage:width>600});
     }
   }
-  // Keyboard order follows the diary.
-  await page.setViewportSize({width:390,height:844});
+  // Keyboard order follows the winding rows, even where visual direction reverses.
+  await page.setViewportSize({width:1280,height:844});
   await page.evaluate(()=>{showView('home');window.scrollTo({top:0,behavior:'instant'});});
   await page.locator('#timelineList [data-exp="'+ids[0]+'"]').focus();
   for(let i=1;i<6;i++){await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.dataset.exp),ids[i]);}
+  await page.setViewportSize({width:390,height:844});
   // An entry opens its work page; editing is one explicit step away and editor-only.
   const owner=await page.evaluate(()=>window.pathosCanEdit);
   await page.locator('#timelineList [data-exp="ui-exp-1"]').click();
