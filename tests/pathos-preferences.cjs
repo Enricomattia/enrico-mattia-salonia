@@ -67,7 +67,7 @@ async function checkPreferences(page,{backup,restore,outputDirectory}){
   assert.equal(await page.locator('#favouritesShelf [data-work="pref-film"]').count(),1,'The main form can favourite a film');
   if(hosted){
     await page.evaluate(()=>{window.pathosCanEdit=false;window.dispatchEvent(new CustomEvent('pathos-owner-change',{detail:{active:false}}));});
-    assert.equal(await page.locator('#favouritesSection').isVisible(),false,'Private favourite marks are hidden outside the owner editor');
+    assert.equal(await page.locator('#favouritesSection').isVisible(),true,'Published favourites remain visible outside the owner editor');
     await page.evaluate(()=>{window.pathosCanEdit=true;window.dispatchEvent(new CustomEvent('pathos-owner-change',{detail:{active:true}}));});
     assert.equal(await page.locator('#favouritesShelf button').count(),6,'The shelf refreshes when owner mode returns');
   }

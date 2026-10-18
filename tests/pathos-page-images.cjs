@@ -6,7 +6,7 @@ const fs=require('node:fs'),path=require('node:path'),Module=require('node:modul
 const filename=path.resolve(__dirname,'../src/lib/pathos-page-images.ts');
 const compiled=new Module(filename,module);compiled.filename=filename;compiled.paths=module.paths;
 compiled._compile(ts.transpileModule(fs.readFileSync(filename,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,esModuleInterop:true,target:ts.ScriptTarget.ES2022}}).outputText,filename);
-const {extractPageImages,isPublicAddress,pageUrl,discoverPageImages}=compiled.exports;
+const {extractPageImages,isPublicAddress,pageUrl,discoverPageImages,downloadPageImage}=compiled.exports;
 const publicIp='93.184.216.34',page='https://venue.example/season/ka-in/';
 function network(responses,resolve=async()=>[{address:publicIp,family:4}]){
   const calls=[];
@@ -75,4 +75,18 @@ test('supports direct public image links and safely handles pages with no artwor
   const direct=await discoverPageImages('https://venue.example/poster.png',network([{headers:{'content-type':'image/png'}}]));
   assert.deepEqual(direct.images,[{url:'https://venue.example/poster.png',source:'Image link'}]);
   const empty=await discoverPageImages(page,network([{body:'<title>No artwork</title>'}]));assert.deepEqual(empty.images,[]);
+});
+test('stores a bounded raster copy, checks redirects/DNS, and rejects disguised or active content',async()=>{
+  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6v7sAAAAASUVORK5CYII=','base64');
+  const mock=network([{status:302,headers:{location:'https://art.example/final.png'}},{headers:{'content-type':'image/png'},body:png}]);
+  const stored=await downloadPageImage('https://venue.example/art.png',mock);
+  assert.equal(stored.dataUrl,'data:image/png;base64,'+png.toString('base64'));
+  assert.equal(mock.calls[1].options.headers.Cookie,undefined);assert.equal(mock.calls[1].options.headers.Authorization,undefined);
+  mock.calls[1].options.lookup('art.example',{},(err,address)=>assert.equal(address,publicIp));
+  await assert.rejects(downloadPageImage(page,network([{headers:{'content-type':'image/png'},body:'<html>Not an image</html>'}])),/supported image/);
+  await assert.rejects(downloadPageImage(page,network([{headers:{'content-type':'image/svg+xml'},body:'<svg/>'}])),/webpage or image/);
+  await assert.rejects(downloadPageImage(page,{...network([{headers:{'content-type':'image/png'},body:png}]),maxBytes:12}),/too large/);
+  await assert.rejects(downloadPageImage(page,network([{status:302,headers:{location:'http://127.0.0.1/private'}}])),/public http/);
+  await assert.rejects(downloadPageImage(page,network([],async()=>[{address:'10.0.0.1',family:4}])),/public website/);
+  await assert.rejects(downloadPageImage(page,{resolve:()=>new Promise(()=>{}),timeoutMs:10}),/too long/);
 });

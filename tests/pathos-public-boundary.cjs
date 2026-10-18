@@ -7,7 +7,7 @@ const vm=require('node:vm');
 const sandbox={window:{}};
 vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../public/pathos/config.js'),'utf8'),sandbox);
 const config=sandbox.window.PATHOS_CONFIG;
-const allowed=['id','workId','rating','review','startDate','endDate','status','venue','viewingLanguage','tags','quotes','edition','sourceUrl','repeat'];
+const allowed=['id','workId','rating','review','startDate','endDate','status','venue','viewingLanguage','tags','cover','quotes','edition','sourceUrl','repeat'];
 async function request(route,body){
   const result=await fetch(config.supabaseUrl+'/rest/v1/'+route,{method:body?'POST':'GET',headers:{apikey:config.supabasePublishableKey,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});
   return {status:result.status,data:await result.json()};
@@ -23,6 +23,10 @@ async function request(route,body){
   for(const experience of archive.data.experiences){
     assert.ok(Object.keys(experience).every(key=>allowed.includes(key)),'Public RPC includes an unexpected field');
     assert.equal(typeof experience.viewingLanguage,'string');
+  }
+  for(const work of archive.data.works){
+    assert.ok(Object.keys(work).every(key=>['id','title','type','creator','year','cover','aliases','liked'].includes(key)));
+    assert.equal(typeof work.liked,'boolean');
   }
   console.log('PASS public RPC: '+archive.data.experiences.length+' published experiences, allowed fields only');
   const own=await request('rpc/pathos_get_my_archive',{});
