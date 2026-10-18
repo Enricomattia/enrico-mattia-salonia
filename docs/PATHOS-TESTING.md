@@ -6,6 +6,8 @@ Entry regression checks (18 October 2026): `tests/pathos-entry-improvements.cjs`
 
 The applied database patch is `scripts/pathos-public-preferences.sql` (rollback included). Execute `tests/pathos-public-preferences.sql` only inside `BEGIN` / `ROLLBACK`: its synthetic fixtures verify public favourites and published cover artwork, while moods, ownership, private experiences and private-only favourite works remain hidden. `node tests/pathos-public-boundary.cjs` performs read-only live anonymous checks using the public configuration.
 
+PR #14's real Netlify preview passed both variants on 18 October 2026 using isolated synthetic archives and mocked owner writes, including the new entry checks, offline Personal, a real deployed raster download/decoding, and the Πathos-only footer boundary. `tests/pathos-preview-details.cjs` runs these checks with `PATHOS_PREVIEW_URL` set to the PR's Netlify hostname.
+
 ```powershell
 npm ci
 npm run build
