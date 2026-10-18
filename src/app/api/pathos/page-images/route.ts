@@ -1,4 +1,4 @@
-import { discoverPageImages, PageImageError } from "@/lib/pathos-page-images";
+import { discoverPageImages, downloadPageImage, PageImageError } from "@/lib/pathos-page-images";
 
 export const runtime = "nodejs";
 let active = 0;
@@ -38,7 +38,8 @@ export async function POST(request: Request) {
     if (timedOut) throw new PageImageError("The request took too long.", 408);
     const body = JSON.parse(Buffer.concat(chunks).toString("utf8"));
     if (typeof body?.url !== "string" || !body.url.trim()) throw new PageImageError("Enter a webpage link.");
-    return Response.json(await discoverPageImages(body.url.trim()), { headers });
+    if (body.mode != null && body.mode !== "store") throw new PageImageError("Unknown image operation.");
+    return Response.json(await (body.mode === "store" ? downloadPageImage(body.url.trim()) : discoverPageImages(body.url.trim())), { headers });
   } catch (error) {
     const status = error instanceof PageImageError ? error.status : 400;
     const message = error instanceof PageImageError ? error.message : "Enter a valid webpage link.";

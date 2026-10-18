@@ -15,12 +15,13 @@ const {checkEntryDetails}=require('./pathos-entry-details.cjs');
 const {checkCoverAccents}=require('./pathos-cover-accent.cjs');
 const {checkNavigation,navigatePage}=require('./pathos-navigation.cjs');
 const {checkPreferences}=require('./pathos-preferences.cjs');
+const {checkEntryImprovements}=require('./pathos-entry-improvements.cjs');
 const root=path.resolve(__dirname,'..');
 const publicRoot=path.join(root,'public');
 const launch={headless:true,...(process.env.PATHOS_BROWSER==='chromium'?{}:{channel:process.env.PATHOS_BROWSER||'msedge'})};
 let release='current';
 const copy=x=>JSON.parse(JSON.stringify(x));
-const pixel='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6v7sAAAAASUVORK5CYII=';
+const pixel='data:image/png;base64,'+fs.readFileSync(path.join(publicRoot,'pathos-personal/icon-192.png')).toString('base64');
 const fixture={schemaVersion:6,works:[{id:'book-1',title:'Synthetic book',type:'Book',creator:'Test author',cover:pixel,aliases:[],liked:true,owned:true,genres:['Classics'],external:{isbn:'9780140328721'},sourceMetadata:{}}],experiences:[{id:'reading-1',workId:'book-1',startDate:'2026-10-01',endDate:'2026-10-01',status:'completed',rating:4.5,review:'A review\nwith paragraphs.',moods:['reflective'],pace:'slow',quotes:[{id:'quote-1',text:'A saved passage',note:'p. 12',featured:true}],tags:['test'],isPublic:true,edition:{isbn:'9780140328721',ean:'9780140328721',identifierType:'catalogue',identifierValue:'custom-1',sourceId:'storygraph-test-uid',publisher:'Manual publisher',publishYear:'2020',language:'Italian',format:'Paperback',pages:'123',printing:'2ª',contributors:'Test translator',cover:pixel,source:'manual'}}]};
 const baseline={};
 if(process.env.PATHOS_UPDATE_BASELINE_REF){
@@ -160,6 +161,7 @@ async function checkArchiveViews(page){
   });
   await run('movie language, edition series, repeat isolation, round trip and offline reload',()=>checkEntryDetails(page,{backup,restore}));
   await run('favourite shelf, book ownership, single language field, quiet insights and clean reading pages',()=>checkPreferences(page,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS}));
+  await run('shared tag/mood vocabulary, exact filters, statistics, universal uploads and offline backup continuity',()=>checkEntryImprovements(page,{backup,restore}));
   await run('restore/export round trip, preserved edition and passage IDs, cancellation and durable undo',async()=>{
     await restore(page,fixture);assert.deepEqual((await archive(page)).experiences,fixture.experiences);
     const exported=await backup(page);assert.deepEqual(exported.experiences,fixture.experiences);
@@ -269,6 +271,7 @@ async function checkArchiveViews(page){
     await page.route('**/api/pathos/page-images',async route=>{
       lookups++;
       if(mode==='blocked')return route.fulfill({status:502,json:{error:'Could not read that page. Your cover is unchanged.'}});
+      if(route.request().postDataJSON().mode==='store')return route.fulfill({json:{dataUrl:pixel}});
       return route.fulfill({json:{pageUrl:eventUrl,images:[{url:image1,source:'Page image'},{url:image2,source:'Page image'}]}});
     });
     await restore(page,event);
@@ -277,27 +280,29 @@ async function checkArchiveViews(page){
     assert.equal(await page.locator('.page-image-choice').count(),2);
     assert.equal((await archive(page)).works[0].cover,eventUrl);
     await page.locator('.page-image-choice').first().click();
-    assert.equal(await page.locator('[name="cover"]').inputValue(),image1);
+    await page.waitForFunction(()=>!coverTaskBusy&&document.getElementById('entryForm').elements.cover.value.startsWith('data:image/jpeg'));
+    const stored=await page.locator('[name="cover"]').inputValue();
     assert.equal((await disk(page)).works[0].cover,eventUrl);
     await page.locator('#cancelBtn').click();assert.equal((await archive(page)).works[0].cover,eventUrl);
     await page.evaluate(()=>openExperience('event-experience'));await page.locator('.page-image-choice').first().waitFor();
     await page.locator('.page-image-choice').first().click();
+    await page.waitForFunction(()=>!coverTaskBusy&&document.getElementById('entryForm').elements.cover.value.startsWith('data:image/jpeg'));
     await page.locator('#entryForm button[type="submit"]').click();await saved(page);
-    let data=await disk(page);assert.equal(data.works[0].cover,image1);
+    let data=await disk(page);assert.equal(data.experiences[0].cover,stored);assert.equal(data.works[0].cover,eventUrl,'An experience cover does not replace other experiences artwork');
     assert.equal(data.experiences[0].id,'event-experience');assert.equal(data.experiences[0].sourceUrl,eventUrl);assert.equal(data.experiences[0].review,'Event review');assert.equal(data.experiences[0].isPublic,false);
     const previousLookups=lookups;
     await page.evaluate(()=>openExperience('event-experience'));
     assert.equal(lookups,previousLookups,'Existing manual covers must not trigger automatic replacement lookup');
     await page.locator('#findPageImageBtn').click();await page.locator('.page-image-choice').first().waitFor();
     page.confirmRestore=false;await page.locator('.page-image-choice').nth(1).click();page.confirmRestore=true;
-    assert.equal(await page.locator('[name="cover"]').inputValue(),image1);
+    assert.equal(await page.locator('[name="cover"]').inputValue(),stored);
     await page.locator('#cancelBtn').click();
     await page.evaluate(()=>openExperience('event-experience'));mode='blocked';
     await page.locator('#findPageImageBtn').click();await page.waitForFunction(()=>document.getElementById('pageImageStatus').textContent.includes('Could not read'));
-    assert.equal(await page.locator('[name="cover"]').inputValue(),image1);
+    assert.equal(await page.locator('[name="cover"]').inputValue(),stored);
     await ctx.setOffline(true);await page.locator('#findPageImageBtn').click();
     assert.match(await page.locator('#pageImageStatus').textContent(),/needs a connection/);
-    assert.equal((await archive(page)).works[0].cover,image1);
+    assert.equal((await archive(page)).experiences[0].cover,stored);
     await ctx.setOffline(false);await page.locator('#cancelBtn').click();
     await page.locator('#addBtn').click();assert.equal(await page.locator('#findPageImageBtn').isVisible(),false);
     await page.locator('#cancelBtn').click();
@@ -393,6 +398,7 @@ async function checkArchiveViews(page){
     await checkNavigation(owner,process.env.PATHOS_UI_SCREENSHOTS);
     await checkEntryDetails(owner,{backup,restore});
     await checkPreferences(owner,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS});
+    await checkEntryImprovements(owner,{backup,restore});
     await owner.evaluate(()=>{db.experiences[0].review='Cloud edit';return saveDb();});
     assert.equal(await owner.evaluate(()=>window.mockCloud.experiences[0].review),'Cloud edit');
     assert.deepEqual(await owner.evaluate(()=>{db.experiences[0].review='Queued A';const a=saveDb();db.experiences[0].review='Queued B';return Promise.all([a,saveDb()]);}),[true,true]);
@@ -414,14 +420,15 @@ async function checkArchiveViews(page){
     const event={schemaVersion:6,works:[{id:'event',title:'KA-IN',type:'Theatre',cover:eventUrl}],experiences:[{id:'attendance',workId:'event',sourceUrl:eventUrl,review:'Hosted event review',isPublic:true,status:'completed',endDate:'2026-10-14'}]};
     const eventOwner=await observe(await hosted.newPage());
     await eventOwner.addInitScript(value=>{window.mockCloud=value;},event);
-    await eventOwner.route('**/api/pathos/page-images',route=>route.fulfill({json:{pageUrl:eventUrl,images:[{url:poster,source:'Page image'}]}}));
+    await eventOwner.route('**/api/pathos/page-images',route=>route.fulfill({json:route.request().postDataJSON().mode==='store'?{dataUrl:pixel}:{pageUrl:eventUrl,images:[{url:poster,source:'Page image'}]}}));
     await eventOwner.goto(origin+'/pathos/app.html');await eventOwner.waitForFunction(()=>window.pathosCanEdit);
     await eventOwner.evaluate(()=>openExperience('attendance'));await eventOwner.locator('.page-image-choice').waitFor();
     assert.equal(await eventOwner.evaluate(()=>window.mockCloud.works[0].cover),eventUrl);
     await eventOwner.locator('.page-image-choice').click();
+    await eventOwner.waitForFunction(()=>!coverTaskBusy&&document.getElementById('entryForm').elements.cover.value.startsWith('data:image/jpeg'));
     assert.equal(await eventOwner.evaluate(()=>window.mockCloud.works[0].cover),eventUrl);
     await eventOwner.locator('#entryForm button[type="submit"]').click();
-    await eventOwner.waitForFunction(expected=>window.mockCloud.works[0].cover===expected,poster);
+    await eventOwner.waitForFunction(()=>window.mockCloud.experiences[0].cover?.startsWith('data:image/jpeg'));
     assert.equal(await eventOwner.evaluate(()=>window.mockCloud.experiences[0].isPublic),true);
     assert.equal(await eventOwner.evaluate(()=>window.mockCloud.experiences[0].review),'Hosted event review');
     const failed=await observe(await hosted.newPage());
@@ -439,6 +446,7 @@ async function checkArchiveViews(page){
     await p.goto(siteOrigin+'/pathos');
     await p.frameLocator('iframe[title="Πathos"]').locator('.pathos-wordmark').waitFor();
     assert.equal(await p.locator('body>header').count(),0);
+    assert.equal(await p.locator('body>footer').count(),0);
     let box=await p.locator('iframe[title="Πathos"]').boundingBox();
     assert.equal(box.y,0);assert.equal(box.height,p.viewportSize().height);
     assert.match(await p.locator('meta[name="robots"]').getAttribute('content'),/noindex/);
@@ -448,6 +456,7 @@ async function checkArchiveViews(page){
     assert.equal(box.y,0);assert.equal(box.height,844);
     await p.goto(siteOrigin+'/research');
     assert.equal(await p.locator('body>header').isVisible(),true);
+    assert.equal(await p.locator('body>footer').isVisible(),true);
     await p.locator('body>header nav').getByRole('link',{name:'Home',exact:true}).click();
     await p.waitForURL(siteOrigin+'/');
     assert.equal(await p.locator('body>header').isVisible(),true);

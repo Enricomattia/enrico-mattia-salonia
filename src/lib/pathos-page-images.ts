@@ -58,17 +58,17 @@ async function publicAddresses(url: URL, resolve: NonNullable<Dependencies["reso
 
 // No cookies, credentials, browser scripts or automatic redirects. Each redirect
 // is checked again, and DNS is pinned to an already validated public address.
-async function readPage(url: URL, address: Address, signal: AbortSignal, dependencies: Dependencies) {
+async function readPage(url: URL, address: Address, signal: AbortSignal, dependencies: Dependencies, storeImage = false) {
   const transport = dependencies.request || ((target, options, callback) =>
     (target.protocol === "https:" ? httpsRequest : httpRequest)(target, options, callback));
-  const limit = dependencies.maxBytes ?? 2 * 1024 * 1024;
-  return new Promise<{ location?: string; html?: string; image?: boolean }>((resolve, reject) => {
+  const limit = dependencies.maxBytes ?? (storeImage ? 8 : 2) * 1024 * 1024;
+  return new Promise<{ location?: string; html?: string; image?: boolean; bytes?: Buffer; type?: string }>((resolve, reject) => {
     const req = transport(url, {
       agent: false, signal, family: address.family,
       lookup: (_hostname, _options, callback) => callback(null, address.address, address.family),
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; Pathos/1.0; official-page image lookup)",
-        "Accept": "text/html,application/xhtml+xml,image/*;q=0.8",
+        "Accept": storeImage ? "image/png,image/jpeg,image/webp,image/gif,image/avif" : "text/html,application/xhtml+xml,image/*;q=0.8",
         "Accept-Encoding": "identity",
       },
     }, response => {
@@ -83,9 +83,9 @@ async function readPage(url: URL, address: Address, signal: AbortSignal, depende
       if (status < 200 || status >= 300) {
         response.destroy(); reject(new PageImageError("The website would not let Πathos read that page. You can still paste an image URL.", 502)); return;
       }
-      const type = String(response.headers["content-type"] || "").toLowerCase();
-      if (type.startsWith("image/")) { response.destroy(); resolve({ image: true }); return; }
-      if (!/^(?:text\/html|application\/xhtml\+xml)(?:;|$)/.test(type)) {
+      const type = String(response.headers["content-type"] || "").toLowerCase().split(";")[0].trim();
+      if (!storeImage && type.startsWith("image/")) { response.destroy(); resolve({ image: true }); return; }
+      if (storeImage ? !/^image\/(?:png|jpeg|webp|gif|avif)$/.test(type) : !/^(?:text\/html|application\/xhtml\+xml)$/.test(type)) {
         response.destroy(); reject(new PageImageError("That link did not return a webpage or image.", 422)); return;
       }
       if (response.headers["content-encoding"] && response.headers["content-encoding"] !== "identity") {
@@ -101,13 +101,51 @@ async function readPage(url: URL, address: Address, signal: AbortSignal, depende
           reject(new PageImageError("That page is too large to inspect.", 413)); response.destroy(); req.destroy();
         } else chunks.push(chunk);
       });
-      response.on("end", () => resolve({ html: Buffer.concat(chunks).toString("utf8") }));
+      response.on("end", () => {
+        const bytes = Buffer.concat(chunks);
+        if (storeImage) {
+          // Never accept HTML/SVG disguised as raster artwork.
+          const valid = type === "image/png" ? bytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10]))
+            : type === "image/jpeg" ? bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255
+            : type === "image/gif" ? /^GIF8[79]a$/.test(bytes.subarray(0, 6).toString())
+            : type === "image/webp" ? bytes.subarray(0, 4).toString() === "RIFF" && bytes.subarray(8, 12).toString() === "WEBP"
+            : bytes.subarray(4, 8).toString() === "ftyp" && /avif|avis/.test(bytes.subarray(8, 32).toString());
+          if (!valid) reject(new PageImageError("That link did not return a supported image.", 422));
+          else resolve({ bytes, type });
+        } else resolve({ html: bytes.toString("utf8") });
+      });
       response.on("aborted", () => reject(new PageImageError("The website interrupted the page download.", 502)));
       response.on("error", reject);
     });
     req.on("error", reject);
     req.end();
   });
+}
+
+// Copy selected public artwork into the archive, using the same pinned DNS,
+// redirect checks, byte/time limits and credential-free requests as discovery.
+export async function downloadPageImage(raw: string, dependencies: Dependencies = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), dependencies.timeoutMs ?? 8000);
+  const resolve = dependencies.resolve || (hostname => lookup(hostname, { all: true, verbatim: true }));
+  try {
+    let url = pageUrl(raw);
+    for (let redirects = 0; redirects <= 3; redirects++) {
+      const addresses = await publicAddresses(url, resolve, controller.signal);
+      const result = await readPage(url, addresses.find(item => item.family === 4) || addresses[0], controller.signal, dependencies, true);
+      if (result.location) {
+        if (redirects === 3) throw new PageImageError("The website redirected too many times.", 502);
+        url = pageUrl(result.location, url.href);
+      } else if (result.bytes && result.type) {
+        return { dataUrl: `data:${result.type};base64,${result.bytes.toString("base64")}` };
+      } else throw new PageImageError("Could not store that image.", 502);
+    }
+    throw new PageImageError("Could not store that image.", 502);
+  } catch (error) {
+    if (controller.signal.aborted) throw new PageImageError("The image took too long to respond.", 504);
+    if (error instanceof PageImageError) throw error;
+    throw new PageImageError("Could not store that image. Upload your own image or try another link.", 502);
+  } finally { clearTimeout(timer); }
 }
 
 export function extractPageImages(html: string, finalUrl: string) {

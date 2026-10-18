@@ -756,6 +756,7 @@ body:not(.pathos-owner) .experience-edit{display:none}
  .year-cover-month{padding-top:0}
 }
 @media(max-width:600px) and (forced-colors:active){nav.tabs{border-top:1px solid CanvasText}}
+.edition-cover-preview{width:100px;max-width:100%;height:140px;overflow:hidden;background:var(--soft)}.edition-cover-preview img{width:100%;height:100%;object-fit:contain}.vocabulary-suggestions{display:flex;flex-wrap:wrap;gap:6px}.vocabulary-suggestions[hidden],[hidden]#experienceCoverField,[hidden]#experienceCoverPreview{display:none!important}.vocabulary-suggestions button{font:inherit;min-height:36px;border:1px solid var(--line);background:var(--paper);border-radius:20px;padding:6px 10px;cursor:pointer}.experience-cover{float:right;width:64px;height:90px;position:relative;overflow:hidden;margin:12px 0 12px 16px}.experience-cover img{width:100%;height:100%;object-fit:cover}.experience:after{content:'';display:block;clear:both}
 </style>
 <link rel="stylesheet" href="/pathos/discover.css">
 </head>
@@ -809,6 +810,7 @@ body:not(.pathos-owner) .experience-edit{display:none}
       <select id="statusFilter" class="input">
         <option value="">All statuses</option><option value="completed">Completed</option><option value="in-progress">In progress</option><option value="planned">Planned</option><option value="dnf">Did not finish</option>
       </select>
+      <select id="libraryTagFilter" class="input" aria-label="Tag"><option value="">All tags</option></select><select id="libraryMoodFilter" class="input" aria-label="Mood"><option value="">All moods</option></select>
       <select id="libraryContentFilter" class="input">
         <option value="">Everything</option><option value="favorite">Favourites</option><option value="reviewed">With a review</option><option value="unreviewed">Without a review</option>
       </select>
@@ -854,6 +856,7 @@ body:not(.pathos-owner) .experience-edit{display:none}
     <section class="chart-panel wide" id="activityPanel"><div class="chart-head"><div><h3>Experiences and written reviews by year</h3></div></div><div id="activityByYear"></div></section>
     <section class="chart-panel wide" id="trendPanel"><div class="chart-head"><div><h3>Average rating by year</h3></div><div class="chart-note">Years with at least 2 ratings</div></div><div id="ratingTrend"></div></section>
     <section class="chart-panel"><div class="chart-head"><div><h3>Review rate by medium</h3></div></div><div id="reviewRateByMedium"></div></section>
+    <section class="chart-panel" id="tagStatsPanel"><div class="chart-head"><h3>Tags</h3></div><div id="tagStats"></div></section><section class="chart-panel" id="moodStatsPanel"><div class="chart-head"><h3>Moods</h3></div><div id="moodStats"></div></section>
     <section class="chart-panel"><div class="chart-head"><div><h3>Your longest reviews</h3></div></div><div id="longestReviews" class="review-list"></div></section>
   </div>
 </section>
@@ -944,7 +947,7 @@ body:not(.pathos-owner) .experience-edit{display:none}
       <details class="entry-details span-2" id="bookProfileDetails"><summary>Book profile <span class="entry-summary-note">Genres, moods, pace</span></summary>
         <div class="details-inner form-grid">
           <label class="field span-2">Genres<input class="input" name="bookGenres" placeholder="e.g. classics, literary"></label>
-          <label class="field">Moods<input class="input" name="bookMoods" placeholder="e.g. reflective, dark"></label>
+          <label class="field">Moods<input class="input" name="bookMoods" autocomplete="off" data-vocabulary="moods" placeholder="e.g. reflective, dark"><div class="vocabulary-suggestions" data-suggestions="moods" hidden></div></label>
           <label class="field">Pace<select class="input" name="bookPace"><option value="">Not recorded</option><option value="slow">Slow</option><option value="medium">Medium</option><option value="fast">Fast</option></select></label>
         </div>
       </details>
@@ -953,7 +956,7 @@ body:not(.pathos-owner) .experience-edit{display:none}
           <div id="editionPanel" class="edition-panel hidden">
             <div class="edition-head"><div><strong>Book edition</strong><div class="catalog-hint">Each reading can use a different edition and cover.</div></div></div>
             <div class="edition-search-row"><input id="editionSearch" class="input" autocomplete="off" aria-label="Filter editions or enter ISBN" placeholder="Filter editions or enter an ISBN…"><button id="editionLookupBtn" type="button" class="btn">Find editions</button></div>
-            <div class="edition-search-row"><label class="field">Language<input id="editionLanguageFilter" class="input" name="editionLanguage" list="bookLanguages" placeholder="e.g. Italian"><datalist id="bookLanguages"><option value="Italian"><option value="English"><option value="French"><option value="German"><option value="Spanish"><option value="Portuguese"></datalist></label><label class="field">Publisher<input id="editionPublisherFilter" class="input" placeholder="e.g. Einaudi"></label></div>
+            <div class="edition-search-row"><label class="field">Language<input id="editionLanguageFilter" class="input" name="editionLanguage" list="bookLanguages" placeholder="e.g. Italian"><datalist id="bookLanguages"><option value="Italian"><option value="English"><option value="French"><option value="German"><option value="Spanish"><option value="Portuguese"></datalist></label><label class="field">Publisher<input id="editionPublisherFilter" name="editionPublisher" class="input" placeholder="e.g. Einaudi"></label></div>
             <div id="editionResults" class="edition-results hidden"></div>
             <div class="edition-fields">
               <input type="hidden" name="editionTitle"><input type="hidden" name="editionGoogleBooksId"><input type="hidden" name="editionSourceUrl"><input type="hidden" name="editionOlid"><input type="hidden" name="editionWorkKey">
@@ -962,7 +965,6 @@ body:not(.pathos-owner) .experience-edit{display:none}
               <label class="field">StoryGraph ISBN / UID<input class="input" name="editionSourceId" autocomplete="off"></label>
               <label class="field">Other ID type<input class="input" name="editionOtherType" placeholder="SBN, catalogue ID…"></label>
               <label class="field">Other ID value<input class="input" name="editionOtherId" autocomplete="off"></label>
-              <label class="field">Publisher<input class="input" name="editionPublisher"></label>
               <label class="field">Publication series<input class="input" name="editionSeries" placeholder="e.g. Nuovi Coralli"></label>
               <label class="field">Series number<input class="input" name="editionSeriesNumber" placeholder="e.g. 15"></label>
               <label class="field">Edition year<input class="input" name="editionYear" inputmode="numeric"></label>
@@ -980,8 +982,8 @@ body:not(.pathos-owner) .experience-edit{display:none}
           <label class="field">Creator / author / director<input class="input" name="creator"></label>
           <label class="field">Original year<input class="input" name="year" inputmode="numeric"></label>
           <div class="field span-2"><label for="sourceUrlInput" id="sourceUrlLabel">Reference / event page</label><div class="page-image-input"><input class="input" id="sourceUrlInput" type="url" name="sourceUrl" placeholder="https://…"><button type="button" class="btn" id="findPageImageBtn" hidden>Find image</button></div><span class="catalog-hint" id="pageImageStatus" role="status" aria-live="polite"></span><div id="pageImageResults" class="page-image-results" hidden></div></div>
-          <label class="field span-2">Tags<input class="input" name="tags" placeholder="e.g. sci-fi, Rome, theatre"></label>
-          <label class="field span-2">Work cover / poster URL<input class="input" name="cover"></label>
+          <label class="field span-2">Tags<input class="input" name="tags" autocomplete="off" data-vocabulary="tags" placeholder="e.g. sci-fi, Rome, theatre"><div class="vocabulary-suggestions" data-suggestions="tags" hidden></div></label>
+          <div class="field span-2" id="experienceCoverField"><label for="experienceCoverInput">Cover / poster</label><input type="hidden" name="cover"><input id="experienceCoverInput" class="input" type="url" placeholder="Image URL"><label class="btn file-btn">Upload your own image<input id="experienceCoverFile" type="file" accept="image/*" hidden></label><div id="experienceCoverPreview" class="edition-cover-preview" hidden></div><span id="experienceCoverStatus" class="catalog-hint" role="status"></span></div>
           <label class="check span-2"><input type="checkbox" name="repeat"> Reread / rewatch / replay</label>
         </div>
       </details>
@@ -1106,7 +1108,7 @@ function prepareBackup(value){
     if(!object(e)||typeof e.id!=='string'||!e.id.trim()||experiences.has(e.id))throw new Error('Every experience needs a unique ID.');
     experiences.add(e.id);
     if(typeof e.workId!=='string'||!ids.has(e.workId))throw new Error('An experience references a missing work.');
-    textFields(e,['startDate','endDate','loggedDate','review','venue','sourceUrl','status','source','viewingLanguage']);
+    textFields(e,['startDate','endDate','loggedDate','review','venue','sourceUrl','status','source','viewingLanguage','cover']);
     if(e.isPublic!=null&&typeof e.isPublic!=='boolean')throw new Error('Invalid publication setting.');
     if(e.rating!=null&&e.rating!==''&&(!Number.isFinite(Number(e.rating))||Number(e.rating)<0||Number(e.rating)>5))throw new Error('Invalid rating.');
     if(e.moods!=null&&(!Array.isArray(e.moods)||e.moods.some(x=>typeof x!=='string')))throw new Error('Invalid book moods.');
@@ -1176,7 +1178,7 @@ function workFor(id){return db.works.find(w=>w.id===id)}
 function experiencesFor(workId){return db.experiences.filter(e=>e.workId===workId).sort((a,b)=>(experienceDate(b)||b.loggedDate||'').localeCompare(experienceDate(a)||a.loggedDate||''))}
 function mediumIcon(type){return MEDIA_ICONS[type]||MEDIA_ICONS.Other}
 function statusPill(status){if(!status||status==='completed')return'';const cls=status==='in-progress'?'current':status;return `<span class="pill ${cls}">${esc(STATUS_LABELS[status]||status)}</span>`}
-function editionCover(e){return e?.edition?.cover||''}
+function editionCover(e){return e?.cover||e?.edition?.cover||''}
 function generatedIsbnCover(url,isbn=''){const u=String(url||'');const clean=String(isbn||'').replace(/[^0-9Xx]/g,'');return Boolean(clean)&&u.includes('/b/isbn/'+clean+'-')}
 function safeWebUrl(value){try{const u=new URL(String(value||'').trim());return (u.protocol==='http:'||u.protocol==='https:')?u.href:''}catch{return''}}
 function sourcePageLink(e){const u=safeWebUrl(e?.sourceUrl);return u?`<a class="inline-link" href="${esc(u)}" target="_blank" rel="noopener noreferrer">Open reference page ↗</a>`:''}
@@ -1216,7 +1218,7 @@ function normalizeEdition(ed){if(!ed)return null;const rawIsbn=String(ed.isbn||'
 function editionFromData(data){return normalizeEdition(data.edition||{isbn:data.editionIsbn,ean:data.editionEan,identifierType:data.editionOtherType,identifierValue:data.editionOtherId,publisher:data.editionPublisher,series:data.editionSeries,seriesNumber:data.editionSeriesNumber,publishYear:data.editionYear,language:data.editionLanguage,format:data.editionFormat,pages:data.editionPages,cover:data.editionCover,olid:data.editionOlid,workKey:data.editionWorkKey,contributors:data.sourceMetadata?.contributors||'',source:data.source||'manual'})}
 function addExperience(data){
   const w=findOrCreateWork(data);const ed=w.type==='Book'?editionFromData(data):null;
-  const e={id:uid(),workId:w.id,startDate:data.startDate||'',endDate:data.endDate||'',loggedDate:data.loggedDate||'',rating:data.rating===''||data.rating==null?'':Number(data.rating),review:data.review||'',quotes:normalizeQuotes(data.quotes||[]),venue:data.venue||'',viewingLanguage:w.type==='Film'?String(data.viewingLanguage||'').trim():'',sourceUrl:safeWebUrl(data.sourceUrl||''),isPublic:data.isPublic!==false,tags:Array.isArray(data.tags)?data.tags:String(data.tags||'').split(',').map(s=>s.trim()).filter(Boolean),repeat:Boolean(data.repeat),status:data.status||'completed',source:data.source||'manual',details:data.details||{},edition:ed,...(w.type==='Book'?{moods:uniqueText(data.moods||[]),pace:normalizePace(data.pace)}:{}),createdAt:new Date().toISOString()};
+  const e={id:uid(),workId:w.id,startDate:data.startDate||'',endDate:data.endDate||'',loggedDate:data.loggedDate||'',rating:data.rating===''||data.rating==null?'':Number(data.rating),review:data.review||'',quotes:normalizeQuotes(data.quotes||[]),venue:data.venue||'',viewingLanguage:w.type==='Film'?String(data.viewingLanguage||'').trim():'',sourceUrl:safeWebUrl(data.sourceUrl||''),isPublic:data.isPublic!==false,tags:Array.isArray(data.tags)?data.tags:splitTags(data.tags),repeat:Boolean(data.repeat),status:data.status||'completed',source:data.source||'manual',details:data.details||{},edition:ed,...(w.type!=='Book'&&data.cover?{cover:data.cover}:{}),...(w.type==='Book'?{moods:uniqueText(data.moods||[]),pace:normalizePace(data.pace)}:{}),createdAt:new Date().toISOString()};
   if(ed?.cover)w.cover=ed.cover;if(ed?.workKey){w.external=w.external||{};w.external.openlibraryKey=w.external.openlibraryKey||ed.workKey}
   db.experiences.push(e);return e;
 }
@@ -1272,13 +1274,27 @@ function saveWorkFlags(w,data){
   if(w.type==='Book'&&(known||f.elements.owned.dataset.changed||data.owned))w.owned=Boolean(data.owned);
 }
 function renderFavourites(){
-  const works=(window.pathosCanEdit?db.works:[]).filter(w=>w.liked).sort((a,b)=>workLatestDate(b.id).localeCompare(workLatestDate(a.id))||a.title.localeCompare(b.title));
+  const works=db.works.filter(w=>w.liked).sort((a,b)=>workLatestDate(b.id).localeCompare(workLatestDate(a.id))||a.title.localeCompare(b.title));
   $('favouritesSection').hidden=!works.length;
   $('favouritesShelf').innerHTML=works.map(w=>{const e=experiencesFor(w.id)[0];return `<button type="button" class="favourite-cover-btn" data-work="${esc(w.id)}" title="${esc(w.title)}" aria-label="Open ${esc(w.title)}">${coverHTML(w,'favourite-cover',e)}</button>`}).join('');
   $('favouritesShelf').querySelectorAll('[data-work]').forEach(button=>button.onclick=()=>openWork(button.dataset.work));
 }
 window.addEventListener('pathos-owner-change',renderFavourites);
-function renderAll(){renderFavourites();renderCurrent();renderFilters();renderLibrary();renderTimeline();renderPassageFilters();renderPassages();renderInsights();renderMetadataKpis()}
+function vocabulary(kind,experiences=db.experiences){return uniqueText(experiences.flatMap(e=>Array.isArray(e[kind])?e[kind]:[])).sort((a,b)=>a.localeCompare(b));}
+function canonicalTerms(value,kind){const known=new Map(vocabulary(kind).map(term=>[norm(term),term]));return uniqueText(splitTags(value).map(term=>known.get(norm(term))||term));}
+function closeVocabularySuggestions(){document.querySelectorAll('[data-suggestions]').forEach(box=>{box.hidden=true;box.innerHTML='';});}
+for(const input of document.querySelectorAll('[data-vocabulary]')){
+ const kind=input.dataset.vocabulary,box=document.querySelector('[data-suggestions="'+kind+'"]');
+ const suggest=()=>{const terms=input.value.split(/[,;]/),query=norm(terms.pop()),chosen=new Set(terms.map(norm));
+ const matches=vocabulary(kind).filter(term=>norm(term).includes(query)&&!chosen.has(norm(term))).slice(0,12);
+ box.innerHTML=matches.map(term=>'<button type="button">'+esc(term)+'</button>').join('');box.hidden=!matches.length;
+ [...box.children].forEach((button,index)=>button.onclick=()=>{terms.push(matches[index]);input.value=uniqueText(terms.map(x=>x.trim()).filter(Boolean)).join(', ')+', ';input.dispatchEvent(new Event('input',{bubbles:true}));input.focus();});
+ };
+ input.addEventListener('input',suggest);input.addEventListener('focus',suggest);input.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();event.stopPropagation();closeVocabularySuggestions();}if(event.key==='ArrowDown'&&!box.hidden){event.preventDefault();box.querySelector('button')?.focus();}});
+}
+document.addEventListener('click',event=>{if(!event.target.closest('[data-vocabulary],[data-suggestions]'))closeVocabularySuggestions();});
+function renderVocabularyFilters(){for(const kind of ['tags','moods']){const select=$('library'+(kind==='tags'?'Tag':'Mood')+'Filter'),value=select.value;select.innerHTML='<option value="">All '+kind+'</option>'+vocabulary(kind).map(term=>'<option value="'+esc(term)+'">'+esc(term)+'</option>').join('');select.value=vocabulary(kind).includes(value)?value:'';}}
+function renderAll(){renderVocabularyFilters();renderFavourites();renderCurrent();renderFilters();renderLibrary();renderTimeline();renderPassageFilters();renderPassages();renderInsights();renderMetadataKpis()}
 function workAverageRating(wid){const a=experiencesFor(wid).filter(e=>e.rating!==''&&e.rating!=null).map(e=>Number(e.rating));return a.length?a.reduce((s,x)=>s+x,0)/a.length:null}
 function workLatestDate(wid){return experiencesFor(wid).map(experienceDate).filter(Boolean).sort().pop()||''}
 function reviewWords(e){return String(e.review||'').trim()?String(e.review).trim().split(/\s+/).length:0}
@@ -1334,6 +1350,7 @@ function renderInsights(){
   renderRatingByMedium(rated);
   renderReviewRateByMedium(experienced);
   renderLongestReviews(reviewed);
+  for(const [kind,id] of [['tags','tag'],['moods','mood']]){const names=new Map(vocabulary(kind).map(term=>[norm(term),term])),terms=vocabulary(kind,experienced).map(term=>names.get(norm(term))||term);$(id+'StatsPanel').hidden=!terms.length;$(id+'Stats').innerHTML=terms.map(term=>{const count=experienced.filter(e=>(e[kind]||[]).some(value=>norm(value)===norm(term))).length;return '<button type="button" class="btn subtle" data-drill="'+kind+'" data-value="'+esc(term)+'">'+esc(term)+' · '+count+'</button>';}).join('');}
   $('activityPanel').hidden=!allTime;$('trendPanel').hidden=!allTime;
   if(allTime){renderActivityByYear(experienced);renderRatingTrend(rated);}
 }
@@ -1355,6 +1372,7 @@ function openInsightDrill(kind,value){
   else if(kind==='ratedYear'){matching=all.filter(e=>datedYear(e)===value&&insightHasRating(e));title=`${value} · Ratings`}
   else if(kind==='reviewedMedium'){matching=all.filter(e=>workFor(e.workId)?.type===value&&insightReview(e));title=`${value} · Written reviews`}
   else if(kind==='ratingBin'){matching=all.filter(e=>insightHasRating(e)&&ratingBin(e.rating)===Number(value));title=`Rated ${formatRating(Number(value))}/5`}
+  else if(kind==='tags'||kind==='moods'){matching=all.filter(e=>(e[kind]||[]).some(term=>norm(term)===norm(value)));title=(kind==='tags'?'Tag: ':'Mood: ')+value;}
   else if(kind==='allRated'){matching=all.filter(insightHasRating);title='All rated experiences'}
   else if(kind==='allReviewed'){matching=all.filter(insightReview);title='All written reviews'}
   else if(kind==='fiveStars'){matching=all.filter(e=>insightHasRating(e)&&Number(e.rating)===5);title='Five-star experiences'}
@@ -1512,6 +1530,7 @@ function renderLibrary(){
   const q=norm($('searchInput').value),type=libraryType,status=$('statusFilter').value,content=$('libraryContentFilter')?.value||'',sort=$('librarySort')?.value||'title';
   let works=db.works.filter(w=>(!type||w.type===type)&&(!status||workStatus(w.id)===status)).filter(w=>{
     const ex=experiencesFor(w.id);
+    const tag=$('libraryTagFilter').value,mood=$('libraryMoodFilter').value;if((tag||mood)&&!ex.some(e=>(!tag||(e.tags||[]).some(t=>norm(t)===norm(tag)))&&(!mood||(e.moods||[]).some(m=>norm(m)===norm(mood)))))return false;
     if(content==='favorite'&&!w.liked)return false;
     if(content==='reviewed'&&!ex.some(e=>String(e.review||'').trim()))return false;
     if(content==='unreviewed'&&ex.some(e=>String(e.review||'').trim()))return false;
@@ -1540,7 +1559,7 @@ function experienceHTML(w,e){
   const range=e.startDate&&e.endDate&&e.startDate!==e.endDate?`${dateLabel(e.startDate)} → ${dateLabel(e.endDate)}`:'';
   const facts=[range,e.venue].filter(Boolean).map(esc).join(' · ');
   const quotes=quotesForExperience(e);
-  return `<article class="experience" id="experience-${esc(e.id)}"${coverAccentAttr(w,e)}><div class="experience-head"><strong class="experience-date">${esc(dateLabel(e.endDate||e.startDate)||STATUS_LABELS[e.status]||'Undated')}</strong>${statusPill(e.status)}${e.repeat?'<span class="pill">repeat</span>':''}${ratingPips(e.rating)}<button type="button" class="btn subtle experience-edit" data-edit="${esc(e.id)}">Edit</button></div>${facts?`<div class="experience-facts">${facts}</div>`:''}${w.type==='Book'&&(e.moods?.length||e.pace)?`<div class="experience-profile meta">${esc([...(e.moods||[]),e.pace?e.pace[0].toUpperCase()+e.pace.slice(1)+' pace':''].filter(Boolean).join(' · '))}</div>`:''}${e.viewingLanguage?`<div class="experience-language"><strong>Viewing language:</strong> ${esc(e.viewingLanguage)}</div>`:''}${e.edition?`<div class="experience-edition"><strong>Edition:</strong> ${esc(editionSummary(e.edition,false)||'edition recorded')}</div>`:''}${e.sourceUrl?`<div class="experience-source">${sourcePageLink(e)}</div>`:''}${e.review?`<p class="experience-review">${esc(e.review).replace(/\n/g,'<br>')}</p>`:''}${quotes.length?`<div class="experience-passages"><div class="eyebrow">PASSAGES</div>${quotes.map(q=>`<figure class="experience-quote saved-passage"><blockquote>${esc(q.text).replace(/\n/g,'<br>')}</blockquote>${q.note?`<figcaption>${esc(q.note)}</figcaption>`:''}</figure>`).join('')}</div>`:''}${e.tags?.length?`<div class="tag-row">${e.tags.map(t=>`<span class="pill">${esc(t)}</span>`).join('')}</div>`:''}${e.loggedDate?`<div class="meta small" style="margin-top:8px">Logged/added: ${esc(dateLabel(e.loggedDate))}</div>`:''}</article>`;
+  return `<article class="experience" id="experience-${esc(e.id)}"${coverAccentAttr(w,e)}><div class="experience-head"><strong class="experience-date">${esc(dateLabel(e.endDate||e.startDate)||STATUS_LABELS[e.status]||'Undated')}</strong>${statusPill(e.status)}${e.repeat?'<span class="pill">repeat</span>':''}${ratingPips(e.rating)}<button type="button" class="btn subtle experience-edit" data-edit="${esc(e.id)}">Edit</button></div>${e.cover?coverHTML(w,'experience-cover',e):''}${facts?`<div class="experience-facts">${facts}</div>`:''}${w.type==='Book'&&(e.moods?.length||e.pace)?`<div class="experience-profile meta">${esc([...(e.moods||[]),e.pace?e.pace[0].toUpperCase()+e.pace.slice(1)+' pace':''].filter(Boolean).join(' · '))}</div>`:''}${e.viewingLanguage?`<div class="experience-language"><strong>Viewing language:</strong> ${esc(e.viewingLanguage)}</div>`:''}${e.edition?`<div class="experience-edition"><strong>Edition:</strong> ${esc(editionSummary(e.edition,false)||'edition recorded')}</div>`:''}${e.sourceUrl&&w.type!=='Theatre'?`<div class="experience-source">${sourcePageLink(e)}</div>`:''}${e.review?`<p class="experience-review">${esc(e.review).replace(/\n/g,'<br>')}</p>`:''}${quotes.length?`<div class="experience-passages"><div class="eyebrow">PASSAGES</div>${quotes.map(q=>`<figure class="experience-quote saved-passage"><blockquote>${esc(q.text).replace(/\n/g,'<br>')}</blockquote>${q.note?`<figcaption>${esc(q.note)}</figcaption>`:''}</figure>`).join('')}</div>`:''}${e.tags?.length?`<div class="tag-row">${e.tags.map(t=>`<span class="pill">${esc(t)}</span>`).join('')}</div>`:''}${e.loggedDate?`<div class="meta small" style="margin-top:8px">Logged/added: ${esc(dateLabel(e.loggedDate))}</div>`:''}</article>`;
 }
 function renderWorkPage(id){
   const w=workFor(id);if(!w)return false;const ex=experiencesFor(id),latest=ex[0];
@@ -1617,12 +1636,13 @@ function languageLabel(code){return ({it:'Italian',en:'English',fr:'French',de:'
 let pageImageRequest=null,pageImageRevision=0;
 function pageImagesAllowed(){return !['Book','Film','TV'].includes($('entryForm').elements.type.value)}
 function resetPageImages(){
+  resetCoverTask();
   pageImageRevision++;pageImageRequest?.abort();pageImageRequest=null;
   $('pageImageResults').innerHTML='';$('pageImageResults').hidden=true;
   $('pageImageStatus').textContent='';$('findPageImageBtn').disabled=false;
 }
 function updatePageImageControls(){
-  const allowed=pageImagesAllowed();$('findPageImageBtn').hidden=!allowed;
+  const type=$('entryForm').elements.type.value;if($('experienceCoverField').dataset.medium!==type){resetCoverTask();$('experienceCoverField').dataset.medium=type;}const allowed=pageImagesAllowed();$('findPageImageBtn').hidden=!allowed;$('experienceCoverField').hidden=$('entryForm').elements.type.value==='Book';
   if(!allowed)resetPageImages();
 }
 async function findPageImages(automatic=false){
@@ -1646,12 +1666,12 @@ async function findPageImages(automatic=false){
     $('pageImageResults').hidden=!images.length;
     $('pageImageResults').querySelectorAll('[data-page-image]').forEach((button,index)=>{
       button.querySelector('img').addEventListener('error',()=>{button.disabled=true;button.querySelector('span').textContent='Image unavailable';});
-      button.onclick=()=>{
+      button.onclick=async()=>{
         const existing=f.elements.cover.value.trim(),chosen=images[index].url;
         if(existing&&existing!==chosen&&safeWebUrl(existing)!==source&&!confirm('Replace the current cover with this image?'))return;
-        f.elements.cover.value=chosen;
+        const revision=pageImageRevision;const stored=await selectExperienceCover(signal=>storedRemoteCover(chosen,signal));if(!stored||revision!==pageImageRevision)return;
         $('pageImageResults').querySelectorAll('button').forEach(node=>node.setAttribute('aria-pressed',String(node===button)));
-        $('pageImageStatus').textContent='Image selected. Save the entry to keep it.';
+        $('pageImageStatus').textContent='Image stored in the form. Save the entry to keep it in your archive.';
       };
     });
   }catch(error){
@@ -1708,7 +1728,28 @@ async function editionLookup(){
   }
   const wk=editionWorkKey||$('entryForm').elements.editionWorkKey?.value||selectedCatalogItem?.external?.openlibraryKey||'';if(wk)await loadEditionsForWork(wk);else $('editionCurrent').textContent='Choose an Open Library work or enter an ISBN. You can also enter the edition manually.';
 }
-async function compressCover(file){if(!file)return'';const bmp=await createImageBitmap(file);const scale=Math.min(1,600/bmp.width,900/bmp.height);const c=document.createElement('canvas');c.width=Math.max(1,Math.round(bmp.width*scale));c.height=Math.max(1,Math.round(bmp.height*scale));c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.78)}
+let coverTaskRevision=0,coverTaskBusy=false,coverTaskRequest=null;
+function resetCoverTask(){coverTaskRevision++;coverTaskRequest?.abort();coverTaskRequest=null;coverTaskBusy=false;$('experienceCoverStatus').textContent='';}
+function renderExperienceCover(){const url=$('entryForm').elements.cover.value.trim(),box=$('experienceCoverPreview'),input=$('experienceCoverInput');input.value=safeWebUrl(url);input.placeholder=url.startsWith('data:')?'Replace with an image URL':'Image URL';box.hidden=!url;box.innerHTML=url?'<img src="'+esc(url)+'" alt="Selected cover">':'';}
+async function storedRemoteCover(url,signal){
+ const response=await fetch('/api/pathos/page-images',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,mode:'store'}),signal});
+ const result=await response.json();if(!response.ok)throw new Error(result.error||'Could not store that image.');
+ if(!/^data:image\/(?:png|jpeg|webp|gif|avif);base64,/.test(result.dataUrl||''))throw new Error('That link did not return a supported image.');
+ const blob=await (await fetch(result.dataUrl)).blob();return compressCover(blob);
+}
+async function selectExperienceCover(load){
+ resetCoverTask();const revision=coverTaskRevision,controller=new AbortController();coverTaskRequest=controller;coverTaskBusy=true;
+ const previous=$('entryForm').elements.cover.value;$('experienceCoverStatus').textContent='Storing image…';
+ const timeout=setTimeout(()=>controller.abort(),15000);
+ try{const url=await load(controller.signal);if(revision!==coverTaskRevision||!$('entryDialog').open||!window.pathosCanEdit||$('entryForm').elements.cover.value!==previous)return false;
+ $('entryForm').elements.cover.value=url;renderExperienceCover();$('experienceCoverStatus').textContent='Image ready. Save to keep it with this experience and in backups.';return true;
+ }catch(error){if(revision===coverTaskRevision)$('experienceCoverStatus').textContent='Could not store that image. Upload your own image or try again.';return false;}
+ finally{clearTimeout(timeout);if(revision===coverTaskRevision){coverTaskBusy=false;coverTaskRequest=null;}}
+}
+$('experienceCoverFile').addEventListener('change',async event=>{const file=event.target.files?.[0];event.target.value='';if(file)await selectExperienceCover(()=>compressCover(file));});
+$('experienceCoverInput').addEventListener('input',event=>{resetCoverTask();$('entryForm').elements.cover.value=event.target.value;const box=$('experienceCoverPreview');box.hidden=true;box.innerHTML='';});
+$('entryDialog').addEventListener('close',()=>{resetCoverTask();closeVocabularySuggestions();});
+async function compressCover(file){if(!file)return'';const bmp=await createImageBitmap(file);const scale=Math.min(1,600/bmp.width,900/bmp.height);const c=document.createElement('canvas');c.width=Math.max(1,Math.round(bmp.width*scale));c.height=Math.max(1,Math.round(bmp.height*scale));c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);bmp.close();return c.toDataURL('image/jpeg',.78)}
 function titleScore(a,b){a=norm(a).replace(/[^a-z0-9à-ž ]/g,'');b=norm(b).replace(/[^a-z0-9à-ž ]/g,'');if(a===b)return 4;if(a.includes(b)||b.includes(a))return 2;const aw=new Set(a.split(' ')),bw=b.split(' ');return bw.filter(x=>aw.has(x)).length/Math.max(1,bw.length)}
 function bestBookDoc(w,docs){return [...docs].sort((a,b)=>{const aa=(a.author_name||[]).some(x=>w.creator&&(norm(w.creator).includes(norm(x))||norm(x).includes(norm(w.creator))));const ba=(b.author_name||[]).some(x=>w.creator&&(norm(w.creator).includes(norm(x))||norm(x).includes(norm(w.creator))));const sa=titleScore(a.title,w.title)+(aa?2:0);const sb=titleScore(b.title,w.title)+(ba?2:0);return sb-sa})[0]}
 async function enrichBook(w){
@@ -1754,7 +1795,7 @@ function updateFormSections(){
   const ed=editionFromForm();if($('editionFormSummary'))$('editionFormSummary').textContent=ed?(ed.publisher||ed.isbn||ed.ean||ed.identifierValue||'Recorded'):'Optional · ISBN, EAN, cover';
 }
 function resetFormSections(existing=false){
-  resetPageImages();updatePageImageControls();
+  resetPageImages();resetCoverTask();updatePageImageControls();renderExperienceCover();
   ['passagesDetails','bookProfileDetails','bookEditionDetails','moreEntryDetails'].forEach(id=>{if($(id))$(id).open=false});
   if(existing){
     const f=$('entryForm');
@@ -1772,16 +1813,16 @@ function openEntryDialog(opts={}){
 function openExperience(id){
   if(archiveBusy)return;
   if(!window.pathosCanEdit){const item=db.experiences.find(x=>x.id===id);if(item)openWork(item.workId);return;}
-  const e=db.experiences.find(x=>x.id===id);if(!e)return;const w=workFor(e.workId);if(!w)return;editingExperienceId=id;const f=$('entryForm');f.reset();clearEditionForm();Object.entries({title:w.title,type:w.type,creator:w.creator,year:w.year,cover:w.cover,status:e.status||'completed',startDate:e.startDate,endDate:e.endDate,rating:e.rating,venue:e.venue,viewingLanguage:e.viewingLanguage,sourceUrl:e.sourceUrl||'',tags:(e.tags||[]).join(', '),review:e.review}).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??''});fillWorkFlags(w);fillBookProfile(w,e);f.elements.repeat.checked=e.repeat;f.elements.isPrivate.checked=!e.isPublic;renderQuoteEditor(e.quotes||[]);if(e.edition)fillEditionForm(e.edition);selectedCatalogItem=localItemFromWork(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(true);$('deleteBtn').classList.remove('hidden');$('entryDialog').showModal();void findPageImages(true);
+  const e=db.experiences.find(x=>x.id===id);if(!e)return;const w=workFor(e.workId);if(!w)return;editingExperienceId=id;const f=$('entryForm');f.reset();clearEditionForm();Object.entries({title:w.title,type:w.type,creator:w.creator,year:w.year,cover:e.cover||w.cover,status:e.status||'completed',startDate:e.startDate,endDate:e.endDate,rating:e.rating,venue:e.venue,viewingLanguage:e.viewingLanguage,sourceUrl:e.sourceUrl||'',tags:(e.tags||[]).join(', '),review:e.review}).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??''});fillWorkFlags(w);fillBookProfile(w,e);f.elements.repeat.checked=e.repeat;f.elements.isPrivate.checked=!e.isPublic;renderQuoteEditor(e.quotes||[]);if(e.edition)fillEditionForm(e.edition);selectedCatalogItem=localItemFromWork(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(true);$('deleteBtn').classList.remove('hidden');$('entryDialog').showModal();void findPageImages(true);
 }
-$('entryForm').addEventListener('submit',ev=>{if(!window.pathosCanEdit||archiveBusy){ev.preventDefault();return;}
-  ev.preventDefault();const f=new FormData(ev.currentTarget);let data=Object.fromEntries(f.entries());if(SINGLE_DATE_MEDIA[data.type])data.startDate='';if(!validateDateOrder(true))return;data.repeat=f.get('repeat')==='on';if(data.type==='Book'){data.genres=splitTags(f.get('bookGenres'));data.moods=splitTags(f.get('bookMoods'));data.pace=normalizePace(f.get('bookPace'));}data.liked=f.get('liked')==='on';data.owned=f.get('owned')==='on';data.isPublic=f.get('isPrivate')!=='on';data.quotes=quotesFromEditor();data=mergeSelectedCatalog(data);if(data.type==='Book')data.edition=editionFromForm();
-  if(editingExperienceId){const e=db.experiences.find(x=>x.id===editingExperienceId);const oldWork=workFor(e.workId);if(oldWork&&norm(oldWork.title)===norm(data.title)){Object.assign(oldWork,{title:data.title,type:data.type,creator:data.creator,year:data.year,cover:data.cover||oldWork.cover});oldWork.external=Object.assign(oldWork.external||{},data.external||{});oldWork.sourceMetadata=Object.assign(oldWork.sourceMetadata||{},data.sourceMetadata||{});oldWork.aliases=uniqueText([...(oldWork.aliases||[]),...(data.aliases||[])])}else e.workId=findOrCreateWork(data).id;Object.assign(e,{startDate:data.startDate,endDate:data.endDate,rating:data.rating===''?'':Number(data.rating),venue:data.venue,viewingLanguage:data.type==='Film'?String(data.viewingLanguage||'').trim():'',sourceUrl:safeWebUrl(data.sourceUrl||''),isPublic:data.isPublic!==false,review:data.review,tags:String(data.tags||'').split(',').map(s=>s.trim()).filter(Boolean),repeat:data.repeat,status:data.status||'completed',quotes:normalizeQuotes(data.quotes||[]),edition:data.type==='Book'?normalizeEdition(data.edition):null,...(data.type==='Book'?{moods:uniqueText(data.moods||[]),pace:normalizePace(data.pace)}:{})});const w=workFor(e.workId);saveWorkFlags(w,data);if(e.edition?.cover&&w)w.cover=e.edition.cover;toast('Saving changes…')}
+$('entryForm').addEventListener('submit',async ev=>{if(!window.pathosCanEdit||archiveBusy){ev.preventDefault();return;}
+  ev.preventDefault();if(coverTaskBusy){toast('Wait for the cover image to finish.');return;}const form=ev.currentTarget,cover=form.elements.cover.value.trim();if(pageImagesAllowed()&&safeWebUrl(cover)&&safeWebUrl(cover)!==safeWebUrl(form.elements.sourceUrl.value)){if(!await selectExperienceCover(signal=>storedRemoteCover(cover,signal)))return;}const f=new FormData(form);let data=Object.fromEntries(f.entries());if(SINGLE_DATE_MEDIA[data.type])data.startDate='';if(!validateDateOrder(true))return;data.repeat=f.get('repeat')==='on';data.tags=canonicalTerms(f.get('tags'),'tags');if(data.type==='Book'){data.genres=splitTags(f.get('bookGenres'));data.moods=canonicalTerms(f.get('bookMoods'),'moods');data.pace=normalizePace(f.get('bookPace'));}data.liked=f.get('liked')==='on';data.owned=f.get('owned')==='on';data.isPublic=f.get('isPrivate')!=='on';data.quotes=quotesFromEditor();data=mergeSelectedCatalog(data);if(data.type==='Book')data.edition=editionFromForm();
+  if(editingExperienceId){const e=db.experiences.find(x=>x.id===editingExperienceId);const oldWork=workFor(e.workId);if(oldWork&&norm(oldWork.title)===norm(data.title)){Object.assign(oldWork,{title:data.title,type:data.type,creator:data.creator,year:data.year,cover:data.type==='Book'?(data.cover||oldWork.cover):oldWork.cover});oldWork.external=Object.assign(oldWork.external||{},data.external||{});oldWork.sourceMetadata=Object.assign(oldWork.sourceMetadata||{},data.sourceMetadata||{});oldWork.aliases=uniqueText([...(oldWork.aliases||[]),...(data.aliases||[])])}else e.workId=findOrCreateWork(data).id;Object.assign(e,{startDate:data.startDate,endDate:data.endDate,rating:data.rating===''?'':Number(data.rating),venue:data.venue,viewingLanguage:data.type==='Film'?String(data.viewingLanguage||'').trim():'',sourceUrl:safeWebUrl(data.sourceUrl||''),isPublic:data.isPublic!==false,review:data.review,tags:data.tags,repeat:data.repeat,status:data.status||'completed',quotes:normalizeQuotes(data.quotes||[]),edition:data.type==='Book'?normalizeEdition(data.edition):null,...(data.type!=='Book'?{cover:data.cover||''}:{}),...(data.type==='Book'?{moods:uniqueText(data.moods||[]),pace:normalizePace(data.pace)}:{})});const w=workFor(e.workId);saveWorkFlags(w,data);if(e.edition?.cover&&w)w.cover=e.edition.cover;toast('Saving changes…')}
   else{const added=addExperience(data);saveWorkFlags(workFor(added.workId),data);toast('Saving experience…')}$('entryDialog').close();saveDb();
 });
 $('deleteBtn').onclick=()=>{if(!window.pathosCanEdit||archiveBusy)return;if(!editingExperienceId)return;if(confirm('Delete this experience?')){const e=db.experiences.find(x=>x.id===editingExperienceId);db.experiences=db.experiences.filter(x=>x.id!==editingExperienceId);if(e&&!db.experiences.some(x=>x.workId===e.workId))db.works=db.works.filter(w=>w.id!==e.workId);$('entryDialog').close();saveDb();toast('Deleting online…')}};
 $('addQuoteBtn').onclick=()=>appendQuoteRow();$('addBtn').onclick=()=>openEntryDialog();if($('heroAddBtn'))$('heroAddBtn').onclick=()=>openEntryDialog();$('closeDialog').onclick=$('cancelBtn').onclick=()=>$('entryDialog').close();$('closeWorkDialog').onclick=()=>$('workDialog').close();
-$('searchInput').addEventListener('input',renderLibrary);['typeFilter','statusFilter','libraryContentFilter','librarySort'].forEach(id=>{const el=$(id);if(el)el.addEventListener('change',renderLibrary)});
+$('searchInput').addEventListener('input',renderLibrary);['typeFilter','statusFilter','libraryContentFilter','librarySort','libraryTagFilter','libraryMoodFilter'].forEach(id=>{const el=$(id);if(el)el.addEventListener('change',renderLibrary)});
 ['passageSearch','passageTypeFilter','passageYearFilter','passageFeaturedFilter','passageSort'].forEach(id=>{const el=$(id);if(el)el.addEventListener(id==='passageSearch'?'input':'change',renderPassages)});
 // Measure the rendered labels, so fonts, zoom, available width and owner
 // controls determine overflow without a fixed desktop breakpoint.

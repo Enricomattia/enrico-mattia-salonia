@@ -1,7 +1,12 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import { COLORS, MONO } from "@/lib/tokens";
 import TrackedLink from "@/components/TrackedLink";
 
 export default function SiteFooter() {
+  const pathname = usePathname();
+  if (pathname === "/pathos" || pathname.startsWith("/pathos/") || pathname === "/pathos-personal" || pathname.startsWith("/pathos-personal/")) return null;
   return (
     <footer
       style={{
