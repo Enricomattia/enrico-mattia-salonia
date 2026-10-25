@@ -16,6 +16,8 @@ const {checkCoverAccents}=require('./pathos-cover-accent.cjs');
 const {checkNavigation,navigatePage}=require('./pathos-navigation.cjs');
 const {checkPreferences}=require('./pathos-preferences.cjs');
 const {checkEntryImprovements}=require('./pathos-entry-improvements.cjs');
+const {checkEntryRecall}=require('./pathos-entry-recall.cjs');
+const {checkGenreVocabulary}=require('./pathos-genres.cjs');
 const root=path.resolve(__dirname,'..');
 const publicRoot=path.join(root,'public');
 const launch={headless:true,...(process.env.PATHOS_BROWSER==='chromium'?{}:{channel:process.env.PATHOS_BROWSER||'msedge'})};
@@ -162,6 +164,8 @@ async function checkArchiveViews(page){
   await run('movie language, edition series, repeat isolation, round trip and offline reload',()=>checkEntryDetails(page,{backup,restore}));
   await run('favourite shelf, book ownership, single language field, quiet insights and clean reading pages',()=>checkPreferences(page,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS}));
   await run('shared tag/mood vocabulary, exact filters, statistics, universal uploads and offline backup continuity',()=>checkEntryImprovements(page,{backup,restore}));
+  await run('quiet edition/venue cards, automatic book completion, saved detail suggestions and filtered statistics',()=>checkEntryRecall(page,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS}));
+  await run('saved genres, shared starter terms, punctuation, empty archives and offline continuity',()=>checkGenreVocabulary(page,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS}));
   await run('restore/export round trip, preserved edition and passage IDs, cancellation and durable undo',async()=>{
     await restore(page,fixture);assert.deepEqual((await archive(page)).experiences,fixture.experiences);
     const exported=await backup(page);assert.deepEqual(exported.experiences,fixture.experiences);
@@ -312,9 +316,10 @@ async function checkArchiveViews(page){
   await run('two staged releases: Later, two clients, pending/failed writes, open form, offline browser restart',async()=>{
     release='before';
     const updateFixture=copy(fixture);
+    updateFixture.works[0].genres=['Fiction, general'];
     Object.assign(updateFixture.experiences[0].edition,{series:'Nuovi Coralli',seriesNumber:'15'});
     updateFixture.works.push({id:'update-film',title:'Update language test',type:'Film'});
-    updateFixture.experiences.push({id:'update-watch',workId:'update-film',viewingLanguage:'Italian',status:'completed',rating:'',quotes:[]});
+    updateFixture.experiences.push({id:'update-watch',workId:'update-film',viewingLanguage:'Italian',venue:'Update cinema',status:'completed',rating:'',quotes:[]});
     const profile=path.join(temporary,'profile');
     let installed=await chromium.launchPersistentContext(profile,launch);persistentContexts.push(installed);
     let app=await personal(installed);
@@ -374,6 +379,9 @@ async function checkArchiveViews(page){
     assert.equal((await archive(app)).experiences[0].edition.cover,pixel);
     assert.equal((await archive(app)).experiences[0].edition.series,'Nuovi Coralli');
     assert.equal((await archive(app)).experiences[1].viewingLanguage,'Italian');
+    assert.equal((await archive(app)).experiences[1].venue,'Update cinema');
+    assert.deepEqual((await archive(app)).works[0].genres,['Fiction, general']);
+    assert.equal(await app.evaluate(()=>window.PATHOS_STARTER_TERMS.genres.length),161,'Starter choices load after a full offline browser restart');
     assert.equal(await app.locator('link[rel="manifest"]').getAttribute('href'),'/pathos-personal/manifest.webmanifest');
     await app.screenshot({path:path.join(temporary,'personal.png'),fullPage:true});
     await installed.close();
@@ -399,6 +407,8 @@ async function checkArchiveViews(page){
     await checkEntryDetails(owner,{backup,restore});
     await checkPreferences(owner,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS});
     await checkEntryImprovements(owner,{backup,restore});
+    await checkEntryRecall(owner,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS});
+    await checkGenreVocabulary(owner,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS});
     await owner.evaluate(()=>{db.experiences[0].review='Cloud edit';return saveDb();});
     assert.equal(await owner.evaluate(()=>window.mockCloud.experiences[0].review),'Cloud edit');
     assert.deepEqual(await owner.evaluate(()=>{db.experiences[0].review='Queued A';const a=saveDb();db.experiences[0].review='Queued B';return Promise.all([a,saveDb()]);}),[true,true]);
