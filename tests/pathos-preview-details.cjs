@@ -11,6 +11,7 @@ const {checkTimeline}=require('./pathos-timeline.cjs');
 const {checkPreferences}=require('./pathos-preferences.cjs');
 const {checkEntryImprovements}=require('./pathos-entry-improvements.cjs');
 const {checkEntryRecall}=require('./pathos-entry-recall.cjs');
+const {checkGenreVocabulary}=require('./pathos-genres.cjs');
 const target=new URL(process.env.PATHOS_PREVIEW_URL||'https://invalid.invalid');
 assert.match(target.hostname,/^deploy-preview-\d+--[a-z0-9-]+\.netlify\.app$/,'Only a Netlify PR preview is allowed');
 const moduleSource=`export function createClient(){return {auth:{getUser:async()=>({data:{user:{id:window.PATHOS_CONFIG.ownerUserId}}})},rpc:async(name,args)=>{if(name==='pathos_replace_my_archive'){window.testCloud=JSON.parse(JSON.stringify(args.p_archive));return{};}return{data:window.testCloud};}}}`;
@@ -48,7 +49,7 @@ async function restore(page,value){
     if(variant==='personal'){
       await page.evaluate(()=>navigator.serviceWorker.ready);
       await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
-      assert((await page.evaluate(()=>caches.keys())).includes('pathos-personal-shell-v22'));
+      assert((await page.evaluate(()=>caches.keys())).includes('pathos-personal-shell-v23'));
     }
     assert.equal(await page.locator('#reviews,[data-view="reviews"]').count(),0);
     await page.evaluate(()=>showView('timeline'));
@@ -59,6 +60,7 @@ async function restore(page,value){
     await checkEntryDetails(page,{backup,restore});
     await checkEntryImprovements(page,{backup,restore});
     await checkEntryRecall(page,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS});
+    await checkGenreVocabulary(page,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS});
     const stored=await page.evaluate(async url=>storedRemoteCover(url,new AbortController().signal),target.origin+'/pathos-personal/icon-192.png');
     assert.match(stored,/^data:image\/jpeg;base64,/,'Real preview endpoint copies, validates and decodes public raster artwork');
     await page.locator('#addBtn').click();

@@ -948,7 +948,7 @@ body:not(.pathos-owner) .experience-edit{display:none}
       </details>
       <details class="entry-details span-2" id="bookProfileDetails"><summary>Book profile <span class="entry-summary-note">Genres, moods, pace</span></summary>
         <div class="details-inner form-grid">
-          <label class="field span-2">Genres<input class="input" name="bookGenres" placeholder="e.g. classics, literary"></label>
+          <label class="field span-2">Genres<input class="input" name="bookGenres" autocomplete="off" data-vocabulary="genres" placeholder="e.g. classics, literary"><div class="vocabulary-suggestions" data-suggestions="genres" hidden></div></label>
           <label class="field">Moods<input class="input" name="bookMoods" autocomplete="off" data-vocabulary="moods" placeholder="e.g. reflective, dark"><div class="vocabulary-suggestions" data-suggestions="moods" hidden></div></label>
           <label class="field">Pace<select class="input" name="bookPace"><option value="">Not recorded</option><option value="slow">Slow</option><option value="medium">Medium</option><option value="fast">Fast</option></select></label>
         </div>
@@ -1243,13 +1243,24 @@ function fillImportedBookProfile(m){
 
 function normalizePace(value){return ({slow:'slow','slow-paced':'slow','slow paced':'slow',medium:'medium','medium-paced':'medium','medium paced':'medium',fast:'fast','fast-paced':'fast','fast paced':'fast'})[norm(value)]||''}
 function workGenres(w){return Array.isArray(w?.genres)?w.genres:Array.isArray(w?.sourceMetadata?.genres)?w.sourceMetadata.genres:[]}
+// Quoted genre terms preserve catalogue subjects containing commas or semicolons.
+function genreParts(value){
+ const parts=[];let text='',quoted=false;value=String(value||'');
+ for(let i=0;i<value.length;i++){const char=value[i];
+  if(char==='"'){if(quoted&&value[i+1]==='"'){text+='"';i++;}else quoted=!quoted;}
+  else if((char===','||char===';')&&!quoted){parts.push(text.trim());text='';}
+  else text+=char;
+ }
+ parts.push(text.trim());return parts;
+}
+function formatGenres(terms){return terms.map(term=>/[",;]/.test(term)?'"'+term.replace(/"/g,'""')+'"':term).join(', ');}
 function fillBookProfile(w=null,e=null){
-  const f=$('entryForm');f.dataset.profileWorkId=w?.id||'';f.elements.bookGenres.value=workGenres(w).join(', ');delete f.elements.bookGenres.dataset.changed;
+  const f=$('entryForm');f.dataset.profileWorkId=w?.id||'';f.elements.bookGenres.value=formatGenres(workGenres(w));delete f.elements.bookGenres.dataset.changed;
   f.elements.bookMoods.value=(e?.moods||[]).join(', ');f.elements.bookPace.value=normalizePace(e?.pace);
 }
 function suggestBookGenres(item){
   const f=$('entryForm'),w=item.provider==='local'?workFor(item.id):findWork(item);f.dataset.profileWorkId=w?.id||'';
-  if(!f.elements.bookGenres.dataset.changed)f.elements.bookGenres.value=(w?workGenres(w):item.sourceMetadata?.genres||item.genres||[]).join(', ');
+  if(!f.elements.bookGenres.dataset.changed)f.elements.bookGenres.value=formatGenres(w?workGenres(w):item.sourceMetadata?.genres||item.genres||[]);
 }
 function saveBookGenres(w,data){
   if(w?.type!=='Book')return;const f=$('entryForm');
@@ -1288,17 +1299,21 @@ function experienceDetail(kind,e){
  if(kind==='languages'){const type=workFor(e.workId)?.type;return String(languageLabel(type==='Film'?e.viewingLanguage:type==='Book'?e.edition?.language:'')).trim();}
  return '';
 }
-function vocabulary(kind,experiences=db.experiences){return uniqueText(experiences.flatMap(e=>Array.isArray(e[kind])?e[kind]:[experienceDetail(kind,e)])).sort((a,b)=>a.localeCompare(b));}
+function vocabulary(kind,experiences=db.experiences){return uniqueText(kind==='genres'?db.works.flatMap(workGenres):experiences.flatMap(e=>Array.isArray(e[kind])?e[kind]:[experienceDetail(kind,e)])).sort((a,b)=>a.localeCompare(b));}
+function suggestedTerms(kind){
+ const starters=['moods','genres'].includes(kind)?window.PATHOS_STARTER_TERMS?.[kind]||[]:[];
+ return uniqueText([...vocabulary(kind),...starters,...(kind==='languages'?['Italian','English','French','German','Spanish','Portuguese']:[])]);
+}
 function canonicalDetail(value,kind){const text=String(value||'').trim().replace(/\s+/g,' ');return vocabulary(kind).find(term=>norm(term)===norm(text))||text;}
-function canonicalTerms(value,kind){const known=new Map(vocabulary(kind).map(term=>[norm(term),term]));return uniqueText(splitTags(value).map(term=>known.get(norm(term))||term));}
+function canonicalTerms(value,kind){const known=new Map(vocabulary(kind).map(term=>[norm(term),term]));return uniqueText((kind==='genres'?genreParts(value):splitTags(value)).map(term=>known.get(norm(term))||term));}
 function closeVocabularySuggestions(){document.querySelectorAll('[data-suggestions]').forEach(box=>{box.hidden=true;box.innerHTML='';});}
 for(const input of document.querySelectorAll('[data-vocabulary]')){
  const kind=input.dataset.vocabulary,single=input.dataset.single==='true',box=input.parentElement.querySelector('[data-suggestions]');
- const suggest=()=>{const terms=single?[]:input.value.split(/[,;]/),query=norm(single?input.value:terms.pop()),chosen=new Set(terms.map(norm));
- const available=kind==='languages'?uniqueText([...vocabulary(kind),'Italian','English','French','German','Spanish','Portuguese']):vocabulary(kind);
+ const suggest=()=>{const terms=single?[]:kind==='genres'?genreParts(input.value):input.value.split(/[,;]/),query=norm(single?input.value:terms.pop()),chosen=new Set(terms.map(norm));
+ const available=suggestedTerms(kind);
  const matches=available.filter(term=>norm(term).includes(query)&&!chosen.has(norm(term))).slice(0,12);
  box.innerHTML=matches.map(term=>'<button type="button">'+esc(term)+'</button>').join('');box.hidden=!matches.length;
- [...box.children].forEach((button,index)=>button.onclick=()=>{terms.push(matches[index]);input.value=single?matches[index]:uniqueText(terms.map(x=>x.trim()).filter(Boolean)).join(', ')+', ';input.dispatchEvent(new Event('input',{bubbles:true}));input.focus();if(single)closeVocabularySuggestions();});
+ [...box.children].forEach((button,index)=>button.onclick=()=>{terms.push(matches[index]);const selected=uniqueText(terms.map(x=>x.trim()).filter(Boolean));input.value=single?matches[index]:(kind==='genres'?formatGenres(selected):selected.join(', '))+', ';input.dispatchEvent(new Event('input',{bubbles:true}));input.focus();if(single)closeVocabularySuggestions();});
  };
  input.addEventListener('input',suggest);input.addEventListener('focus',suggest);input.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();event.stopPropagation();closeVocabularySuggestions();}if(event.key==='ArrowDown'&&!box.hidden){event.preventDefault();box.querySelector('button')?.focus();}});
 }
@@ -1841,7 +1856,7 @@ function openExperience(id){
   const e=db.experiences.find(x=>x.id===id);if(!e)return;const w=workFor(e.workId);if(!w)return;editingExperienceId=id;const f=$('entryForm');f.reset();clearEditionForm();Object.entries({title:w.title,type:w.type,creator:w.creator,year:w.year,cover:e.cover||w.cover,status:e.status||'completed',startDate:e.startDate,endDate:e.endDate,rating:e.rating,venue:e.venue,viewingLanguage:e.viewingLanguage,sourceUrl:e.sourceUrl||'',tags:(e.tags||[]).join(', '),review:e.review}).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??''});fillWorkFlags(w);fillBookProfile(w,e);f.elements.repeat.checked=e.repeat;f.elements.isPrivate.checked=!e.isPublic;renderQuoteEditor(e.quotes||[]);if(e.edition)fillEditionForm(e.edition);selectedCatalogItem=localItemFromWork(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(true);$('deleteBtn').classList.remove('hidden');$('entryDialog').showModal();void findPageImages(true);
 }
 $('entryForm').addEventListener('submit',async ev=>{if(!window.pathosCanEdit||archiveBusy){ev.preventDefault();return;}
-  ev.preventDefault();if(coverTaskBusy){toast('Wait for the cover image to finish.');return;}const form=ev.currentTarget,cover=form.elements.cover.value.trim();if(pageImagesAllowed()&&safeWebUrl(cover)&&safeWebUrl(cover)!==safeWebUrl(form.elements.sourceUrl.value)){if(!await selectExperienceCover(signal=>storedRemoteCover(cover,signal)))return;}const f=new FormData(form);let data=Object.fromEntries(f.entries());if(SINGLE_DATE_MEDIA[data.type])data.startDate='';if(!validateDateOrder(true))return;data.venue=canonicalDetail(f.get('venue'),'venues');data.viewingLanguage=canonicalDetail(f.get('viewingLanguage'),'languages');data.repeat=f.get('repeat')==='on';data.tags=canonicalTerms(f.get('tags'),'tags');if(data.type==='Book'){data.genres=splitTags(f.get('bookGenres'));data.moods=canonicalTerms(f.get('bookMoods'),'moods');data.pace=normalizePace(f.get('bookPace'));}data.liked=f.get('liked')==='on';data.owned=f.get('owned')==='on';data.isPublic=f.get('isPrivate')!=='on';data.quotes=quotesFromEditor();data=mergeSelectedCatalog(data);if(data.type==='Book')data.edition=editionFromForm();
+  ev.preventDefault();if(coverTaskBusy){toast('Wait for the cover image to finish.');return;}const form=ev.currentTarget,cover=form.elements.cover.value.trim();if(pageImagesAllowed()&&safeWebUrl(cover)&&safeWebUrl(cover)!==safeWebUrl(form.elements.sourceUrl.value)){if(!await selectExperienceCover(signal=>storedRemoteCover(cover,signal)))return;}const f=new FormData(form);let data=Object.fromEntries(f.entries());if(SINGLE_DATE_MEDIA[data.type])data.startDate='';if(!validateDateOrder(true))return;data.venue=canonicalDetail(f.get('venue'),'venues');data.viewingLanguage=canonicalDetail(f.get('viewingLanguage'),'languages');data.repeat=f.get('repeat')==='on';data.tags=canonicalTerms(f.get('tags'),'tags');if(data.type==='Book'){data.genres=canonicalTerms(f.get('bookGenres'),'genres');data.moods=canonicalTerms(f.get('bookMoods'),'moods');data.pace=normalizePace(f.get('bookPace'));}data.liked=f.get('liked')==='on';data.owned=f.get('owned')==='on';data.isPublic=f.get('isPrivate')!=='on';data.quotes=quotesFromEditor();data=mergeSelectedCatalog(data);if(data.type==='Book')data.edition=editionFromForm();
   if(editingExperienceId){const e=db.experiences.find(x=>x.id===editingExperienceId);const oldWork=workFor(e.workId);if(oldWork&&norm(oldWork.title)===norm(data.title)){Object.assign(oldWork,{title:data.title,type:data.type,creator:data.creator,year:data.year,cover:data.type==='Book'?(data.cover||oldWork.cover):oldWork.cover});oldWork.external=Object.assign(oldWork.external||{},data.external||{});oldWork.sourceMetadata=Object.assign(oldWork.sourceMetadata||{},data.sourceMetadata||{});oldWork.aliases=uniqueText([...(oldWork.aliases||[]),...(data.aliases||[])])}else e.workId=findOrCreateWork(data).id;Object.assign(e,{startDate:data.startDate,endDate:data.endDate,rating:data.rating===''?'':Number(data.rating),venue:data.venue,viewingLanguage:data.type==='Film'?String(data.viewingLanguage||'').trim():'',sourceUrl:safeWebUrl(data.sourceUrl||''),isPublic:data.isPublic!==false,review:data.review,tags:data.tags,repeat:data.repeat,status:data.status||'completed',quotes:normalizeQuotes(data.quotes||[]),edition:data.type==='Book'?normalizeEdition(data.edition):null,...(data.type!=='Book'?{cover:data.cover||''}:{}),...(data.type==='Book'?{moods:uniqueText(data.moods||[]),pace:normalizePace(data.pace)}:{})});const w=workFor(e.workId);saveWorkFlags(w,data);if(e.edition?.cover&&w)w.cover=e.edition.cover;toast('Saving changes…')}
   else{const added=addExperience(data);saveWorkFlags(workFor(added.workId),data);toast('Saving experience…')}$('entryDialog').close();saveDb();
 });
