@@ -1,6 +1,6 @@
 # Πathos — Project handoff for Codex
 
-_Last checked against the implementation: 18 October 2026._
+_Last checked against the implementation: 25 October 2026._
 
 ## 1. What Πathos is
 
@@ -75,7 +75,7 @@ Release changes in PR #6 (`codex/pathos-reliability`):
 - Hosted saves use a fresh owner-session check, an archive comparison against the latest cloud read, and a same-origin Web Lock where available. This rejects previously saved changes from other windows/devices, but **is not an atomic cross-device conditional write**. A simultaneous save on another device (or from an old client) can still race the preflight read; resolving that needs a separately reviewed server-side revision check.
 - Automatic ISBN enrichment fills missing edition fields and preserves recorded metadata, identifiers and uploaded/manual covers. Editing an edition also preserves its contributors.
 - Save errors remain visible and block Personal updates; a later successful write clears the failure. Personal refuses updates/restores while an entry dialog, import or metadata operation is open/running, and prevents new edits while preparing an update. Unsaved form entries are not auto-saved.
-- The service worker uses shell cache `pathos-personal-shell-v21` and looks up shell assets in its own versioned cache, so a waiting release's cache cannot be served prematurely. The standalone manifest is unchanged. Preview v4/v5 provided the real reliability update-cycle check; v6 stages interface simplifications and v7 adds official-page image suggestions. Release v8 adds winding timelines, mobile layout improvements and Current above the Home timeline. The v9 follow-up makes both timelines vertical and nearly full-width on phones (600px and narrower), retaining winding rows on larger screens. Release v10 adds viewing language and publication series and promotes Timeline into the primary navigation. Release v11 adds restrained artwork-derived accents and caches the standalone accent module. Release v12 improves accent recovery and the visibility of pale colors. Release v13 caches the book catalogue module and extends the existing bounded, best-effort cover cache to Google Books artwork.
+- The service worker uses shell cache `pathos-personal-shell-v22` and looks up shell assets in its own versioned cache, so a waiting release's cache cannot be served prematurely. The standalone manifest is unchanged. Preview v4/v5 provided the real reliability update-cycle check; v6 stages interface simplifications and v7 adds official-page image suggestions. Release v8 adds winding timelines, mobile layout improvements and Current above the Home timeline. The v9 follow-up makes both timelines vertical and nearly full-width on phones (600px and narrower), retaining winding rows on larger screens. Release v10 adds viewing language and publication series and promotes Timeline into the primary navigation. Release v11 adds restrained artwork-derived accents and caches the standalone accent module. Release v12 improves accent recovery and the visibility of pale colors. Release v13 caches the book catalogue module and extends the existing bounded, best-effort cover cache to Google Books artwork.
 
 ## 4. What the user wants the experience to feel like
 
@@ -151,6 +151,14 @@ The reported publisher, language, publication year, format, series, translator a
 - Theatre reading pages omit **Open reference page**; the recorded source URL remains editable and included in backups.
 - `scripts/pathos-public-preferences.sql` adds only boolean work `liked` and published experience `cover` to the inspected public RPC, retaining all publication/owner filters, RLS, grants and owner writes. It includes rollback instructions. Applied and verified with rolled-back synthetic public/private fixtures on 18 October; anonymous table/private-RPC access remains denied. Moods and ownership remain private.
 - Personal shell **v21** stages these changes without a storage migration or new shell assets; Update / Later is retained.
+
+### Entry details and recall (25 October 2026)
+
+- Reading pages omit the empty **Edition: edition recorded** placeholder. Real edition summaries still appear; identifiers, cover choices and edition metadata remain recorded. Film and theatre venues are omitted from diary and reading cards, but remain editable, searchable and included in backups and Insights. Other media keep their venue display.
+- Entering a valid, nonempty book finish date (including **Today**) selects **Completed** in the form. Loading an entry does not rewrite its status; cancelling does not save, clearing a date does not guess another status, and a subsequent manual status choice is respected. Other media keep their selected status.
+- Venue/platform and film/book language fields suggest saved answers from the currently loaded archive, including imports, reloads and restores. They share the existing tag/mood suggestion controls, with single-value selection for venues and languages. Commas/semicolons remain part of those values. Book languages keep the six existing common-language suggestions. New form saves reuse existing case/spacing spellings; older records are not bulk-rewritten. Language counts/suggestions recognise the existing catalogue-code labels (e.g. `eng` → English) without migrating stored metadata. Compound language answers remain one recorded value.
+- **Languages** and **Venues / platforms** in Insights count non-planned experiences within the selected year or All time. Each has an **All media** / medium filter and clickable counts using the same filter. Repeat experiences count separately. Languages use film viewing language and each book reading's edition language. Hosted counts use only the loaded owner/public archive; no additional fields or private terms are published.
+- Personal shell **v22** stages this interface update with the existing Update / Later flow. No storage migration, new shell assets, database or publication changes.
 
 ### Visual/product decisions worth preserving
 
