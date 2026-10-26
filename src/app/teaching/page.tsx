@@ -10,7 +10,7 @@ interface Course {
 const courses: Course[] = [
   {
     title: "Game Theory",
-    meta: "Spring 2026 · Second-year bachelor · Tor Vergata",
+    meta: "Spring 2026, 2027 · Second-year bachelor · Tor Vergata",
     materials: [
       { label: "Study guide", href: "/docs/game_guide.pdf" },
       { label: "Syllabus", href: "/docs/game_syl.pdf" },
