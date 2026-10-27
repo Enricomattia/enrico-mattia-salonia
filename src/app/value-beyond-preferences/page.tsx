@@ -17,7 +17,7 @@ export default function ValueBeyondPreferences() {
           We are pleased to invite submissions for the upcoming interdisciplinary workshop{" "}
           <strong>“Value Beyond Preferences”</strong>, to be held on{" "}
           <strong><time dateTime="2027-03-19">March 19, 2027</time></strong>, at the{" "}
-          <strong>University of Rome Tor Vergata, Italy</strong>.
+          <strong>University of Rome Tor Vergata (Department of Economics), Italy</strong>.
         </p>
 
         <h2>Keynote speakers</h2>
