@@ -122,7 +122,6 @@ export default function ValueBeyondPreferences() {
           </li>
           <li>Enrico Mattia Salonia (University of Rome Tor Vergata)</li>
         </ul>
-        <p>All the best,<br />Annalisa Costella and Enrico Mattia Salonia</p>
       </article>
     </main>
   );
