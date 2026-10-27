@@ -23,8 +23,8 @@ export default function ValueBeyondPreferences() {
         <h2>Keynote speakers</h2>
         <p>We are delighted to announce our keynote speakers:</p>
         <ul>
-          <li><strong>H. Orri Stefánsson</strong> (Stockholm University)</li>
           <li><strong>Paolo Giovanni Piacquadio</strong> (University of St. Gallen)</li>
+          <li><strong>H. Orri Stefánsson</strong> (Stockholm University)</li>
         </ul>
         <p>
           The workshop is generously funded by the{" "}
