@@ -64,6 +64,40 @@ export default function Home() {
           <img src="/img/parrott.webp" alt="Enrico Mattia Salonia" style={{ width: "100%", display: "block" }} />
         </figure>
       </div>
+      <p
+        style={{
+          fontFamily: SERIF,
+          fontSize: 20,
+          lineHeight: 1.7,
+          color: "#3a4650",
+          maxWidth: 660,
+          margin: "56px auto 0",
+          textAlign: "center",
+        }}
+      >
+        I am organising “Value Beyond Preferences”, a workshop in economics and philosophy, with{" "}
+        <TrackedLink
+          href="https://www.annalisacostella.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          eventName="workshop_organizer_click"
+          tags={{ workshop: "Value Beyond Preferences" }}
+          style={{ color: COLORS.accent, borderBottom: `1px solid ${COLORS.linkUnderline}` }}
+        >
+          Annalisa Costella
+        </TrackedLink>
+        . Find the call for papers{" "}
+        <TrackedLink
+          href="/value-beyond-preferences"
+          aria-label="Read the call for papers for Value Beyond Preferences"
+          eventName="workshop_call_click"
+          tags={{ workshop: "Value Beyond Preferences" }}
+          style={{ color: COLORS.accent, borderBottom: `1px solid ${COLORS.linkUnderline}` }}
+        >
+          here
+        </TrackedLink>
+        . Submissions are open!
+      </p>
     </main>
   );
 }
