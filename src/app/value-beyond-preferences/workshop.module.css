@@ -1,0 +1,54 @@
+.workshop {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 18px;
+  line-height: 1.75;
+  color: #46525c;
+  overflow-wrap: break-word;
+}
+
+.workshop h1 {
+  font-size: clamp(30px, 5vw, 40px);
+  font-weight: 500;
+  line-height: 1.2;
+  color: #14202a;
+  margin-bottom: 28px;
+}
+
+.workshop h2 {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #14202a;
+  margin: 36px 0 16px;
+}
+
+.workshop p + p {
+  margin-top: 18px;
+}
+
+.workshop ul,
+.workshop ol {
+  padding-left: 1.4em;
+  margin: 16px 0 20px;
+}
+
+.workshop ul {
+  list-style: disc;
+}
+
+.workshop ol {
+  list-style: decimal;
+}
+
+.workshop li + li {
+  margin-top: 10px;
+}
+
+.workshop strong {
+  font-weight: 600;
+}
+
+.workshop a {
+  color: #1f5673;
+  border-bottom: 1px solid #b9cdd6;
+}
