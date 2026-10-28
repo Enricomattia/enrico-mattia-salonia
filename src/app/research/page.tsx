@@ -3,6 +3,7 @@ import { useState } from "react";
 import { papers, Paper } from "@/lib/papers";
 import { COLORS, SERIF, MONO } from "@/lib/tokens";
 import { clarityEvent, setClarityTag } from "@/lib/clarity";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 import TeX from "@/components/TeX";
 
 const stop = (e: React.MouseEvent) => e.stopPropagation();
@@ -56,6 +57,7 @@ function Card({ paper, open, onToggle }: { paper: Paper; open: boolean; onToggle
                   stop(e);
                   setClarityTag("paper_id", paper.id);
                   clarityEvent("paper_ssrn_click");
+                  trackAnalyticsEvent(`paper_ssrn_${paper.id}`, { paper_id: paper.id, paper_title: paper.title });
                 }}
                 style={{ ...chipStyle, marginLeft: 12 }}
               >
@@ -81,7 +83,10 @@ function Card({ paper, open, onToggle }: { paper: Paper; open: boolean; onToggle
                   href={paper.coauthor.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={stop}
+                  onClick={(e) => {
+                    stop(e);
+                    trackAnalyticsEvent(`paper_coauthor_${paper.id}`, { paper_id: paper.id });
+                  }}
                   style={{ color: COLORS.accent, borderBottom: `1px solid ${COLORS.linkUnderline}` }}
                 >
                   {paper.coauthor.name}
@@ -123,6 +128,7 @@ function Card({ paper, open, onToggle }: { paper: Paper; open: boolean; onToggle
                   onClick={() => {
                     setClarityTag("paper_id", paper.id);
                     clarityEvent("paper_extra_link_click");
+                    trackAnalyticsEvent(`paper_extra_${paper.id}`, { paper_id: paper.id, link_label: l.label });
                   }}
                 >
                   {l.label}
@@ -146,12 +152,15 @@ export default function Research() {
     setExpanded((s) => ({ ...s, [paper.id]: !s[paper.id] }));
     setClarityTag("paper_id", paper.id);
     clarityEvent(willOpen ? "paper_expand" : "paper_collapse");
+    // Each paper has its own GA4 event name, so reports work without custom dimensions.
+    if (willOpen) trackAnalyticsEvent(`paper_open_${paper.id}`, { paper_id: paper.id, paper_title: paper.title });
   };
   const toggleAll = () => {
     const next: Record<string, boolean> = {};
     papers.forEach((p) => (next[p.id] = !allOpen));
     setExpanded(next);
     clarityEvent(allOpen ? "papers_collapse_all" : "papers_expand_all");
+    trackAnalyticsEvent(allOpen ? "papers_collapse_all" : "papers_expand_all");
   };
 
   return (
