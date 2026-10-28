@@ -75,7 +75,7 @@ async function start(){
   await context.setOffline(true);
   await app.reload();await app.waitForFunction(()=>window.pathosPersonalReady);
   await app.evaluate(()=>openExperience('preview-reading'));
-  await app.locator('[name="review"]').fill('Offline preview edit');
+  await app.getByRole('textbox',{name:'Review',exact:true}).fill('Offline preview edit');
   await app.locator('#entryForm button[type="submit"]').click();
   await app.waitForFunction(()=>pendingWrites===0&&!archiveBusy);
   }
