@@ -49,6 +49,7 @@ export default function Home() {
                 target="_blank"
                 rel="noopener noreferrer"
                 eventName="cv_html_open"
+                gaEventName="cv_click"
                 tags={{ link_type: "cv_html" }}
                 style={{ color: COLORS.accent }}
               >
