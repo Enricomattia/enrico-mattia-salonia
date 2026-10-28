@@ -1,0 +1,23 @@
+/* Keep the Personal copy identical. */
+.review-editor{min-width:0;gap:7px}
+.review-toolbar{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.review-toolbar button{min-width:36px;min-height:36px;padding:5px 9px;border:1px solid transparent;border-radius:5px;background:transparent;color:var(--ink);font:13px var(--sans);cursor:pointer}
+.review-toolbar button:hover,.review-toolbar button[aria-pressed="true"]{border-color:var(--line);background:var(--soft)}
+.review-toolbar button:focus-visible{outline:2px solid #387d82;outline-offset:2px}
+.review-toolbar button:disabled{opacity:.4;cursor:default}
+.review-toolbar [data-review-preview]{margin-left:auto}
+.review-editor textarea{width:100%}
+.review-editor [hidden]{display:none!important}
+.review-preview{min-height:170px;padding:12px;border:1px solid var(--line);border-radius:5px;background:var(--paper);font:18px/1.65 var(--serif);overflow-wrap:anywhere;user-select:text}
+.review-rich>p{margin:0 0 .8em}
+.review-rich>:last-child{margin-bottom:0}
+.review-rich strong{font-weight:700}
+.review-rich blockquote{margin:1em 0;padding-left:1em;border-left:2px solid var(--line)}
+.review-rich blockquote p{margin:.4em 0}
+.review-rich ul,.review-rich ol{padding-left:1.5em;margin:.8em 0;list-style-position:outside}
+.review-rich ul{list-style-type:disc}
+.review-rich ol{list-style-type:decimal}
+.review-rich li+li{margin-top:.25em}
+.review-rich a{text-decoration:underline;text-underline-offset:3px;color:inherit}
+.review-rich code{font-size:.85em;white-space:pre-wrap}
+@media(max-width:600px){.review-toolbar button{min-width:44px;min-height:44px}.review-preview{font-size:17px}}

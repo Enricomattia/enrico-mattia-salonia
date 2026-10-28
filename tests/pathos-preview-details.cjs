@@ -12,9 +12,10 @@ const {checkPreferences}=require('./pathos-preferences.cjs');
 const {checkEntryImprovements}=require('./pathos-entry-improvements.cjs');
 const {checkEntryRecall}=require('./pathos-entry-recall.cjs');
 const {checkGenreVocabulary}=require('./pathos-genres.cjs');
+const {checkReviewFormatting}=require('./pathos-review-browser.cjs');
 const target=new URL(process.env.PATHOS_PREVIEW_URL||'https://invalid.invalid');
 assert.match(target.hostname,/^deploy-preview-\d+--[a-z0-9-]+\.netlify\.app$/,'Only a Netlify PR preview is allowed');
-const moduleSource=`export function createClient(){return {auth:{getUser:async()=>({data:{user:{id:window.PATHOS_CONFIG.ownerUserId}}})},rpc:async(name,args)=>{if(name==='pathos_replace_my_archive'){window.testCloud=JSON.parse(JSON.stringify(args.p_archive));return{};}return{data:window.testCloud};}}}`;
+const moduleSource=`export function createClient(){return {auth:{getUser:async()=>({data:{user:{id:window.PATHOS_CONFIG.ownerUserId}}})},rpc:async(name,args)=>{if(name==='pathos_replace_my_archive'){window.testCloud=JSON.parse(JSON.stringify(args.p_archive));sessionStorage.setItem('pathos-test-cloud',JSON.stringify(window.testCloud));return{};}return{data:window.testCloud};}}}`;
 let browser;
 async function backup(page){
   const waiting=page.waitForEvent('download');
@@ -25,14 +26,16 @@ async function backup(page){
 }
 async function restore(page,value){
   await page.locator('#restoreInput').setInputFiles({name:'preview.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(value))});
-  await page.waitForFunction(()=>!document.getElementById('restoreInput').value&&pendingWrites===0&&!archiveBusy);
+  await page.waitForFunction(()=>!document.getElementById('restoreInput').value&&(typeof pendingWrites==='undefined'||pendingWrites===0)&&!archiveBusy);
 }
 (async()=>{
   browser=await chromium.launch({headless:true,channel:process.env.PATHOS_BROWSER||'msedge'});
   const screenshots=await fs.mkdtemp(path.join(os.tmpdir(),'pathos-preview-details-'));
   for(const variant of ['personal','hosted']){
     const context=await browser.newContext({acceptDownloads:true});
-    await context.addInitScript(()=>window.testCloud={schemaVersion:6,works:[],experiences:[]});
+    await context.addInitScript(origin=>{
+      if(location.origin===origin)window.testCloud=JSON.parse(sessionStorage.getItem('pathos-test-cloud')||'null')||{schemaVersion:6,works:[],experiences:[]};
+    },target.origin);
     // Netlify's deploy-preview drawer (absent in production) covers the phone bottom bar.
     await context.addInitScript(()=>document.addEventListener('DOMContentLoaded',()=>{const style=document.createElement('style');style.textContent='[data-netlify-deploy-id]{display:none!important}';document.head.append(style);}));
     await context.route('**/*',route=>{
@@ -49,7 +52,7 @@ async function restore(page,value){
     if(variant==='personal'){
       await page.evaluate(()=>navigator.serviceWorker.ready);
       await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
-      assert((await page.evaluate(()=>caches.keys())).includes('pathos-personal-shell-v23'));
+      assert((await page.evaluate(()=>caches.keys())).includes('pathos-personal-shell-v24'));
     }
     assert.equal(await page.locator('#reviews,[data-view="reviews"]').count(),0);
     await page.evaluate(()=>showView('timeline'));
@@ -61,6 +64,7 @@ async function restore(page,value){
     await checkEntryImprovements(page,{backup,restore});
     await checkEntryRecall(page,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS});
     await checkGenreVocabulary(page,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS});
+    await checkReviewFormatting(page,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS});
     const stored=await page.evaluate(async url=>storedRemoteCover(url,new AbortController().signal),target.origin+'/pathos-personal/icon-192.png');
     assert.match(stored,/^data:image\/jpeg;base64,/,'Real preview endpoint copies, validates and decodes public raster artwork');
     await page.locator('#addBtn').click();
