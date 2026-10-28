@@ -31,7 +31,7 @@ async function checkEntryDetails(page,{backup,restore}){
   assert.equal(repeat.isPublic,false);
   await page.evaluate(id=>openExperience(id),repeat.id);
   if(hosted)assert.equal(await field('isPrivate').isChecked(),true);
-  await field('review').fill('A private rewatch');
+  await page.getByRole('textbox',{name:'Review',exact:true}).fill('A private rewatch');
   await submit();
   assert.equal(await page.evaluate(id=>db.experiences.find(e=>e.id===id).isPublic,repeat.id),false);
   await page.evaluate(id=>openWork(id),film.workId);

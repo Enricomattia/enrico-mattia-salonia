@@ -30,7 +30,10 @@ test('raw HTML, images and unsafe links cannot execute or fetch media',()=>{
 });
 test('offline copies and pinned parser bundle are reproducible',()=>{
  const read=file=>fs.readFileSync(file,'utf8').replace(/\r\n/g,'\n');
- for(const file of ['markdown-it.min.js','markdown-it.LICENSE.txt','review-format.js','review-format.css'])assert.equal(read(path.join(root,'pathos',file)),read(path.join(root,'pathos-personal',file)),file);
+ for(const file of ['markdown-it.min.js','markdown-it.LICENSE.txt','review-format.js','review-format.css','review-editor.js','review-editor.LICENSE.txt'])assert.equal(read(path.join(root,'pathos',file)),read(path.join(root,'pathos-personal',file)),file);
  const parser=path.dirname(require.resolve('markdown-it/package.json'));
  assert.equal(read(path.join(root,'pathos/markdown-it.min.js')),read(path.join(parser,'dist/browser/markdown-it.umd.min.js')));
+});
+test('visual editor bundle and notices match the checked-in source',async()=>{
+ await require('../scripts/pathos-review-editor.cjs').build({check:true});
 });

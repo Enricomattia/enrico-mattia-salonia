@@ -939,7 +939,7 @@ body:not(.pathos-owner) .experience-edit{display:none}
       <label class="field span-2 hidden" id="viewingLanguageField">Viewing language<input class="input" name="viewingLanguage" autocomplete="off" data-vocabulary="languages" data-single="true" placeholder="e.g. Italian, English"><div class="vocabulary-suggestions" data-suggestions="languages" hidden></div></label>
       <div class="entry-flags span-2"><label class="check"><input type="checkbox" name="liked"> Favourite</label><label class="check" id="bookOwnedField"><input type="checkbox" name="owned"> I own this book</label></div>
       <div class="field span-2 review-editor" id="reviewEditor">
-        <label for="reviewInput">Review</label>
+        <span id="reviewLabel">Review</span>
         <div class="review-toolbar" role="group" aria-label="Review formatting">
           <button type="button" data-review-command="bold" aria-label="Bold" title="Bold (Ctrl/Cmd+B)"><strong>B</strong></button>
           <button type="button" data-review-command="italic" aria-label="Italic" title="Italic (Ctrl/Cmd+I)"><em>I</em></button>
@@ -948,11 +948,15 @@ body:not(.pathos-owner) .experience-edit{display:none}
           <button type="button" data-review-command="bullet" aria-label="Bullet list" title="Bullet list">• List</button>
           <button type="button" data-review-command="number" aria-label="Numbered list" title="Numbered list">1. List</button>
           <button type="button" data-review-command="link" aria-label="Insert link" title="Insert link">Link</button>
-          <button type="button" data-review-preview aria-pressed="false" aria-controls="reviewPreview">Preview</button>
         </div>
-        <textarea class="input textarea" id="reviewInput" name="review" placeholder="What stayed with you?" aria-describedby="reviewFormatHint"></textarea>
-        <div id="reviewPreview" class="review-preview review-rich" role="region" aria-label="Review preview" tabindex="0" hidden></div>
-        <span class="catalog-hint" id="reviewFormatHint">Select text to format, or write Markdown. Preview shows how it will read.</span>
+        <textarea class="input textarea" id="reviewInput" name="review" placeholder="What stayed with you?" aria-labelledby="reviewLabel"></textarea>
+        <div class="review-surface review-rich" hidden></div>
+        <div class="review-link-editor" role="group" aria-label="Edit review link" hidden>
+          <label for="reviewLinkUrl">Link address</label>
+          <input class="input" id="reviewLinkUrl" type="text" inputmode="url" autocomplete="off" placeholder="https://…" data-review-link-url>
+          <div class="review-link-actions"><button class="btn" type="button" data-review-link-apply>Apply</button><button class="btn subtle" type="button" data-review-link-remove hidden>Remove link</button><button class="btn subtle" type="button" data-review-link-cancel>Cancel</button></div>
+          <span class="catalog-hint" data-review-link-error role="alert" hidden>Enter a full http:// or https:// address.</span>
+        </div>
       </div>
       <label class="check span-2"><input type="checkbox" name="isPrivate"> Keep this experience private (including review and saved passages)</label>
       <details class="entry-details span-2" id="passagesDetails"><summary>Saved passages <span id="passageFormCount" class="entry-summary-note">Optional</span></summary>
@@ -1022,6 +1026,7 @@ body:not(.pathos-owner) .experience-edit{display:none}
 
 <script src="/pathos/markdown-it.min.js"></script>
 <script src="/pathos/review-format.js"></script>
+<script src="/pathos/review-editor.js"></script>
 <script>
 const PRELOADED_DB={schemaVersion:6,works:[],experiences:[]};
 const STORYGRAPH_EDITION_ROWS=[];

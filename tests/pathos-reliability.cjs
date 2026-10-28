@@ -28,9 +28,9 @@ const pixel='data:image/png;base64,'+fs.readFileSync(path.join(publicRoot,'patho
 const fixture={schemaVersion:6,works:[{id:'book-1',title:'Synthetic book',type:'Book',creator:'Test author',cover:pixel,aliases:[],liked:true,owned:true,genres:['Classics'],external:{isbn:'9780140328721'},sourceMetadata:{}}],experiences:[{id:'reading-1',workId:'book-1',startDate:'2026-10-01',endDate:'2026-10-01',status:'completed',rating:4.5,review:'A review\nwith paragraphs.',moods:['reflective'],pace:'slow',quotes:[{id:'quote-1',text:'A saved passage',note:'p. 12',featured:true}],tags:['test'],isPublic:true,edition:{isbn:'9780140328721',ean:'9780140328721',identifierType:'catalogue',identifierValue:'custom-1',sourceId:'storygraph-test-uid',publisher:'Manual publisher',publishYear:'2020',language:'Italian',format:'Paperback',pages:'123',printing:'2ª',contributors:'Test translator',cover:pixel,source:'manual'}}]};
 const baseline={};
 if(process.env.PATHOS_UPDATE_BASELINE_REF){
-  for(const name of ['index.html','sw.js','cover-accent.mjs','book-catalogue.mjs']){
+  for(const name of ['index.html','sw.js','cover-accent.mjs','book-catalogue.mjs','review-format.js','review-format.css','markdown-it.min.js','review-editor.js']){
     try{baseline[name]=execFileSync('git',['show',process.env.PATHOS_UPDATE_BASELINE_REF+':public/pathos-personal/'+name],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','pipe']});}
-    catch(error){if(!['cover-accent.mjs','book-catalogue.mjs'].includes(name))throw error;}
+    catch(error){if(['index.html','sw.js'].includes(name))throw error;}
   }
 }
 const server=http.createServer(async(req,res)=>{
@@ -39,7 +39,7 @@ const server=http.createServer(async(req,res)=>{
     if(!/^\/(pathos|pathos-personal)\/(fonts\/)?[a-z0-9.-]+$/i.test(pathname)){res.writeHead(404).end();return;}
     const name=path.basename(pathname);
     let bytes=await fsp.readFile(path.join(publicRoot,pathname));
-    if(pathname.startsWith('/pathos-personal/')&&['index.html','sw.js','cover-accent.mjs','book-catalogue.mjs'].includes(name)){
+    if(pathname.startsWith('/pathos-personal/')&&['index.html','sw.js','cover-accent.mjs','book-catalogue.mjs','review-format.js','review-format.css','markdown-it.min.js','review-editor.js'].includes(name)){
       let source=release==='before'&&baseline[name]?baseline[name]:bytes.toString();
       if(name==='sw.js'&&!(release==='before'&&baseline[name]))source=source.replace(/pathos-personal-shell-v\d+/g,'pathos-personal-shell-test-'+release);
       if(name==='index.html')source=source.replace('</head>','<meta name="pathos-test-release" content="'+release+'"></head>');
@@ -141,7 +141,7 @@ async function checkArchiveViews(page){
   browser=await chromium.launch(launch);
   const ctx=await context();
   let page=await personal(ctx);
-  await run('review toolbar, nested formatting, safe preview, backup and offline editing',()=>checkReviewFormatting(page,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS}));
+  await run('direct visual review editing, history, safe paste, exact backups and offline editing',()=>checkReviewFormatting(page,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS}));
   await run('create, edit, delete and reload through the personal form',async()=>{
     assert.equal((await archive(page)).works.length,0);
     await page.locator('#addBtn').click();
@@ -156,7 +156,7 @@ async function checkArchiveViews(page){
     await page.reload();await page.waitForFunction(()=>window.pathosPersonalReady);
     await page.evaluate(id=>openExperience(id),id);
     assert.equal(await page.locator('#entryDialog').evaluate(el=>el.open),true);
-    await page.locator('[name="review"]').fill('Edited review');
+    await page.getByRole('textbox',{name:'Review',exact:true}).fill('Edited review');
     await page.locator('#entryForm button[type="submit"]').click();await saved(page);
     assert.equal((await disk(page)).experiences[0].review,'Edited review');
     await page.evaluate(id=>openExperience(id),id);
@@ -261,7 +261,7 @@ async function checkArchiveViews(page){
   await run('offline reload, editing, uploaded cover and reopen',async()=>{
     await ctx.setOffline(true);await page.reload();await page.waitForFunction(()=>window.pathosPersonalReady);
     await page.evaluate(()=>openExperience('reading-1'));
-    await page.locator('[name="review"]').fill('Offline edit');
+    await page.getByRole('textbox',{name:'Review',exact:true}).fill('Offline edit');
     await page.locator('#entryForm button[type="submit"]').click();await saved(page);
     await page.close();page=await personal(ctx);
     assert.equal((await archive(page)).experiences[0].review,'Offline edit');
@@ -345,7 +345,7 @@ async function checkArchiveViews(page){
     await app.waitForFunction(()=>document.querySelector('meta[name="pathos-test-release"]').content==='current');
     await app.waitForFunction(()=>window.pathosPersonalReady);
     assert.deepEqual((await archive(app)).experiences,updateFixture.experiences);
-    for(const asset of ['markdown-it.min.js','review-format.js','review-format.css']){
+    for(const asset of ['markdown-it.min.js','review-format.js','review-format.css','review-editor.js']){
       assert.equal(await app.evaluate(async name=>{
         const key=(await caches.keys()).find(key=>key.startsWith('pathos-personal-shell-'));
         return(await(await caches.open(key)).match('/pathos-personal/'+name)).text();

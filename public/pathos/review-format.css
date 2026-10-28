@@ -5,10 +5,19 @@
 .review-toolbar button:hover,.review-toolbar button[aria-pressed="true"]{border-color:var(--line);background:var(--soft)}
 .review-toolbar button:focus-visible{outline:2px solid #387d82;outline-offset:2px}
 .review-toolbar button:disabled{opacity:.4;cursor:default}
-.review-toolbar [data-review-preview]{margin-left:auto}
 .review-editor textarea{width:100%}
 .review-editor [hidden]{display:none!important}
-.review-preview{min-height:170px;padding:12px;border:1px solid var(--line);border-radius:5px;background:var(--paper);font:18px/1.65 var(--serif);overflow-wrap:anywhere;user-select:text}
+.review-surface{min-width:0;border:1px solid var(--line);border-radius:5px;background:var(--paper);overflow:auto;max-height:55dvh}
+.review-surface:focus-within{border-color:#8e877b;box-shadow:0 0 0 3px rgba(50,45,35,.07)}
+.review-surface .ProseMirror{position:relative;min-height:170px;padding:12px;outline:none;font:18px/1.65 var(--serif);color:var(--ink);overflow-wrap:anywhere;white-space:pre-wrap;white-space:break-spaces;font-variant-ligatures:none}
+.review-surface .ProseMirror>p{margin:0 0 .8em}
+.review-surface .ProseMirror>:last-child{margin-bottom:0}
+.review-surface.is-empty .ProseMirror>p:first-child:before{content:'What stayed with you?';float:left;height:0;pointer-events:none;color:var(--muted)}
+.review-surface .ProseMirror-hideselection *::selection{background:transparent}
+.review-link-editor{display:grid;gap:8px;padding:12px;border:1px solid var(--line);border-radius:5px;background:var(--paper)}
+.review-link-editor .input{width:100%;min-width:0}
+.review-link-actions{display:flex;flex-wrap:wrap;gap:8px}
+.review-link-editor [role="alert"]{color:var(--danger)}
 .review-rich>p{margin:0 0 .8em}
 .review-rich>:last-child{margin-bottom:0}
 .review-rich strong{font-weight:700}
@@ -20,4 +29,4 @@
 .review-rich li+li{margin-top:.25em}
 .review-rich a{text-decoration:underline;text-underline-offset:3px;color:inherit}
 .review-rich code{font-size:.85em;white-space:pre-wrap}
-@media(max-width:600px){.review-toolbar button{min-width:44px;min-height:44px}.review-preview{font-size:17px}}
+@media(max-width:600px){.review-toolbar button{min-width:44px;min-height:44px}.review-surface .ProseMirror{font-size:17px}}
