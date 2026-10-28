@@ -784,6 +784,7 @@ body:not(.pathos-owner) .experience-edit{display:none}
 @media(max-width:600px) and (forced-colors:active){nav.tabs{border-top:1px solid CanvasText}}
 .edition-cover-preview{width:100px;max-width:100%;height:140px;overflow:hidden;background:var(--soft)}.edition-cover-preview img{width:100%;height:100%;object-fit:contain}.vocabulary-suggestions{display:flex;flex-wrap:wrap;gap:6px}.vocabulary-suggestions[hidden],[hidden]#experienceCoverField,[hidden]#experienceCoverPreview{display:none!important}.vocabulary-suggestions button{font:inherit;min-height:36px;border:1px solid var(--line);background:var(--paper);border-radius:20px;padding:6px 10px;cursor:pointer}.experience-cover{float:right;width:64px;height:90px;position:relative;overflow:hidden;margin:12px 0 12px 16px}.experience-cover img{width:100%;height:100%;object-fit:cover}.experience:after{content:'';display:block;clear:both}
 </style>
+<link rel="stylesheet" href="/pathos-personal/review-format.css">
 </head>
 <body>
 
@@ -966,7 +967,22 @@ body:not(.pathos-owner) .experience-edit{display:none}
       <label class="field">Venue / platform<input class="input" name="venue" autocomplete="off" data-vocabulary="venues" data-single="true" placeholder="Optional"><div class="vocabulary-suggestions" data-suggestions="venues" hidden></div></label>
       <label class="field span-2 hidden" id="viewingLanguageField">Viewing language<input class="input" name="viewingLanguage" autocomplete="off" data-vocabulary="languages" data-single="true" placeholder="e.g. Italian, English"><div class="vocabulary-suggestions" data-suggestions="languages" hidden></div></label>
       <div class="entry-flags span-2"><label class="check"><input type="checkbox" name="liked"> Favourite</label><label class="check" id="bookOwnedField"><input type="checkbox" name="owned"> I own this book</label></div>
-      <label class="field span-2">Review<textarea class="input textarea" name="review" placeholder="What stayed with you?"></textarea></label>
+      <div class="field span-2 review-editor" id="reviewEditor">
+        <label for="reviewInput">Review</label>
+        <div class="review-toolbar" role="group" aria-label="Review formatting">
+          <button type="button" data-review-command="bold" aria-label="Bold" title="Bold (Ctrl/Cmd+B)"><strong>B</strong></button>
+          <button type="button" data-review-command="italic" aria-label="Italic" title="Italic (Ctrl/Cmd+I)"><em>I</em></button>
+          <button type="button" data-review-command="strike" aria-label="Strikethrough" title="Strikethrough"><s>S</s></button>
+          <button type="button" data-review-command="quote" aria-label="Quote" title="Quote">❝</button>
+          <button type="button" data-review-command="bullet" aria-label="Bullet list" title="Bullet list">• List</button>
+          <button type="button" data-review-command="number" aria-label="Numbered list" title="Numbered list">1. List</button>
+          <button type="button" data-review-command="link" aria-label="Insert link" title="Insert link">Link</button>
+          <button type="button" data-review-preview aria-pressed="false" aria-controls="reviewPreview">Preview</button>
+        </div>
+        <textarea class="input textarea" id="reviewInput" name="review" placeholder="What stayed with you?" aria-describedby="reviewFormatHint"></textarea>
+        <div id="reviewPreview" class="review-preview review-rich" role="region" aria-label="Review preview" tabindex="0" hidden></div>
+        <span class="catalog-hint" id="reviewFormatHint">Select text to format, or write Markdown. Preview shows how it will read.</span>
+      </div>
       <details class="entry-details span-2" id="passagesDetails"><summary>Saved passages <span id="passageFormCount" class="entry-summary-note">Optional</span></summary>
         <div class="details-inner"><div class="quote-editor">
           <div class="quote-editor-head"><div><strong>Sentences / passages</strong><div class="catalog-hint">Collect quotations, with an optional page, scene or context.</div></div><button id="addQuoteBtn" type="button" class="btn">+ Add passage</button></div>
@@ -1043,6 +1059,8 @@ body:not(.pathos-owner) .experience-edit{display:none}
   </div>
 </div>
 
+<script src="/pathos-personal/markdown-it.min.js"></script>
+<script src="/pathos-personal/review-format.js"></script>
 <script src="/pathos-personal/starter-terms.js"></script>
 <script>
 const PRELOADED_DB={schemaVersion:6,works:[],experiences:[]};
@@ -1433,7 +1451,7 @@ function renderVocabularyFilters(){for(const kind of ['tags','moods']){const sel
 function renderAll(){renderVocabularyFilters();renderFavourites();renderCurrent();renderFilters();renderLibrary();renderTimeline();renderPassageFilters();renderPassages();renderInsights();renderMetadataKpis()}
 function workAverageRating(wid){const a=experiencesFor(wid).filter(e=>e.rating!==''&&e.rating!=null).map(e=>Number(e.rating));return a.length?a.reduce((s,x)=>s+x,0)/a.length:null}
 function workLatestDate(wid){return experiencesFor(wid).map(experienceDate).filter(Boolean).sort().pop()||''}
-function reviewWords(e){return String(e.review||'').trim()?String(e.review).trim().split(/\s+/).length:0}
+function reviewWords(e){const text=PathosReview.text(e.review);return text?text.split(/\s+/).length:0}
 function datedYear(e){const d=experienceDate(e);return d&&/^\d{4}/.test(d)?d.slice(0,4):''}
 function pct(n,d){return d?Math.round(n/d*100):0}
 function reviewDate(e){return experienceDate(e)||e.loggedDate||''}
@@ -1532,7 +1550,7 @@ function openInsightDrill(kind,value,medium=''){
   $('insightDialogCount').textContent=`${matching.length} matching experience${matching.length===1?'':'s'} · Select one to open it`;
   $('insightDialogList').innerHTML=matching.length?matching.map(e=>{
     const w=workFor(e.workId);if(!w)return'';
-    return `<button type="button" class="insight-drill-item" data-exp="${esc(e.id)}">${coverHTML(w,'mini-cover',e)}<span><span class="drill-title" style="display:block">${esc(w.title)}</span><span class="meta">${esc(w.type)}${e.rating!==''&&e.rating!=null?` · ★ ${formatRating(e.rating)}/5`:''}${experienceDate(e)?` · ${esc(dateLabel(experienceDate(e)))}`:''}</span>${e.review?`<span class="drill-excerpt" style="display:-webkit-box">${esc(e.review)}</span>`:''}</span></button>`;
+    return `<button type="button" class="insight-drill-item" data-exp="${esc(e.id)}">${coverHTML(w,'mini-cover',e)}<span><span class="drill-title" style="display:block">${esc(w.title)}</span><span class="meta">${esc(w.type)}${e.rating!==''&&e.rating!=null?` · ★ ${formatRating(e.rating)}/5`:''}${experienceDate(e)?` · ${esc(dateLabel(experienceDate(e)))}`:''}</span>${e.review?`<span class="drill-excerpt" style="display:-webkit-box">${esc(PathosReview.text(e.review))}</span>`:''}</span></button>`;
   }).join(''):'<div class="insight-empty">No matching entries.</div>';
   $('insightDialog').showModal();
 }
@@ -1590,7 +1608,7 @@ function renderReviewRateByMedium(experienced){
 }
 function renderLongestReviews(reviewed){
   const top=[...reviewed].sort((a,b)=>reviewWords(b)-reviewWords(a)).slice(0,5);
-  $('longestReviews').innerHTML=top.length?top.map(e=>{const w=workFor(e.workId);return `<article class="review-row" data-exp="${e.id}" style="cursor:pointer"><strong>${esc(w?.title||'Untitled')}</strong><div class="meta">${esc(w?.type||'')} · ${reviewWords(e)} words${e.rating!==''?` · ${stars(e.rating)}`:''}</div><p class="review-snippet">${esc(e.review)}</p></article>`}).join(''):'<div class="insight-empty">No written reviews yet.</div>';bindExperienceClicks($('longestReviews'));
+  $('longestReviews').innerHTML=top.length?top.map(e=>{const w=workFor(e.workId);return `<article class="review-row" data-exp="${e.id}" style="cursor:pointer"><strong>${esc(w?.title||'Untitled')}</strong><div class="meta">${esc(w?.type||'')} · ${reviewWords(e)} words${e.rating!==''?` · ${stars(e.rating)}`:''}</div><p class="review-snippet">${esc(PathosReview.text(e.review))}</p></article>`}).join(''):'<div class="insight-empty">No written reviews yet.</div>';bindExperienceClicks($('longestReviews'));
 }
 
 function renderCurrent(){
@@ -1611,7 +1629,7 @@ let diaryLimit=60;
 function diaryMonth(date){const m=String(date).match(/^(\d{4})(?:-(\d{2}))?/);if(!m)return'Undated';return m[2]?new Date(`${m[1]}-${m[2]}-01T12:00:00`).toLocaleDateString(undefined,{month:'long',year:'numeric'}):m[1]}
 function diaryDay(date){const m=String(date).match(/^\d{4}-\d{2}-(\d{2})/);return m?{num:String(Number(m[1])),weekday:new Date(`${m[0]}T12:00:00`).toLocaleDateString(undefined,{weekday:'short'})}:null}
 function diaryRow(e){
-  const w=workFor(e.workId),date=experienceDate(e),day=diaryDay(date),review=String(e.review||'').trim();
+  const w=workFor(e.workId),date=experienceDate(e),day=diaryDay(date),review=PathosReview.text(e.review);
   const tint=coverTint(w).match(/\w\w/g).map(x=>parseInt(x,16)).join(',');
   const status=e.status==='in-progress'?'Started':e.status==='dnf'?'Did not finish':'';
   const meta=[status?`<span class="diary-status">${status}</span>`:'',...[w.creator,w.type,cardVenue(w,e)].filter(Boolean).map(esc)].filter(Boolean).join(' · ');
@@ -1683,7 +1701,7 @@ function renderLibrary(){
     if(content==='favorite'&&!w.liked)return false;
     if(content==='reviewed'&&!ex.some(e=>String(e.review||'').trim()))return false;
     if(content==='unreviewed'&&ex.some(e=>String(e.review||'').trim()))return false;
-    if(!q)return true;return [workSearchText(w),w.type,...workGenres(w),...ex.flatMap(e=>[e.review,e.venue,e.sourceUrl,e.source,...(e.moods||[]),e.pace,e.edition?.isbn,e.edition?.sourceId,e.edition?.publisher,e.edition?.series,e.edition?.seriesNumber,e.viewingLanguage,...(e.tags||[]),...quotesForExperience(e).flatMap(q=>[q.text,q.note])])].some(x=>norm(x).includes(q));
+    if(!q)return true;return [workSearchText(w),w.type,...workGenres(w),...ex.flatMap(e=>[PathosReview.text(e.review),e.venue,e.sourceUrl,e.source,...(e.moods||[]),e.pace,e.edition?.isbn,e.edition?.sourceId,e.edition?.publisher,e.edition?.series,e.edition?.seriesNumber,e.viewingLanguage,...(e.tags||[]),...quotesForExperience(e).flatMap(q=>[q.text,q.note])])].some(x=>norm(x).includes(q));
   });
   if(sort==='recent')works.sort((a,b)=>workLatestDate(b.id).localeCompare(workLatestDate(a.id))||a.title.localeCompare(b.title));
   else if(sort==='rating')works.sort((a,b)=>(workAverageRating(b.id)??-1)-(workAverageRating(a.id)??-1)||a.title.localeCompare(b.title));
@@ -1710,7 +1728,7 @@ function experienceHTML(w,e){
   const edition=editionSummary(e.edition,false);
   const facts=[range,cardVenue(w,e)].filter(Boolean).map(esc).join(' · ');
   const quotes=quotesForExperience(e);
-  return `<article class="experience" id="experience-${esc(e.id)}"${coverAccentAttr(w,e)}><div class="experience-head"><strong class="experience-date">${esc(dateLabel(e.endDate||e.startDate)||STATUS_LABELS[e.status]||'Undated')}</strong>${statusPill(e.status)}${e.repeat?'<span class="pill">repeat</span>':''}${ratingPips(e.rating)}<button type="button" class="btn subtle experience-edit" data-edit="${esc(e.id)}">Edit</button></div>${e.cover?coverHTML(w,'experience-cover',e):''}${facts?`<div class="experience-facts">${facts}</div>`:''}${w.type==='Book'&&(e.moods?.length||e.pace)?`<div class="experience-profile meta">${esc([...(e.moods||[]),e.pace?e.pace[0].toUpperCase()+e.pace.slice(1)+' pace':''].filter(Boolean).join(' · '))}</div>`:''}${e.viewingLanguage?`<div class="experience-language"><strong>Viewing language:</strong> ${esc(e.viewingLanguage)}</div>`:''}${edition?`<div class="experience-edition"><strong>Edition:</strong> ${esc(edition)}</div>`:''}${e.sourceUrl&&w.type!=='Theatre'?`<div class="experience-source">${sourcePageLink(e)}</div>`:''}${e.review?`<p class="experience-review">${esc(e.review).replace(/\n/g,'<br>')}</p>`:''}${quotes.length?`<div class="experience-passages"><div class="eyebrow">PASSAGES</div>${quotes.map(q=>`<figure class="experience-quote saved-passage"><blockquote>${esc(q.text).replace(/\n/g,'<br>')}</blockquote>${q.note?`<figcaption>${esc(q.note)}</figcaption>`:''}</figure>`).join('')}</div>`:''}${e.tags?.length?`<div class="tag-row">${e.tags.map(t=>`<span class="pill">${esc(t)}</span>`).join('')}</div>`:''}${e.loggedDate?`<div class="meta small" style="margin-top:8px">Logged/added: ${esc(dateLabel(e.loggedDate))}</div>`:''}</article>`;
+  return `<article class="experience" id="experience-${esc(e.id)}"${coverAccentAttr(w,e)}><div class="experience-head"><strong class="experience-date">${esc(dateLabel(e.endDate||e.startDate)||STATUS_LABELS[e.status]||'Undated')}</strong>${statusPill(e.status)}${e.repeat?'<span class="pill">repeat</span>':''}${ratingPips(e.rating)}<button type="button" class="btn subtle experience-edit" data-edit="${esc(e.id)}">Edit</button></div>${e.cover?coverHTML(w,'experience-cover',e):''}${facts?`<div class="experience-facts">${facts}</div>`:''}${w.type==='Book'&&(e.moods?.length||e.pace)?`<div class="experience-profile meta">${esc([...(e.moods||[]),e.pace?e.pace[0].toUpperCase()+e.pace.slice(1)+' pace':''].filter(Boolean).join(' · '))}</div>`:''}${e.viewingLanguage?`<div class="experience-language"><strong>Viewing language:</strong> ${esc(e.viewingLanguage)}</div>`:''}${edition?`<div class="experience-edition"><strong>Edition:</strong> ${esc(edition)}</div>`:''}${e.sourceUrl&&w.type!=='Theatre'?`<div class="experience-source">${sourcePageLink(e)}</div>`:''}${e.review?`<div class="experience-review review-rich">${PathosReview.render(e.review)}</div>`:''}${quotes.length?`<div class="experience-passages"><div class="eyebrow">PASSAGES</div>${quotes.map(q=>`<figure class="experience-quote saved-passage"><blockquote>${esc(q.text).replace(/\n/g,'<br>')}</blockquote>${q.note?`<figcaption>${esc(q.note)}</figcaption>`:''}</figure>`).join('')}</div>`:''}${e.tags?.length?`<div class="tag-row">${e.tags.map(t=>`<span class="pill">${esc(t)}</span>`).join('')}</div>`:''}${e.loggedDate?`<div class="meta small" style="margin-top:8px">Logged/added: ${esc(dateLabel(e.loggedDate))}</div>`:''}</article>`;
 }
 function renderWorkPage(id){
   const w=workFor(id);if(!w)return false;const ex=experiencesFor(id),latest=ex[0];
@@ -1946,6 +1964,7 @@ function updateFormSections(){
   const ed=editionFromForm();if($('editionFormSummary'))$('editionFormSummary').textContent=ed?(ed.publisher||ed.isbn||ed.ean||ed.identifierValue||'Recorded'):'Optional · ISBN, EAN, cover';
 }
 function resetFormSections(existing=false){
+  reviewEditor.reset();
   resetPageImages();resetCoverTask();updatePageImageControls();renderExperienceCover();
   ['passagesDetails','bookProfileDetails','bookEditionDetails','moreEntryDetails'].forEach(id=>{if($(id))$(id).open=false});
   if(existing){
@@ -1966,6 +1985,7 @@ function openExperience(id){
   if(!window.pathosCanEdit){const item=db.experiences.find(x=>x.id===id);if(item)openWork(item.workId);return;}
   const e=db.experiences.find(x=>x.id===id);if(!e)return;const w=workFor(e.workId);if(!w)return;editingExperienceId=id;const f=$('entryForm');f.reset();clearEditionForm();Object.entries({title:w.title,type:w.type,creator:w.creator,year:w.year,cover:e.cover||w.cover,status:e.status||'completed',startDate:e.startDate,endDate:e.endDate,rating:e.rating,venue:e.venue,viewingLanguage:e.viewingLanguage,sourceUrl:e.sourceUrl||'',tags:(e.tags||[]).join(', '),review:e.review}).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??''});fillWorkFlags(w);fillBookProfile(w,e);f.elements.repeat.checked=e.repeat;renderQuoteEditor(e.quotes||[]);if(e.edition)fillEditionForm(e.edition);selectedCatalogItem=localItemFromWork(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(true);$('deleteBtn').classList.remove('hidden');$('entryDialog').showModal();void findPageImages(true);
 }
+const reviewEditor=PathosReview.attach($('reviewEditor'));
 $('entryForm').addEventListener('submit',async ev=>{if(!window.pathosCanEdit||archiveBusy){ev.preventDefault();return;}
   ev.preventDefault();if(coverTaskBusy){toast('Wait for the cover image to finish.');return;}const form=ev.currentTarget,cover=form.elements.cover.value.trim();if(pageImagesAllowed()&&safeWebUrl(cover)&&safeWebUrl(cover)!==safeWebUrl(form.elements.sourceUrl.value)){if(!await selectExperienceCover(signal=>storedRemoteCover(cover,signal)))return;}const f=new FormData(form);let data=Object.fromEntries(f.entries());if(SINGLE_DATE_MEDIA[data.type])data.startDate='';if(!validateDateOrder(true))return;data.venue=canonicalDetail(f.get('venue'),'venues');data.viewingLanguage=canonicalDetail(f.get('viewingLanguage'),'languages');data.repeat=f.get('repeat')==='on';data.tags=canonicalTerms(f.get('tags'),'tags');if(data.type==='Book'){data.genres=canonicalTerms(f.get('bookGenres'),'genres');data.moods=canonicalTerms(f.get('bookMoods'),'moods');data.pace=normalizePace(f.get('bookPace'));}data.liked=f.get('liked')==='on';data.owned=f.get('owned')==='on';data.quotes=quotesFromEditor();data=mergeSelectedCatalog(data);if(data.type==='Book')data.edition=editionFromForm();
   if(editingExperienceId){const e=db.experiences.find(x=>x.id===editingExperienceId);const oldWork=workFor(e.workId);if(oldWork&&norm(oldWork.title)===norm(data.title)){Object.assign(oldWork,{title:data.title,type:data.type,creator:data.creator,year:data.year,cover:data.type==='Book'?(data.cover||oldWork.cover):oldWork.cover});oldWork.external=Object.assign(oldWork.external||{},data.external||{});oldWork.sourceMetadata=Object.assign(oldWork.sourceMetadata||{},data.sourceMetadata||{});oldWork.aliases=uniqueText([...(oldWork.aliases||[]),...(data.aliases||[])])}else e.workId=findOrCreateWork(data).id;Object.assign(e,{startDate:data.startDate,endDate:data.endDate,rating:data.rating===''?'':Number(data.rating),venue:data.venue,viewingLanguage:data.type==='Film'?String(data.viewingLanguage||'').trim():'',sourceUrl:safeWebUrl(data.sourceUrl||''),review:data.review,tags:data.tags,repeat:data.repeat,status:data.status||'completed',quotes:normalizeQuotes(data.quotes||[]),edition:data.type==='Book'?normalizeEdition(data.edition):null,...(data.type!=='Book'?{cover:data.cover||''}:{}),...(data.type==='Book'?{moods:uniqueText(data.moods||[]),pace:normalizePace(data.pace)}:{})});const w=workFor(e.workId);saveWorkFlags(w,data);if(e.edition?.cover&&w)w.cover=e.edition.cover;toast('Saving changes…')}

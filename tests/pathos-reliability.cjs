@@ -18,6 +18,7 @@ const {checkPreferences}=require('./pathos-preferences.cjs');
 const {checkEntryImprovements}=require('./pathos-entry-improvements.cjs');
 const {checkEntryRecall}=require('./pathos-entry-recall.cjs');
 const {checkGenreVocabulary}=require('./pathos-genres.cjs');
+const {checkReviewFormatting}=require('./pathos-review-browser.cjs');
 const root=path.resolve(__dirname,'..');
 const publicRoot=path.join(root,'public');
 const launch={headless:true,...(process.env.PATHOS_BROWSER==='chromium'?{}:{channel:process.env.PATHOS_BROWSER||'msedge'})};
@@ -73,7 +74,7 @@ async function personal(ctx){
   await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
   return page;
 }
-async function saved(page){await page.waitForFunction(()=>pendingWrites===0&&!archiveBusy);}
+async function saved(page){await page.waitForFunction(()=>(typeof pendingWrites==='undefined'||pendingWrites===0)&&!archiveBusy);}
 async function archive(page){return page.evaluate(()=>JSON.parse(JSON.stringify(db)));}
 async function disk(page){return page.evaluate(()=>readLocalArchive());}
 async function restore(page,value){
@@ -140,6 +141,7 @@ async function checkArchiveViews(page){
   browser=await chromium.launch(launch);
   const ctx=await context();
   let page=await personal(ctx);
+  await run('review toolbar, nested formatting, safe preview, backup and offline editing',()=>checkReviewFormatting(page,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS}));
   await run('create, edit, delete and reload through the personal form',async()=>{
     assert.equal((await archive(page)).works.length,0);
     await page.locator('#addBtn').click();
@@ -320,6 +322,7 @@ async function checkArchiveViews(page){
     Object.assign(updateFixture.experiences[0].edition,{series:'Nuovi Coralli',seriesNumber:'15'});
     updateFixture.works.push({id:'update-film',title:'Update language test',type:'Film'});
     updateFixture.experiences.push({id:'update-watch',workId:'update-film',viewingLanguage:'Italian',venue:'Update cinema',status:'completed',rating:'',quotes:[]});
+    updateFixture.experiences.at(-1).review='A **formatted** review survives the update.';
     const profile=path.join(temporary,'profile');
     let installed=await chromium.launchPersistentContext(profile,launch);persistentContexts.push(installed);
     let app=await personal(installed);
@@ -342,6 +345,13 @@ async function checkArchiveViews(page){
     await app.waitForFunction(()=>document.querySelector('meta[name="pathos-test-release"]').content==='current');
     await app.waitForFunction(()=>window.pathosPersonalReady);
     assert.deepEqual((await archive(app)).experiences,updateFixture.experiences);
+    for(const asset of ['markdown-it.min.js','review-format.js','review-format.css']){
+      assert.equal(await app.evaluate(async name=>{
+        const key=(await caches.keys()).find(key=>key.startsWith('pathos-personal-shell-'));
+        return(await(await caches.open(key)).match('/pathos-personal/'+name)).text();
+      },asset),fs.readFileSync(path.join(publicRoot,'pathos-personal',asset),'utf8'),'Accepted update caches '+asset);
+    }
+    assert.match(await app.evaluate(()=>PathosReview.render(db.experiences.find(e=>e.id==='update-watch').review)),/<strong>formatted<\/strong>/);
     assert.equal(await app.evaluate(async()=>{
       const cacheName=(await caches.keys()).find(name=>name.startsWith('pathos-personal-shell-'));
       return (await(await caches.open(cacheName)).match('/pathos-personal/cover-accent.mjs')).text();
@@ -391,18 +401,29 @@ async function checkArchiveViews(page){
     release='current';
     const hosted=await context();
     // Substitute only the Supabase browser module; never contact the live archive.
-    const module=`export function createClient(){return {auth:{getUser:async()=>({data:{user:window.mockOwner?{id:window.PATHOS_CONFIG.ownerUserId}:null}}),signOut:async()=>({}),signInWithPassword:async()=>({})},rpc:async(name,args)=>{window.mockCalls.push(name);if(window.mockLoadError)return{error:{message:'Simulated load error'}};if(name==='pathos_replace_my_archive'){if(window.mockSaveError)return{error:{message:'Simulated save error'}};window.mockCloud=JSON.parse(JSON.stringify(args.p_archive));return{};}return{data:JSON.parse(JSON.stringify(window.mockCloud))};}}}`;
+    const module=`export function createClient(){return {auth:{getUser:async()=>({data:{user:window.mockOwner?{id:window.PATHOS_CONFIG.ownerUserId}:null}}),signOut:async()=>({}),signInWithPassword:async()=>({})},rpc:async(name,args)=>{window.mockCalls.push(name);if(window.mockLoadError)return{error:{message:'Simulated load error'}};if(name==='pathos_replace_my_archive'){if(window.mockSaveError)return{error:{message:'Simulated save error'}};window.mockCloud=JSON.parse(JSON.stringify(args.p_archive));sessionStorage.setItem('pathos-test-cloud',JSON.stringify(window.mockCloud));return{};}sessionStorage.setItem('pathos-test-cloud',JSON.stringify(window.mockCloud));return{data:JSON.parse(JSON.stringify(window.mockCloud))};}}}`;
     await hosted.route('https://cdn.jsdelivr.net/**',route=>route.fulfill({contentType:'text/javascript',body:module}));
-    await hosted.addInitScript(value=>{window.mockOwner=false;window.mockCloud=value;window.mockCalls=[];},fixture);
+    await hosted.addInitScript(value=>{window.mockOwner=false;window.mockCloud=JSON.parse(sessionStorage.getItem('pathos-test-cloud')||'null')||value;window.mockCalls=[];},fixture);
     const guest=await observe(await hosted.newPage());await guest.goto(origin+'/pathos/app.html');
     await guest.waitForFunction(()=>document.querySelector('.pathos-sync-status').textContent==='Public archive');
     assert.equal(await guest.evaluate(()=>window.pathosCanEdit),false);
     assert.equal(await guest.locator('#addBtn').isVisible(),false);
     assert.deepEqual(await guest.evaluate(()=>window.mockCalls),['pathos_get_public_archive']);
+    await guest.evaluate(()=>{
+      db.experiences[0].review='A public **bold** review with *italics* and <img src=x onerror=alert(1)>.';
+      openExperiencePage(db.experiences[0].id);
+    });
+    assert.equal(await guest.locator('.experience-review strong').innerText(),'bold');
+    assert.equal(await guest.locator('.experience-review em').innerText(),'italics');
+    assert.equal(await guest.locator('.experience-review img').count(),0);
+    assert.equal(await guest.locator('.experience-edit').isVisible(),false);
+    await guest.locator('#closeWorkDialog').click();
+    assert.deepEqual(await guest.evaluate(()=>window.mockCalls),['pathos_get_public_archive'],'Formatted public reads never save');
     await checkArchiveViews(guest);
     await hosted.addInitScript(()=>{window.mockOwner=true;});
     const owner=await observe(await hosted.newPage());await owner.goto(origin+'/pathos/app.html');
     await owner.waitForFunction(()=>window.pathosCanEdit);
+    await checkReviewFormatting(owner,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS});
     await checkNavigation(owner,process.env.PATHOS_UI_SCREENSHOTS);
     await checkEntryDetails(owner,{backup,restore});
     await checkPreferences(owner,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS});
