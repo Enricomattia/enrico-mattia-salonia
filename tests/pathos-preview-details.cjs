@@ -26,14 +26,16 @@ async function backup(page){
 }
 async function restore(page,value){
   await page.locator('#restoreInput').setInputFiles({name:'preview.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(value))});
-  await page.waitForFunction(()=>!document.getElementById('restoreInput').value&&pendingWrites===0&&!archiveBusy);
+  await page.waitForFunction(()=>!document.getElementById('restoreInput').value&&(typeof pendingWrites==='undefined'||pendingWrites===0)&&!archiveBusy);
 }
 (async()=>{
   browser=await chromium.launch({headless:true,channel:process.env.PATHOS_BROWSER||'msedge'});
   const screenshots=await fs.mkdtemp(path.join(os.tmpdir(),'pathos-preview-details-'));
   for(const variant of ['personal','hosted']){
     const context=await browser.newContext({acceptDownloads:true});
-    await context.addInitScript(()=>window.testCloud=JSON.parse(sessionStorage.getItem('pathos-test-cloud')||'null')||{schemaVersion:6,works:[],experiences:[]});
+    await context.addInitScript(origin=>{
+      if(location.origin===origin)window.testCloud=JSON.parse(sessionStorage.getItem('pathos-test-cloud')||'null')||{schemaVersion:6,works:[],experiences:[]};
+    },target.origin);
     // Netlify's deploy-preview drawer (absent in production) covers the phone bottom bar.
     await context.addInitScript(()=>document.addEventListener('DOMContentLoaded',()=>{const style=document.createElement('style');style.textContent='[data-netlify-deploy-id]{display:none!important}';document.head.append(style);}));
     await context.route('**/*',route=>{
