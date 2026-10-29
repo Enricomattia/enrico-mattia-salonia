@@ -24,11 +24,11 @@
   background-size: cover;
   background-repeat: no-repeat;
   filter: grayscale(1) contrast(1.15) brightness(1.08);
-  opacity: 0.3;
+  opacity: 0.25;
 }
 
 @media (max-width: 600px) {
   .background::before {
-    opacity: 0.22;
+    opacity: 0.18;
   }
 }
