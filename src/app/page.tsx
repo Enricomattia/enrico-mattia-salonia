@@ -1,8 +1,10 @@
 import { COLORS, SERIF, MONO } from "@/lib/tokens";
 import TrackedLink from "@/components/TrackedLink";
+import styles from "./home.module.css";
 
 export default function Home() {
   return (
+    <div className={styles.home}>
     <main className="site-main">
       <div style={{ display: "flex", flexWrap: "wrap", gap: 48, alignItems: "flex-start" }}>
         <div style={{ flex: 1, minWidth: 300 }}>
@@ -100,5 +102,6 @@ export default function Home() {
         . Submissions are open!
       </p>
     </main>
+    </div>
   );
 }
