@@ -1,11 +1,14 @@
 import { COLORS, SERIF, MONO } from "@/lib/tokens";
 import TrackedLink from "@/components/TrackedLink";
+import styles from "./home.module.css";
 
 export default function Home() {
   return (
+    <div className={styles.home}>
+    <div className={styles.background} aria-hidden="true" />
     <main className="site-main">
       <div style={{ display: "flex", flexWrap: "wrap", gap: 48, alignItems: "flex-start" }}>
-        <div style={{ flex: 1, minWidth: 300 }}>
+        <div style={{ flex: 1, minWidth: "min(300px, 100%)" }}>
           <p style={{ fontFamily: SERIF, fontSize: 22, lineHeight: 1.7, color: "#3a4650", maxWidth: 480 }}>
             I am an assistant professor in the Department of Economics at the{" "}
             <TrackedLink
@@ -100,5 +103,6 @@ export default function Home() {
         . Submissions are open!
       </p>
     </main>
+    </div>
   );
 }

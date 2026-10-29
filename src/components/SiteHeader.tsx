@@ -12,6 +12,7 @@ const NAV = [
 
 export default function SiteHeader() {
   const pathname = usePathname();
+  const isHome = pathname === "/";
 
   if (pathname === "/pathos" || pathname === "/pathos/") return null;
 
@@ -27,7 +28,7 @@ export default function SiteHeader() {
         borderBottom: `1px solid ${COLORS.hairline}`,
         position: "sticky",
         top: 0,
-        background: "rgba(250,250,248,0.9)",
+        background: isHome ? "rgba(250,250,248,0.8)" : "rgba(250,250,248,0.9)",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
         zIndex: 10,
