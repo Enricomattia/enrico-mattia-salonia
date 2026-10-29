@@ -7,11 +7,21 @@
 }
 
 .background {
+  /* Fade both margins into a clear centre aligned with the text column. */
+  --edge-fade: linear-gradient(
+    90deg,
+    #000,
+    transparent max(24px, calc(50% - 380px)),
+    transparent min(calc(100% - 24px), calc(50% + 380px)),
+    #000
+  );
   position: fixed;
   inset: 0;
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
+  -webkit-mask-image: var(--edge-fade);
+  mask-image: var(--edge-fade);
 }
 
 .background::before {
@@ -24,11 +34,11 @@
   background-size: cover;
   background-repeat: no-repeat;
   filter: grayscale(1) contrast(1.15) brightness(1.08);
-  opacity: 0.25;
+  opacity: 0.6;
 }
 
 @media (max-width: 600px) {
   .background::before {
-    opacity: 0.18;
+    opacity: 0.4;
   }
 }
