@@ -8,8 +8,8 @@ export default function Home() {
     <div className={styles.background} aria-hidden="true" />
     <main className="site-main">
       <div style={{ display: "flex", flexWrap: "wrap", gap: 48, alignItems: "flex-start" }}>
-        <div className={styles.readable} style={{ flex: 1, minWidth: "min(300px, 100%)" }}>
-          <p style={{ fontFamily: SERIF, fontSize: 22, lineHeight: 1.7, color: COLORS.ink, maxWidth: 480 }}>
+        <div style={{ flex: 1, minWidth: "min(300px, 100%)" }}>
+          <p style={{ fontFamily: SERIF, fontSize: 22, lineHeight: 1.7, color: "#3a4650", maxWidth: 480 }}>
             I am an assistant professor in the Department of Economics at the{" "}
             <TrackedLink
               href="https://economia.uniroma2.it/def"
@@ -28,7 +28,7 @@ export default function Home() {
               fontFamily: SERIF,
               fontSize: 22,
               lineHeight: 1.7,
-              color: COLORS.ink,
+              color: "#3a4650",
               maxWidth: 480,
               marginTop: 22,
             }}
@@ -69,12 +69,11 @@ export default function Home() {
         </figure>
       </div>
       <p
-        className={styles.readable}
         style={{
           fontFamily: SERIF,
           fontSize: 20,
           lineHeight: 1.7,
-          color: COLORS.ink,
+          color: "#3a4650",
           maxWidth: 660,
           margin: "56px auto 0",
           textAlign: "center",

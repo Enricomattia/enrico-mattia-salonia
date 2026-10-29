@@ -60,7 +60,7 @@ export default function SiteHeader() {
                 fontSize: 12,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                color: active ? COLORS.accent : isHome ? COLORS.body : COLORS.faint,
+                color: active ? COLORS.accent : COLORS.faint,
                 borderBottom: `1px solid ${active ? COLORS.accent : "transparent"}`,
                 paddingBottom: 3,
               }}

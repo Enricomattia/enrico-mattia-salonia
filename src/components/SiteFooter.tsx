@@ -32,7 +32,7 @@ export default function SiteFooter() {
         href="mailto:mattia.salonia1@gmail.com"
         eventName="mailto_click"
         tags={{ link_type: "footer_email" }}
-        style={{ color: isHome ? COLORS.body : COLORS.faint }}
+        style={{ color: COLORS.faint }}
       >
         mattia.salonia1@gmail.com
       </TrackedLink>
