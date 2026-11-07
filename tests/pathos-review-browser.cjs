@@ -98,7 +98,11 @@ async function checkReviewFormatting(page,{backup,restore,outputDirectory}){
  if(await page.evaluate(()=>location.pathname.includes('personal'))){
   await page.context().setOffline(true);await page.reload();await page.waitForFunction(()=>window.pathosPersonalReady);
   await page.evaluate(id=>openExperience(id),id);assert.equal(await field.locator('strong').innerText(),'bold');
-  await field.press('Control+End');await field.press('Enter');await command('bold').click();await page.keyboard.insertText('Offline addition');
+  await field.press('Control+End');await field.press('Enter');await command('bold').click();
+  // Toolbar scrolling can leave the browser selection pending on a narrow screen.
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  assert.equal(await command('bold').getAttribute('aria-pressed'),'true');
+  await field.pressSequentially('Offline addition');
   await page.locator('#entryForm button[type="submit"]').click();await settle();await page.reload();await page.waitForFunction(()=>window.pathosPersonalReady);
   await page.evaluate(id=>openExperiencePage(id),id);assert.equal(await page.locator('#experience-'+id+' .experience-review strong').last().innerText(),'Offline addition');await page.locator('#closeWorkDialog').click();
   await page.context().setOffline(false);

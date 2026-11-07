@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="PUBLICATION_CSP"><title>Πathos</title><style>PUBLICATION_STYLE</style></head>
+<body><header><div class="brand"><h1><span class="pi">Π</span>athos</h1><span id="profileUsername" hidden></span></div><p id="profileTitle"></p></header><nav aria-label="Πathos pages"><button data-view="home" aria-current="page">Home</button><button data-view="library">Library</button><button data-view="passages">Passages</button><button data-view="insights">Insights</button></nav>
+<main><section id="home"><div id="current"></div><div id="diary"></div></section><section id="library" hidden><h2>Library</h2><label class="search">Search your library<input id="search" type="search" placeholder="Title or creator"></label><div id="books" class="library"></div></section><section id="passages" hidden><h2>Passages</h2><div id="quotes"></div></section><section id="insights" hidden><h2>Insights</h2><div id="stats" class="stats"></div><div id="media"></div></section></main>
+<dialog id="workDialog" aria-labelledby="workTitle"><button id="closeWork" class="close" aria-label="Close work">×</button><div id="workBody"></div></dialog>
+<script id="publicationData" type="application/json">PUBLICATION_DATA</script>
+<script id="publicationLicenses" type="application/json">PUBLICATION_NOTICES</script>
+PUBLICATION_SCRIPTS
+</body></html>

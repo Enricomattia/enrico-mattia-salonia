@@ -64,7 +64,10 @@ let origin,browser;
   await page.waitForFunction(()=>!document.getElementById('editionLookupBtn').disabled);
   assert(calls.some(raw=>new URL(raw).searchParams.get('q')?.includes('language:ita publisher:"Einaudi"')));
   await page.locator('#cancelBtn').click();
-  await page.evaluate(()=>showView('metadata'));await page.locator('#googleBooksKeyInput').fill(key);await page.locator('#saveGoogleBooksBtn').click();assert.match(await page.locator('#googleBooksKeyStatus').innerText(),/enabled/);
+  await page.evaluate(()=>showView('metadata'));
+  if(variant==='personal')await page.locator('[data-catalogue-guide="googlebooks"]').click();
+  await page.locator('#googleBooksKeyInput').fill(key);await page.locator('#saveGoogleBooksBtn').click();assert.match(await page.locator('#googleBooksKeyStatus').innerText(),variant==='personal'?/Saved/:/enabled/);
+  if(variant==='personal')await page.locator('#catalogueGuideDone').click();
   await page.locator('#addBtn').click();await field('title').fill('A shared title');await page.evaluate(()=>runCatalogSearch());assert.equal(await page.locator('#catalogResults [data-cat]').count(),4);
   await page.locator('#catalogResults [data-cat]').filter({hasText:'Google Books'}).first().click();await page.locator('#bookEditionDetails>summary').click();
   assert.equal(await field('editionIsbn').inputValue(),'');assert.equal(await field('cover').inputValue(),'');await page.locator('#editionResults [data-ed]').click();
@@ -80,7 +83,7 @@ let origin,browser;
   await page.locator('#addBtn').click();await page.evaluate(()=>{void loadEditionsForWork('/works/OL999W')});while(!staleRelease)await new Promise(resolve=>setTimeout(resolve,10));await page.locator('#cancelBtn').click();await page.locator('#addBtn').click();staleRelease();await page.evaluate(()=>Promise.resolve());assert.equal(await field('editionPublisher').inputValue(),'');assert.equal(await page.locator('#editionResults').isVisible(),false);await page.locator('#cancelBtn').click();
   if(variant==='personal'){
    await page.evaluate(()=>navigator.serviceWorker.ready);await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
-   assert(await page.evaluate(async()=>!!await(await caches.open('pathos-personal-shell-v23')).match('/pathos-personal/book-catalogue.mjs')));
+   assert(await page.evaluate(async()=>{const name=(await caches.keys()).find(name=>name.startsWith('pathos-personal-shell-'));return!!name&&!!await(await caches.open(name)).match('/pathos-personal/book-catalogue.mjs')}));
    await context.setOffline(true);await page.reload();await page.waitForFunction(()=>window.pathosPersonalReady);assert.deepEqual(await page.evaluate(()=>db.experiences),recorded.experiences);await context.setOffline(false);
   }else{
    await page.locator('#discoverBtn').click();await page.locator('#discoveryQuery').fill('Google book');await page.locator('#discoveryForm button').click();await page.locator('.discover-result').click();await page.locator('.discover-preview a.source-link').waitFor();assert.equal(await page.locator('.discover-preview a.source-link').innerText(),'Google Books ↗');await page.locator('#discoveryPreview').getByRole('button',{name:'Log experience',exact:true}).click();assert.equal(await field('editionGoogleBooksId').inputValue(),'google_1','Existing work retains its recorded edition');await page.locator('#cancelBtn').click();
