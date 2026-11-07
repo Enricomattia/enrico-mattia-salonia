@@ -785,6 +785,7 @@ body:not(.pathos-owner) .experience-edit{display:none}
 .edition-cover-preview{width:100px;max-width:100%;height:140px;overflow:hidden;background:var(--soft)}.edition-cover-preview img{width:100%;height:100%;object-fit:contain}.vocabulary-suggestions{display:flex;flex-wrap:wrap;gap:6px}.vocabulary-suggestions[hidden],[hidden]#experienceCoverField,[hidden]#experienceCoverPreview{display:none!important}.vocabulary-suggestions button{font:inherit;min-height:36px;border:1px solid var(--line);background:var(--paper);border-radius:20px;padding:6px 10px;cursor:pointer}.experience-cover{float:right;width:64px;height:90px;position:relative;overflow:hidden;margin:12px 0 12px 16px}.experience-cover img{width:100%;height:100%;object-fit:cover}.experience:after{content:'';display:block;clear:both}
 </style>
 <link rel="stylesheet" href="/pathos-personal/catalogue-setup.css">
+<link rel="stylesheet" href="/pathos-personal/publish.css">
 <link rel="stylesheet" href="/pathos-personal/review-format.css">
 </head>
 <body>
@@ -915,6 +916,26 @@ body:not(.pathos-owner) .experience-edit{display:none}
       </div>
       <div id="metadataProgress" class="progress-box"><div class="meta">Ready. Enrichment is conservative: if a match is unclear, the work is left alone.</div></div>
       <div id="metadataKpis" class="metadata-kpis"></div>
+    </div>
+  </div>
+</section>
+
+<section id="publishing" class="view">
+  <div class="section-head"><h2>Publish online</h2></div>
+  <p class="muted">Share a read-only copy on your own Netlify account. Your personal diary stays on this device. Anyone with the website address can view the published copy.</p>
+  <div class="publish-layout">
+    <div>
+      <h3>Choose what to share</h3>
+      <label class="field" for="publishTitle">Website title</label><input class="input" id="publishTitle" maxlength="120" placeholder="My Πathos">
+      <div class="publish-options"><label><input type="checkbox" id="publishReviews" checked> Reviews</label><label><input type="checkbox" id="publishPassages" checked> Passages</label><label><input type="checkbox" id="publishCovers" checked> Covers</label></div>
+      <p class="metadata-note">Selected entries include their title, creator, dates, rating and edition summary. Source links, import details, tags, moods, ownership and catalogue identifiers stay private.</p>
+      <label class="field" for="publishSearch">Find entries</label><input class="input" id="publishSearch" type="search" placeholder="Title or creator">
+      <div class="publish-selection-actions"><span id="publishSelectedCount" role="status">0 selected</span><button type="button" class="btn subtle" id="publishSelectShown">Select shown</button><button type="button" class="btn subtle" id="publishClear">Clear selection</button></div>
+      <div id="publishEntries" class="publish-entries"></div>
+    </div>
+    <div class="publish-controls">
+      <div class="panel"><h3>Preview your website</h3><p class="metadata-note">Check the exact public copy before publishing. New entries are always left unselected.</p><button type="button" class="btn" id="publishPreviewBtn" disabled>Preview selected entries</button><div id="publishPreviewWrap" hidden><iframe id="publishPreview" title="Preview of your public Πathos" sandbox="allow-scripts allow-popups" referrerpolicy="no-referrer"></iframe><label class="check"><input type="checkbox" id="publishApproved"> I have checked this public preview</label></div></div>
+      <div class="panel"><h3>Your hosting account</h3><p class="metadata-note">Connect your own Netlify account. Its hosting limits apply. The connection lasts until you close or reload Πathos.</p><div class="publish-actions"><button type="button" class="btn" id="publishConnectBtn">Connect Netlify</button><button type="button" class="btn subtle" id="publishDisconnectBtn" hidden>Disconnect</button></div><p class="metadata-note" id="publishConnectionStatus" role="status"></p><div id="publishAccountField" hidden><label class="field" for="publishAccount">Netlify team</label><select class="input" id="publishAccount"></select></div><button type="button" class="btn primary" id="publishNowBtn" disabled>Publish website</button><p id="publishProgress" class="publish-status" role="status" aria-live="polite"></p><div id="publishResult" hidden><p><a id="publishWebsiteLink" target="_blank" rel="noopener noreferrer">Open website ↗</a></p><p><a id="publishManageLink" target="_blank" rel="noopener noreferrer">Manage in Netlify ↗</a></p><p class="metadata-note">Netlify may require <strong>Make public</strong> once before friends can visit. Updates replace the current version; Netlify can retain earlier deployments. Manage visibility and remove the website in Netlify. Disconnecting here leaves the website online.</p></div></div>
     </div>
   </div>
 </section>
@@ -1501,7 +1522,7 @@ for(const input of document.querySelectorAll('[data-vocabulary]')){
 }
 document.addEventListener('click',event=>{if(!event.target.closest('[data-vocabulary],[data-suggestions]'))closeVocabularySuggestions();});
 function renderVocabularyFilters(){for(const kind of ['tags','moods']){const select=$('library'+(kind==='tags'?'Tag':'Mood')+'Filter'),value=select.value;select.innerHTML='<option value="">All '+kind+'</option>'+vocabulary(kind).map(term=>'<option value="'+esc(term)+'">'+esc(term)+'</option>').join('');select.value=vocabulary(kind).includes(value)?value:'';}}
-function renderAll(){renderVocabularyFilters();renderFavourites();renderCurrent();renderFilters();renderLibrary();renderTimeline();renderPassageFilters();renderPassages();renderInsights();renderMetadataKpis()}
+function renderAll(){renderVocabularyFilters();renderFavourites();renderCurrent();renderFilters();renderLibrary();renderTimeline();renderPassageFilters();renderPassages();renderInsights();renderMetadataKpis();window.PathosPublishing?.refresh()}
 function workAverageRating(wid){const a=experiencesFor(wid).filter(e=>e.rating!==''&&e.rating!=null).map(e=>Number(e.rating));return a.length?a.reduce((s,x)=>s+x,0)/a.length:null}
 function workLatestDate(wid){return experiencesFor(wid).map(experienceDate).filter(Boolean).sort().pop()||''}
 function reviewWords(e){const text=PathosReview.text(e.review);return text?text.split(/\s+/).length:0}
@@ -2092,7 +2113,8 @@ function showView(name){
   document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===name));
   if($('moreMenu'))$('moreMenu').open=false;
   const settings=$('settingsMenu');
-  if(settings){settings.open=false;settings.querySelector('summary').classList.toggle('active',['metadata','import'].includes(name));}
+  if(settings){settings.open=false;settings.querySelector('summary').classList.toggle('active',['metadata','import','publishing'].includes(name));}
+  if(name==='publishing')window.PathosPublishing?.refresh();
   window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
 }
 document.querySelectorAll('.tab[data-view],.menu-view').forEach(t=>t.onclick=()=>showView(t.dataset.view));
@@ -2369,6 +2391,8 @@ if('serviceWorker' in navigator){
 </script>
 
 <script src="/pathos-personal/catalogue-setup.js"></script>
+<script src="/pathos-personal/publish-config.js"></script>
+<script type="module" src="/pathos-personal/publish.js"></script>
 <script type="module" src="/pathos-personal/cover-accent.mjs"></script>
 </body>
 </html>

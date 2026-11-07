@@ -1,11 +1,21 @@
 /* Πathos Personal offline application shell. No access to /pathos or Supabase. */
-const CACHE='pathos-personal-shell-v26';
+const CACHE='pathos-personal-shell-v27';
 const COVERS='pathos-personal-covers-v1';
 const SHELL=[
  '/pathos-personal/index.html',
  '/pathos-personal/catalogue-setup.js',
  '/pathos-personal/catalogue-setup.css',
+ '/pathos-personal/publish.css',
+ '/pathos-personal/publish.js',
+ '/pathos-personal/publish-config.js',
+ '/pathos-personal/publish-core.mjs',
+ '/pathos-personal/publish-netlify.mjs',
+ '/pathos-personal/published-reader.html',
+ '/pathos-personal/published-reader.css',
+ '/pathos-personal/published-reader.js',
  '/pathos-personal/markdown-it.min.js',
+ '/pathos-personal/markdown-it.LICENSE.txt',
+ '/pathos-personal/fonts/LICENSE.txt',
  '/pathos-personal/review-format.js',
  '/pathos-personal/review-editor.js',
  '/pathos-personal/review-format.css',
@@ -42,6 +52,8 @@ self.addEventListener('fetch',event=>{
  if(url.origin===self.location.origin){
    if(!url.pathname.startsWith('/pathos-personal/'))return;
    if(url.pathname==='/pathos-personal/sw.js')return;
+   // OAuth callback assets never become offline navigation fallbacks.
+   if(['/pathos-personal/netlify-auth.html','/pathos-personal/netlify-auth.js'].includes(url.pathname))return;
    if(req.mode==='navigate'||SHELL.includes(url.pathname)){
      event.respondWith(caches.open(CACHE).then(cache=>cache.match(req,{ignoreSearch:true})).then(hit=>hit||fetch(req).then(response=>{
         if(response.ok){const copy=response.clone();event.waitUntil(caches.open(CACHE).then(c=>c.put(req,copy)));}
