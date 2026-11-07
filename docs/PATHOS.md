@@ -1,6 +1,6 @@
 # Πathos — Project handoff for Codex
 
-_Last checked against the implementation: 28 October 2026._
+_Last checked against the implementation: 7 November 2026._
 
 ## 1. What Πathos is
 
@@ -50,6 +50,7 @@ public/pathos/match-worker.js             # on-device multilingual embeddings
 
 src/app/pathos-personal/page.tsx          # /pathos-personal -> /pathos-personal/index.html
 public/pathos-personal/index.html         # interface + local-first storage
+public/pathos-personal/catalogue-setup.js, catalogue-setup.css # Personal catalogue guide and connection tests
 public/pathos-personal/manifest.webmanifest
 public/pathos-personal/sw.js              # install, cache, update handling
 public/pathos-personal/icon-192.png
@@ -76,7 +77,7 @@ Release changes in PR #6 (`codex/pathos-reliability`):
 - Hosted saves use a fresh owner-session check, an archive comparison against the latest cloud read, and a same-origin Web Lock where available. This rejects previously saved changes from other windows/devices, but **is not an atomic cross-device conditional write**. A simultaneous save on another device (or from an old client) can still race the preflight read; resolving that needs a separately reviewed server-side revision check.
 - Automatic ISBN enrichment fills missing edition fields and preserves recorded metadata, identifiers and uploaded/manual covers. Editing an edition also preserves its contributors.
 - Save errors remain visible and block Personal updates; a later successful write clears the failure. Personal refuses updates/restores while an entry dialog, import or metadata operation is open/running, and prevents new edits while preparing an update. Unsaved form entries are not auto-saved.
-- The service worker uses shell cache `pathos-personal-shell-v25` and looks up shell assets in its own versioned cache, so a waiting release's cache cannot be served prematurely. The standalone manifest is unchanged. Preview v4/v5 provided the real reliability update-cycle check; v6 stages interface simplifications and v7 adds official-page image suggestions. Release v8 adds winding timelines, mobile layout improvements and Current above the Home timeline. The v9 follow-up makes both timelines vertical and nearly full-width on phones (600px and narrower), retaining winding rows on larger screens. Release v10 adds viewing language and publication series and promotes Timeline into the primary navigation. Release v11 adds restrained artwork-derived accents and caches the standalone accent module. Release v12 improves accent recovery and the visibility of pale colors. Release v13 caches the book catalogue module and extends the existing bounded, best-effort cover cache to Google Books artwork.
+- The service worker uses shell cache `pathos-personal-shell-v26` and looks up shell assets in its own versioned cache, so a waiting release's cache cannot be served prematurely. The standalone manifest is unchanged. Preview v4/v5 provided the real reliability update-cycle check; v6 stages interface simplifications and v7 adds official-page image suggestions. Release v8 adds winding timelines, mobile layout improvements and Current above the Home timeline. The v9 follow-up makes both timelines vertical and nearly full-width on phones (600px and narrower), retaining winding rows on larger screens. Release v10 adds viewing language and publication series and promotes Timeline into the primary navigation. Release v11 adds restrained artwork-derived accents and caches the standalone accent module. Release v12 improves accent recovery and the visibility of pale colors. Release v13 caches the book catalogue module and extends the existing bounded, best-effort cover cache to Google Books artwork.
 
 ## 4. What the user wants the experience to feel like
 
@@ -97,6 +98,16 @@ The v0.6 redesign (15 October 2026, requested by the owner from a design canvas 
 Work details show each experience's review once, with no duplicate Latest review summary or experience/review count chips. A single experience is the standard display; repeat experiences retain their separate dates, editions and reviews. A discreet Log again action still opens the repeat-experience form. Library cards show an experience count only when there is more than one.
 
 Book entry forms use one editable **Language** field and one **Publisher** field for edition filtering and recording. Choosing an edition fills it; looking up an ISBN does not erase a manually recorded language before selection. **I own this book** appears in the main form only for books and records optional boolean `work.owned` under schema version 6. Existing StoryGraph ownership in `work.sourceMetadata.owned` or experience `details.owned` is recognised for display; explicit `work.owned` takes precedence, including false. There is no automatic rewrite or storage migration. Ownership and favourites survive repeat logging, unrelated edits and JSON backups; Cancel does not change them. Public hosted responses include the explicitly requested favourite flag for published works and continue to omit ownership.
+
+### Personal catalogue setup
+
+Personal's settings menu calls the existing `metadata` view **Catalogues & covers**; the hosted menu stays **Metadata & covers**. Personal shows Open Library (available without setup), optional Google Books and optional TMDB above existing archive-enrichment tools. StoryGraph/Letterboxd remain file imports, linked separately through **Import existing records**.
+
+A small Home introduction offers **Set up catalogues / Later** once per browser profile. Either action dismisses it using the separate local preference `pathos-personal.catalogue-intro-v1`; archive backups and schema are untouched. The guide remains accessible from settings and from Book/Film/TV entries. An entry opens the same guide as a second native modal, leaving every unsaved entry field, review, passage and edition in place. **Back to entry**, Close and Escape return to the form. Other media have no catalogue setup link.
+
+The expandable guide provides current official setup links, Google's Books API enablement and API/website restrictions (using the current site's origin), and TMDB's exact **API Read Access Token** label. Keys retain their existing local-storage names and remain outside JSON backups. Save stores a credential; it does not claim verified access. **Test connection** checks the currently typed value without saving it, with fixed public sample requests, no diary content, no cookies, an eight-second timeout and provider-specific errors. Google receives only its key; TMDB receives only its bearer token. Editing a credential or closing the guide cancels its test and clears stale results. Successful tests are temporary, never a persisted verification badge. Storage failures stay visible.
+
+Release v26 precaches `catalogue-setup.js` and `catalogue-setup.css` in the existing staged shell. Updates also wait for the catalogue guide to close, protecting unfinished credential edits. No IndexedDB migration, archive writes, hosted changes or manifest changes are involved. `npm run test:pathos-catalogues` uses isolated browser storage and synthetic credentials to check discovery, draft preservation, test requests/errors/cancellation, credential persistence, small screens and offline reopening. It also accepts `PATHOS_CATALOGUE_PREVIEW` for a Netlify deploy-preview origin. The reliability suite checks both new assets after an accepted update and refuses updating with catalogue setup open.
 
 ### Review formatting
 

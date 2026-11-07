@@ -345,7 +345,7 @@ async function checkArchiveViews(page){
     await app.waitForFunction(()=>document.querySelector('meta[name="pathos-test-release"]').content==='current');
     await app.waitForFunction(()=>window.pathosPersonalReady);
     assert.deepEqual((await archive(app)).experiences,updateFixture.experiences);
-    for(const asset of ['markdown-it.min.js','review-format.js','review-format.css','review-editor.js']){
+    for(const asset of ['markdown-it.min.js','review-format.js','review-format.css','review-editor.js','catalogue-setup.js','catalogue-setup.css']){
       assert.equal(await app.evaluate(async name=>{
         const key=(await caches.keys()).find(key=>key.startsWith('pathos-personal-shell-'));
         return(await(await caches.open(key)).match('/pathos-personal/'+name)).text();
@@ -365,6 +365,13 @@ async function checkArchiveViews(page){
     release='next';
     await app.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();await r.update();});
     await app.locator('#pathosUpdateBanner').waitFor({state:'visible'});
+    await app.evaluate(()=>PathosCatalogues.open('tmdb'));
+    await app.locator('#tmdbTokenInput').fill('unfinished-setup-token');
+    await app.evaluate(()=>document.getElementById('pathosUpdateNow').click());
+    assert.equal(await app.locator('#catalogueGuide').evaluate(el=>el.open),true);
+    assert.equal(await app.locator('meta[name="pathos-test-release"]').getAttribute('content'),'current');
+    assert.equal(await app.locator('#tmdbTokenInput').inputValue(),'unfinished-setup-token');
+    await app.locator('#catalogueGuideDone').click();
     await app.locator('#addBtn').click();await app.locator('[name="title"]').fill('Unfinished draft');
     await app.evaluate(()=>document.getElementById('pathosUpdateNow').click());
     assert.equal(await app.locator('#entryDialog').evaluate(el=>el.open),true);

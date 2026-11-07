@@ -784,13 +784,14 @@ body:not(.pathos-owner) .experience-edit{display:none}
 @media(max-width:600px) and (forced-colors:active){nav.tabs{border-top:1px solid CanvasText}}
 .edition-cover-preview{width:100px;max-width:100%;height:140px;overflow:hidden;background:var(--soft)}.edition-cover-preview img{width:100%;height:100%;object-fit:contain}.vocabulary-suggestions{display:flex;flex-wrap:wrap;gap:6px}.vocabulary-suggestions[hidden],[hidden]#experienceCoverField,[hidden]#experienceCoverPreview{display:none!important}.vocabulary-suggestions button{font:inherit;min-height:36px;border:1px solid var(--line);background:var(--paper);border-radius:20px;padding:6px 10px;cursor:pointer}.experience-cover{float:right;width:64px;height:90px;position:relative;overflow:hidden;margin:12px 0 12px 16px}.experience-cover img{width:100%;height:100%;object-fit:cover}.experience:after{content:'';display:block;clear:both}
 </style>
+<link rel="stylesheet" href="/pathos-personal/catalogue-setup.css">
 <link rel="stylesheet" href="/pathos-personal/review-format.css">
 </head>
 <body>
 
 <header class="topbar">
   <div class="archive-heading"><h1 class="pathos-wordmark" aria-label="Πathos"><span class="pathos-pi" aria-hidden="true">Π</span><span>athos</span></h1></div>
-  <div class="top-actions"><span class="personal-status" id="personalStatus" data-status="loading" role="status" aria-live="polite">Loading local archive…</span><button type="button" class="btn personal-install" id="installPersonalBtn">Install app</button><details class="settings-menu" id="settingsMenu"><summary class="btn subtle" aria-label="Metadata, import and backup" title="Metadata, import and backup"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></summary><div class="more-menu-panel"><button type="button" class="menu-view" data-view="metadata">Metadata & covers</button><button type="button" class="menu-view" data-view="import">Import & backup</button></div></details><button class="btn primary" id="addBtn">+ Add experience</button></div>
+  <div class="top-actions"><span class="personal-status" id="personalStatus" data-status="loading" role="status" aria-live="polite">Loading local archive…</span><button type="button" class="btn personal-install" id="installPersonalBtn">Install app</button><details class="settings-menu" id="settingsMenu"><summary class="btn subtle" aria-label="Catalogues, import and backup" title="Catalogues, import and backup"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></summary><div class="more-menu-panel"><button type="button" class="menu-view" data-view="metadata">Catalogues & covers</button><button type="button" class="menu-view" data-view="import">Import & backup</button></div></details><button class="btn primary" id="addBtn">+ Add experience</button></div>
 </header>
 <nav class="tabs" aria-label="Πathos pages">
   <button data-view="home" class="tab active"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z"/></svg><span class="tab-label">Home</span></button>
@@ -810,6 +811,10 @@ body:not(.pathos-owner) .experience-edit{display:none}
 </nav>
 <main>
 <section id="home" class="view active">
+  <aside class="catalogue-intro" id="catalogueIntro" aria-labelledby="catalogueIntroTitle" hidden>
+    <div><h2 id="catalogueIntroTitle">Find books, films and TV automatically</h2><p>Book search is ready to use. Add optional catalogues for more book results and film & TV search.</p></div>
+    <div class="catalogue-actions"><button type="button" class="btn primary" id="introCatalogueSetup">Set up catalogues</button><button type="button" class="btn subtle" id="catalogueIntroLater">Later</button></div>
+  </aside>
   <div class="home-highlights">
     <section id="currentSection" class="hidden">
       <div class="section-head"><div><h3>Current</h3></div></div>
@@ -890,9 +895,16 @@ body:not(.pathos-owner) .experience-edit{display:none}
 </section>
 
 <section id="metadata" class="view">
-  <div class="section-head"><div><h2>Metadata & covers</h2></div></div>
-  <div class="notice muted">Nothing here changes your ratings, reviews or dates. Enrichment only adds catalogue information. For books with a StoryGraph ISBN, v0.4 resolves the exact edition first and keeps edition metadata on the reading itself.</div>
+  <div class="section-head"><div><h2>Catalogues & covers</h2></div><button type="button" class="btn" data-catalogue-guide="openlibrary">Set up catalogues</button></div>
+  <p class="metadata-note">Find titles, editions and artwork while you log. Your diary stays on this device; catalogue searches need an internet connection.</p>
   <div class="metadata-grid">
+    <div class="panel catalogue-overview">
+      <h3>Your catalogues</h3>
+      <button type="button" class="catalogue-source" data-catalogue-guide="openlibrary"><span><strong>Open Library</strong><span>Books and editions</span></span><span class="catalogue-state">Available · no setup</span></button>
+      <button type="button" class="catalogue-source" data-catalogue-guide="googlebooks"><span><strong>Google Books</strong><span>Additional book and edition results</span></span><span class="catalogue-state" id="googleBooksOverviewStatus">Optional · set up</span></button>
+      <button type="button" class="catalogue-source" data-catalogue-guide="tmdb"><span><strong>TMDB</strong><span>Films, TV and posters</span></span><span class="catalogue-state" id="tmdbOverviewStatus">Optional · set up</span></button>
+      <p class="metadata-note">Already use StoryGraph or Letterboxd? <button type="button" class="catalogue-text-link" id="catalogueImportLink">Import existing records</button> from an export file.</p>
+    </div>
     <div class="panel">
       <h3>Enrich your existing archive</h3>
       <p class="metadata-note">Books use Open Library, with optional Google Books ISBN lookup. ISBN-based StoryGraph entries are treated as exact editions, not merely as works. A cover is now saved only when Open Library actually reports one for that edition; a bare ISBN is no longer treated as proof that a cover exists. Films and TV use TMDB; the token stays only in this browser and is never included in your exported archive.</p>
@@ -903,13 +915,6 @@ body:not(.pathos-owner) .experience-edit{display:none}
       </div>
       <div id="metadataProgress" class="progress-box"><div class="meta">Ready. Enrichment is conservative: if a match is unclear, the work is left alone.</div></div>
       <div id="metadataKpis" class="metadata-kpis"></div>
-    </div>
-    <div class="panel">
-      <h3>Catalogue access</h3><p class="metadata-note">Open Library works without a key. To also search Google Books, <a class="source-link" href="https://developers.google.com/books/docs/v1/using#APIKey" target="_blank" rel="noopener noreferrer">create a Google Books API key ↗</a>, enable Books API in that Google Cloud project, and paste it below. Restrict the key to Books API and this site's web addresses. Standard Google API quotas apply.</p><div class="token-row"><input id="googleBooksKeyInput" class="input" type="password" autocomplete="off" aria-label="Google Books API key" placeholder="Google Books API key (optional)"><button id="saveGoogleBooksBtn" class="btn primary">Save</button></div><div id="googleBooksKeyStatus" class="meta" style="margin-top:9px"></div><p class="metadata-note">The key stays in this browser, outside archive backups. Book searches send the query to Open Library and, when configured, Google Books.</p><h4>TMDB</h4>
-      <p class="metadata-note">Needed for film/TV posters, directors, runtime, genres and title search. Paste a TMDB <strong>API Read Access Token</strong> here. It is stored only in your browser's local storage.</p>
-      <div class="token-row"><input id="tmdbTokenInput" class="input" type="password" autocomplete="off" placeholder="TMDB API Read Access Token"><button id="saveTmdbBtn" class="btn primary">Save</button></div>
-      <div id="tmdbTokenStatus" class="meta" style="margin-top:9px"></div>
-      <p class="metadata-note" style="margin-top:18px">The Add experience dialog now searches your own library first. Books then search Open Library and, with a key, Google Books; films and TV search TMDB when this token is configured.</p><p class="metadata-note"><em>This product uses the TMDB API but is not endorsed or certified by TMDB.</em></p>
     </div>
   </div>
 </section>
@@ -956,11 +961,12 @@ body:not(.pathos-owner) .experience-edit{display:none}
     <div class="form-grid">
       <label class="field">Medium<select class="input" name="type"><option>Book</option><option>Film</option><option>TV</option><option>Theatre</option><option>Videogame</option><option>Album</option><option>Concert</option><option>Exhibition</option><option>Podcast</option><option>Opera</option><option>Other</option></select></label>
       <label class="field">Status<select class="input" name="status"><option value="completed">Completed</option><option value="in-progress">In progress</option><option value="planned">Planned</option><option value="dnf">Did not finish</option></select></label>
-      <label class="field span-2 catalog-field">Title
+      <div class="field span-2 catalog-field"><label for="titleInput">Title</label>
         <input class="input" name="title" id="titleInput" required autocomplete="off" placeholder="Start typing a title…">
         <span class="catalog-hint" id="catalogHint">Searches your library and, where available, a catalogue.</span>
+        <button type="button" class="catalogue-text-link" id="entryCatalogueSetup" hidden>Set up catalogues</button>
         <div id="catalogResults" class="catalog-results hidden"></div>
-      </label>
+      </div>
       <label class="field" id="startDateField"><span id="startDateLabel">Started</span><span class="date-control"><input class="input" id="startDateInput" type="date" name="startDate"><button type="button" class="today-btn" data-today="startDateInput" title="Set start date to today">Today</button></span></label>
       <label class="field" id="endDateField"><span id="endDateLabel">Finished</span><span class="date-control"><input class="input" id="endDateInput" type="date" name="endDate"><button type="button" class="today-btn" data-today="endDateInput" title="Set date to today">Today</button></span><span id="dateOrderError" class="catalog-hint hidden" style="color:#a33;margin-top:5px">Finish date cannot be earlier than the start date.</span></label>
       <label class="field">Rating (0–5)<input class="input" type="number" min="0" max="5" step="0.25" name="rating" placeholder="Optional"></label>
@@ -1045,6 +1051,48 @@ body:not(.pathos-owner) .experience-edit{display:none}
 <dialog id="insightDialog" class="insight-dialog" aria-labelledby="insightDialogTitle">
   <div class="dialog-head"><div><h2 id="insightDialogTitle">Experiences</h2><p class="meta" id="insightDialogCount"></p></div><button class="icon-btn" type="button" id="closeInsightDialog" aria-label="Close results">×</button></div>
   <div id="insightDialogList" class="insight-drill-results"></div>
+</dialog>
+
+<dialog id="catalogueGuide" class="catalogue-guide" aria-labelledby="catalogueGuideTitle" aria-describedby="catalogueGuideDescription">
+  <div class="dialog-head"><h2 id="catalogueGuideTitle" tabindex="-1">Set up catalogues</h2><button type="button" class="icon-btn" id="closeCatalogueGuide" aria-label="Close catalogue setup">×</button></div>
+  <p id="catalogueGuideDescription" class="metadata-note">Choose the sources you want. They fetch catalogue information; your diary stays on this device.</p>
+  <details class="catalogue-step" id="catalogue-openlibrary" open>
+    <summary><strong>Open Library</strong><span>Books · already available</span></summary>
+    <div class="catalogue-step-body"><p>Nothing to connect. Choose <strong>Book</strong> when adding an experience and start typing a title or ISBN. Select a result, then check the exact edition against your copy.</p><button type="button" class="btn" data-test-catalogue="openlibrary">Test connection</button><p class="catalogue-feedback" id="openlibraryTestStatus" role="status" aria-live="polite"></p></div>
+  </details>
+  <details class="catalogue-step" id="catalogue-googlebooks">
+    <summary><strong>Google Books</strong><span>More book results · optional</span></summary>
+    <div class="catalogue-step-body">
+      <ol>
+        <li>Sign in to the <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer">Google Cloud console ↗</a> and create or select a project.</li>
+        <li>In <strong>APIs & Services → Library</strong>, find <strong>Books API</strong> and enable it.</li>
+        <li>Open <strong>APIs & Services → Credentials → Create credentials → API key</strong>. Restrict the key to <strong>Books API</strong> and, under <strong>Websites</strong>, add <code id="catalogueSiteAddress"></code>.</li>
+        <li>Paste the key below, test the connection, then save. Book searches will include Google Books.</li>
+      </ol>
+      <p><a href="https://developers.google.com/books/docs/v1/using#APIKey" target="_blank" rel="noopener noreferrer">Official Google Books guide ↗</a> · <a href="https://docs.cloud.google.com/docs/authentication/api-keys#restrict_key" target="_blank" rel="noopener noreferrer">Key restrictions ↗</a>. Standard API quotas apply.</p>
+      <label class="field" for="googleBooksKeyInput">Google Books API key</label>
+      <div class="token-row"><input id="googleBooksKeyInput" class="input" type="password" autocomplete="off" spellcheck="false" aria-describedby="googleBooksKeyStatus" placeholder="API key (optional)"><button type="button" id="saveGoogleBooksBtn" class="btn primary">Save</button><button type="button" class="btn" data-test-catalogue="googlebooks">Test connection</button></div>
+      <p id="googleBooksKeyStatus" class="catalogue-feedback" role="status" aria-live="polite"></p><p id="googlebooksTestStatus" class="catalogue-feedback" role="status" aria-live="polite"></p>
+    </div>
+  </details>
+  <details class="catalogue-step" id="catalogue-tmdb">
+    <summary><strong>TMDB</strong><span>Films & TV · optional</span></summary>
+    <div class="catalogue-step-body">
+      <ol>
+        <li>Create an account or sign in at <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer">TMDB ↗</a>.</li>
+        <li>Open <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener noreferrer"><strong>Settings → API</strong> ↗</a>, request API access and complete their application. This step works best in a desktop browser.</li>
+        <li>Copy the value labelled <strong>API Read Access Token</strong>.</li>
+        <li>Paste the token below, test the connection, then save. Choose <strong>Film</strong> or <strong>TV</strong> in a new entry to search titles and find posters.</li>
+      </ol>
+      <p><a href="https://developer.themoviedb.org/docs/getting-started" target="_blank" rel="noopener noreferrer">Official TMDB setup guide ↗</a> · Use the long read access token; the shorter API key will not work in this field.</p>
+      <label class="field" for="tmdbTokenInput">TMDB API Read Access Token</label>
+      <div class="token-row"><input id="tmdbTokenInput" class="input" type="password" autocomplete="off" spellcheck="false" aria-describedby="tmdbTokenStatus" placeholder="API Read Access Token"><button type="button" id="saveTmdbBtn" class="btn primary">Save</button><button type="button" class="btn" data-test-catalogue="tmdb">Test connection</button></div>
+      <p id="tmdbTokenStatus" class="catalogue-feedback" role="status" aria-live="polite"></p><p id="tmdbTestStatus" class="catalogue-feedback" role="status" aria-live="polite"></p>
+      <p><em>This product uses the TMDB API but is not endorsed or certified by TMDB.</em></p>
+    </div>
+  </details>
+  <p class="metadata-note">Keys and tokens are saved only in this browser, outside your archive backups. Searches go to the selected catalogue providers. Clear a field and save to remove its connection. You can keep logging manually offline.</p>
+  <div class="catalogue-actions"><button type="button" class="btn primary" id="catalogueGuideDone">Done</button></div>
 </dialog>
 
 <dialog id="workDialog" class="work-page" aria-labelledby="workPageTitle">
@@ -1762,8 +1810,9 @@ $('entryDialog').addEventListener('close',()=>{cancelCatalogue();cancelEditionLo
 function tmdbToken(){return localStorage.getItem(TMDB_TOKEN_KEY)||''}
 function setCatalogHint(){
   const type=$('entryForm')?.elements?.type?.value||'Book';
-  const hints={Book:googleBooksKey()?'Searches your archive + Open Library + Google Books.':'Searches your archive + Open Library. Add an optional Google Books key under Metadata for more results.',Film:tmdbToken()?'Searches your archive + TMDB.':'Searches your archive. Add a TMDB token under Metadata for film search.',TV:tmdbToken()?'Searches your archive + TMDB.':'Searches your archive. Add a TMDB token under Metadata for TV search.'};
+  const hints={Book:googleBooksKey()?'Searches your archive + Open Library + Google Books.':'Searches your archive + Open Library. Google Books is optional.',Film:tmdbToken()?'Searches your archive + TMDB.':'Searches your archive. Enable TMDB for film search and posters.',TV:tmdbToken()?'Searches your archive + TMDB.':'Searches your archive. Enable TMDB for TV search and posters.'};
   if($('catalogHint'))$('catalogHint').textContent=hints[type]||'Searches your existing archive first.';
+  window.PathosCatalogues?.refreshHint();
 }
 function localCatalogResults(q,type){
   q=norm(q);if(!q)return[];return db.works.filter(w=>(!type||w.type===type)&&norm(workSearchText(w)).includes(q)).slice(0,6).map(w=>({provider:'local',id:w.id,title:w.title,creator:w.creator||'',year:w.year||'',cover:(experiencesFor(w.id)[0]?.edition?.cover||w.cover||''),type:w.type,external:w.external||{},sourceMetadata:w.sourceMetadata||{},aliases:w.aliases||[],label:'Already in your archive'}));
@@ -1950,11 +1999,11 @@ function setMetadataBusy(active,kind=''){const ids=['enrichBooksBtn','enrichFilm
 function progressHtml(label,done,total,matched,failed=0){const pct=total?Math.round(done/total*100):0;return `<div class="progress-line"><strong>${esc(label)}</strong><span>${done}/${total} · ${matched} matched${failed?` · ${failed} errors`:''}</span></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>`}
 async function enrichWorks(kind,manageBusy=true){
   if(!window.pathosCanEdit||archiveBusy)return;
-  let works=kind==='books'?db.works.filter(w=>w.type==='Book'):db.works.filter(w=>w.type==='Film'||w.type==='TV');if(kind!=='books'&&!tmdbToken()){toast('Add your TMDB token first');document.querySelector('[data-view="metadata"]')?.click();$('tmdbTokenInput')?.focus();return}
+  let works=kind==='books'?db.works.filter(w=>w.type==='Book'):db.works.filter(w=>w.type==='Film'||w.type==='TV');if(kind!=='books'&&!tmdbToken()){window.PathosCatalogues?.open('tmdb');return}
   if(!works.length)return;backgroundTasks++;if(manageBusy)setMetadataBusy(true,kind);const box=$('metadataProgress');let matched=0,failed=0;try{for(let i=0;i<works.length;i++){box.innerHTML=progressHtml(kind==='books'?'Enriching books':'Enriching films & TV',i,works.length,matched,failed)+`<div class="meta" style="margin-top:8px">${esc(works[i].title)}</div>`;try{const ok=kind==='books'?await enrichBook(works[i]):await enrichTmdbWork(works[i]);if(ok)matched++}catch{failed++}saveDb();await sleep(kind==='books'?140:100)}saveDb();box.innerHTML=progressHtml('Finished',works.length,works.length,matched,failed)+`<div class="meta" style="margin-top:8px">Matched ${matched} work${matched===1?'':'s'}. For books, StoryGraph edition IDs are preserved. Work-level covers are never substituted for an exact StoryGraph edition unless the edition can be verified by ISBN.</div>`;toast(`Metadata: ${matched} matched`)}finally{backgroundTasks--;if(manageBusy)setMetadataBusy(false,kind)}
 }
-async function enrichEverything(){if(!tmdbToken()){toast('Add your TMDB token first');$('tmdbTokenInput')?.focus();return}setMetadataBusy(true,'all');try{await enrichWorks('books',false);await enrichWorks('screen',false)}finally{setMetadataBusy(false,'all')}}
-function renderMetadataKpis(){const box=$('metadataKpis');if(!box)return;const total=db.works.length,covers=db.works.filter(w=>w.cover).length,catalogued=db.works.filter(w=>w.external?.openlibraryKey||w.external?.tmdb).length;const bookEx=db.experiences.filter(e=>workFor(e.workId)?.type==='Book');const exactCovers=bookEx.filter(e=>e.edition?.cover).length;box.innerHTML=`<div class="metadata-kpi"><strong>${covers}</strong><span>with cover/poster</span></div><div class="metadata-kpi"><strong>${exactCovers}</strong><span>readings with exact cover</span></div><div class="metadata-kpi"><strong>${catalogued}</strong><span>catalogue matched</span></div>`;const st=$('tmdbTokenStatus');const googleStatus=$('googleBooksKeyStatus');if(googleStatus)googleStatus.textContent=googleBooksKey()?'Google Books enabled in this browser.':'Google Books is optional; Open Library is available.';const googleInput=$('googleBooksKeyInput');if(googleInput&&document.activeElement!==googleInput)googleInput.value=googleBooksKey();if(st)st.textContent=tmdbToken()?'TMDB token saved in this browser.':'No TMDB token saved yet.';const input=$('tmdbTokenInput');if(input&&document.activeElement!==input)input.value=tmdbToken()?tmdbToken():''}
+async function enrichEverything(){if(!tmdbToken()){window.PathosCatalogues?.open('tmdb');return}setMetadataBusy(true,'all');try{await enrichWorks('books',false);await enrichWorks('screen',false)}finally{setMetadataBusy(false,'all')}}
+function renderMetadataKpis(){const box=$('metadataKpis');if(!box)return;const total=db.works.length,covers=db.works.filter(w=>w.cover).length,catalogued=db.works.filter(w=>w.external?.openlibraryKey||w.external?.tmdb).length;const bookEx=db.experiences.filter(e=>workFor(e.workId)?.type==='Book');const exactCovers=bookEx.filter(e=>e.edition?.cover).length;box.innerHTML=`<div class="metadata-kpi"><strong>${covers}</strong><span>with cover/poster</span></div><div class="metadata-kpi"><strong>${exactCovers}</strong><span>readings with exact cover</span></div><div class="metadata-kpi"><strong>${catalogued}</strong><span>catalogue matched</span></div>`;window.PathosCatalogues?.refresh()}
 function appendQuoteRow(q={}){
   const list=$('quoteEditorList');if(!list)return;const row=document.createElement('div');row.className='quote-item';const id=String(q.id||uid());row.dataset.quoteId=id;
   row.innerHTML=`<div class="quote-item-top"><textarea class="input quote-text" placeholder="Sentence, dialogue or passage…"></textarea><button type="button" class="quote-remove" title="Remove passage">Remove</button></div><div class="quote-item-meta"><input class="input quote-note" placeholder="Where / context — e.g. p. 84, chapter 3, scene, speaker"><label class="quote-feature"><input type="radio" name="presentationQuote" value="${esc(id)}"> Use as presentation</label></div>`;
@@ -2071,9 +2120,7 @@ if($('editionLookupBtn'))$('editionLookupBtn').onclick=editionLookup;
 if($('editionSearch'))$('editionSearch').addEventListener('input',()=>{if(editionCandidates.length)renderEditionResults($('editionSearch').value)});
 if($('editionCoverInput'))$('editionCoverInput').addEventListener('input',renderEditionPreview);
 if($('editionCoverFile'))$('editionCoverFile').addEventListener('change',async ev=>{const file=ev.target.files?.[0];if(!file)return;try{$('editionCurrent').textContent='Compressing your cover…';const url=await compressCover(file);$('entryForm').elements.editionCover.value=url;renderEditionPreview();$('editionCurrent').textContent='Custom cover selected. It will be stored with this reading and included in backups.'}catch{$('editionCurrent').textContent='Could not read that image.'}ev.target.value=''});
-$('saveGoogleBooksBtn').onclick=()=>{const value=$('googleBooksKeyInput').value.trim();if(value&&!/^[A-Za-z0-9_-]{20,200}$/.test(value)){toast('Check your Google Books API key');return}if(value)localStorage.setItem(GOOGLE_BOOKS_KEY,value);else localStorage.removeItem(GOOGLE_BOOKS_KEY);renderMetadataKpis();setCatalogHint();toast(value?'Google Books key saved':'Google Books key removed')};
 for(const id of ['editionLanguageFilter','editionPublisherFilter'])$(id).addEventListener('input',()=>{cancelEditionLookup();editionNext=null;editionVisible=30;renderEditionResults($('editionSearch').value)});
-if($('saveTmdbBtn'))$('saveTmdbBtn').onclick=()=>{const v=$('tmdbTokenInput').value.trim();if(v)localStorage.setItem(TMDB_TOKEN_KEY,v);else localStorage.removeItem(TMDB_TOKEN_KEY);renderMetadataKpis();setCatalogHint();toast(v?'TMDB token saved':'TMDB token removed')};
 if($('enrichBooksBtn'))$('enrichBooksBtn').onclick=()=>enrichWorks('books');if($('enrichFilmsBtn'))$('enrichFilmsBtn').onclick=()=>enrichWorks('screen');if($('enrichAllBtn'))$('enrichAllBtn').onclick=enrichEverything;
 $('backupBtn').onclick=()=>exportArchive(db);
 async function replacePersonalArchive(next){
@@ -2274,7 +2321,7 @@ if('serviceWorker' in navigator){
   });
   updateNow.addEventListener('click',async()=>{
     const worker=updateRegistration?.waiting;
-    if($('entryDialog').open||archiveBusy||backgroundTasks){alert('Save or close the open entry and wait for imports or metadata before updating.');return;}
+    if($('entryDialog').open||$('catalogueGuide').open||archiveBusy||backgroundTasks){alert('Save or close the open entry or catalogue setup and wait for imports or metadata before updating.');return;}
     if(!worker){updateBanner.hidden=true;lastUpdateCheck=0;checkForPersonalUpdates();return;}
     archiveBusy=true;
     updateNow.disabled=true;
@@ -2321,6 +2368,7 @@ if('serviceWorker' in navigator){
 }
 </script>
 
+<script src="/pathos-personal/catalogue-setup.js"></script>
 <script type="module" src="/pathos-personal/cover-accent.mjs"></script>
 </body>
 </html>

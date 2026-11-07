@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test:pathos": "node --test tests/pathos-review-format.cjs && node tests/pathos-reliability.cjs",
+    "test:pathos-catalogues": "node tests/pathos-catalogue-setup.cjs",
     "sync:pathos-review-assets": "node scripts/pathos-review-assets.cjs && node scripts/pathos-review-editor.cjs",
     "test:pathos-images": "node --test tests/pathos-page-images.cjs",
     "test:pathos-books": "node --test tests/pathos-books.cjs tests/pathos-isbn-fallback.cjs && node tests/pathos-books-browser.cjs",

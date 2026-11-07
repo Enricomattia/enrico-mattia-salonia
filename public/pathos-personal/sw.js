@@ -1,8 +1,10 @@
 /* Πathos Personal offline application shell. No access to /pathos or Supabase. */
-const CACHE='pathos-personal-shell-v25';
+const CACHE='pathos-personal-shell-v26';
 const COVERS='pathos-personal-covers-v1';
 const SHELL=[
  '/pathos-personal/index.html',
+ '/pathos-personal/catalogue-setup.js',
+ '/pathos-personal/catalogue-setup.css',
  '/pathos-personal/markdown-it.min.js',
  '/pathos-personal/review-format.js',
  '/pathos-personal/review-editor.js',
