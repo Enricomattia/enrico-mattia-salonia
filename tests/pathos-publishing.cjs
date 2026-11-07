@@ -1,6 +1,11 @@
 const{test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path');
 const core=import('../public/pathos-personal/publish-core.mjs');
 const provider=import('../public/pathos-personal/publish-netlify.mjs');
+test('OAuth callback is reproducible and blocks hosting overlays',()=>{
+  require('node:child_process').execFileSync(process.execPath,[path.resolve(__dirname,'../scripts/pathos-publish-auth.cjs'),'--check']);
+  const html=require('node:fs').readFileSync(path.resolve(__dirname,'../public/pathos-personal/netlify-auth.html'),'utf8');
+  assert(!html.includes('script-src \'self\''));assert(!/<script[^>]*src=/.test(html));assert.match(html,/script-src 'sha256-/);
+});
 const fixture={schemaVersion:6,secret:'ARCHIVE_SECRET',works:[{id:'private-work-id',title:'Selected work',type:'Book',creator:'Author',cover:'https://images.example/PRIVATE_COVER.jpg',owned:true,sourceMetadata:{notes:'PRIVATE_NOTES'},external:{isbn:'PRIVATE_ISBN'}}],experiences:[{id:'selected',workId:'private-work-id',rating:4.25,startDate:'2026-10-01',endDate:'2026-10-02',review:'Selected **review** $& $\' </script><script>alert(1)</script>',quotes:[{text:'Selected passage',note:'p. 4',private:'PRIVATE_EXTRA'}],edition:{publisher:'Publisher',isbn:'PRIVATE_ISBN',sourceId:'PRIVATE_UID',contributors:'PRIVATE_CONTRIBUTOR'},tags:['PRIVATE_TAG'],details:{secret:'PRIVATE_DETAILS'},venue:'PRIVATE_VENUE',isPublic:false},{id:'not-selected',workId:'private-work-id',review:'UNSELECTED_REVIEW',cover:'https://example.com/UNSELECTED_COVER.jpg',quotes:[{text:'UNSELECTED_PASSAGE'}]}]};
 test('public projection includes only selected visible fields and never mutates the archive',async()=>{
   const{projectArchive}=await core,before=JSON.stringify(fixture),snapshot=projectArchive(fixture,['selected'],{title:'A public diary'}),raw=JSON.stringify(snapshot);

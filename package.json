@@ -10,6 +10,7 @@
     "test:pathos": "node --test tests/pathos-review-format.cjs && node tests/pathos-reliability.cjs",
     "test:pathos-catalogues": "node tests/pathos-catalogue-setup.cjs",
     "test:pathos-publishing": "node --test tests/pathos-publishing.cjs && node tests/pathos-publishing-browser.cjs",
+    "sync:pathos-publish-auth": "node scripts/pathos-publish-auth.cjs",
     "sync:pathos-review-assets": "node scripts/pathos-review-assets.cjs && node scripts/pathos-review-editor.cjs",
     "test:pathos-images": "node --test tests/pathos-page-images.cjs",
     "test:pathos-books": "node --test tests/pathos-books.cjs tests/pathos-isbn-fallback.cjs && node tests/pathos-books-browser.cjs",
