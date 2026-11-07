@@ -2,23 +2,23 @@ import{projectArchive,buildPublication}from'./publish-core.mjs';
 import{netlifyClient}from'./publish-netlify.mjs';
 // Publishing preferences are deliberately outside the diary and its backups.
 const KEY='pathos-personal.publication-v1',$=id=>document.getElementById(id);
-let prefs={publisherId:crypto.randomUUID(),selected:[],title:'',reviews:true,passages:true,covers:true,sites:{}};
+let prefs={publisherId:crypto.randomUUID(),selected:[],title:'',username:'',reviews:true,passages:true,covers:true,sites:{}};
 try{
   const saved=JSON.parse(localStorage.getItem(KEY)||'null');
   if(saved&&/^[A-Za-z0-9_-]{10,100}$/.test(saved.publisherId)){
-    prefs={...prefs,publisherId:saved.publisherId,title:typeof saved.title==='string'?saved.title.slice(0,120):'',selected:Array.isArray(saved.selected)?saved.selected.filter(id=>typeof id==='string'&&id.length<200).slice(0,10000):[],reviews:saved.reviews!==false,passages:saved.passages!==false,covers:saved.covers!==false,sites:saved.sites&&typeof saved.sites==='object'&&!Array.isArray(saved.sites)?saved.sites:{}};
+    prefs={...prefs,publisherId:saved.publisherId,title:typeof saved.title==='string'?saved.title.slice(0,120):'',username:typeof saved.username==='string'?saved.username.slice(0,40):'',selected:Array.isArray(saved.selected)?saved.selected.filter(id=>typeof id==='string'&&id.length<200).slice(0,10000):[],reviews:saved.reviews!==false,passages:saved.passages!==false,covers:saved.covers!==false,sites:saved.sites&&typeof saved.sites==='object'&&!Array.isArray(saved.sites)?saved.sites:{}};
   }
 }catch{/* A failed preference read never changes the archive. */}
 let selected=new Set(prefs.selected),prepared=null,assetsPromise=null,client=null,user=null,accounts=[],pendingAuth=null,busy=false;
 const menu=document.createElement('button');menu.type='button';menu.className='menu-view';menu.dataset.view='publishing';menu.textContent='Publish online';
 menu.addEventListener('click',()=>showView('publishing'));$('settingsMenu').querySelector('.more-menu-panel').append(menu);
-$('publishTitle').value=prefs.title;for(const option of ['reviews','passages','covers'])$('publish'+option[0].toUpperCase()+option.slice(1)).checked=prefs[option];
+$('publishTitle').value=prefs.title;$('publishUsername').value=prefs.username;for(const option of ['reviews','passages','covers'])$('publish'+option[0].toUpperCase()+option.slice(1)).checked=prefs[option];
 function status(message,state=''){$('publishProgress').textContent=message;$('publishProgress').dataset.state=state;}
 function savePrefs(){
-  prefs.selected=[...selected];prefs.title=$('publishTitle').value;for(const option of ['reviews','passages','covers'])prefs[option]=$('publish'+option[0].toUpperCase()+option.slice(1)).checked;
+  prefs.selected=[...selected];prefs.title=$('publishTitle').value;prefs.username=$('publishUsername').value;for(const option of ['reviews','passages','covers'])prefs[option]=$('publish'+option[0].toUpperCase()+option.slice(1)).checked;
   try{localStorage.setItem(KEY,JSON.stringify(prefs));return true;}catch{status('Could not save publishing preferences on this device. Publication is paused until browser storage works.','error');return false;}
 }
-function snapshot(){return projectArchive(db,[...selected],{title:$('publishTitle').value,reviews:$('publishReviews').checked,passages:$('publishPassages').checked,covers:$('publishCovers').checked});}
+function snapshot(){return projectArchive(db,[...selected],{title:$('publishTitle').value,username:$('publishUsername').value,reviews:$('publishReviews').checked,passages:$('publishPassages').checked,covers:$('publishCovers').checked});}
 function invalidate(){prepared=null;$('publishPreviewWrap').hidden=true;$('publishApproved').checked=false;$('publishPreview').removeAttribute('srcdoc');refreshButtons();}
 function refreshButtons(){
   $('publishPreviewBtn').disabled=busy||!selected.size||!window.pathosPersonalReady;
@@ -27,7 +27,7 @@ function refreshButtons(){
   $('publishNowBtn').textContent=user&&prefs.sites[user.id]?'Update published version':'Publish website';
   $('publishDisconnectBtn').hidden=!client&&!pendingAuth;
   $('publishAccountField').hidden=!client;
-  for(const id of ['publishTitle','publishReviews','publishPassages','publishCovers','publishSearch','publishSelectShown','publishClear','publishAccount','publishApproved'])$(id).disabled=busy;
+  for(const id of ['publishTitle','publishUsername','publishReviews','publishPassages','publishCovers','publishSearch','publishSelectShown','publishClear','publishAccount','publishApproved'])$(id).disabled=busy;
   $('publishEntries').querySelectorAll('input').forEach(input=>input.disabled=busy);
 }
 function showResult(ref){
@@ -130,7 +130,7 @@ $('publishConnectBtn').addEventListener('click',connect);$('publishDisconnectBtn
 $('publishSearch').addEventListener('input',refresh);
 $('publishSelectShown').addEventListener('click',()=>{document.querySelectorAll('[data-publish-entry]').forEach(input=>selected.add(input.dataset.publishEntry));invalidate();savePrefs();refresh();});
 $('publishClear').addEventListener('click',()=>{selected.clear();invalidate();savePrefs();refresh();});
-for(const id of ['publishTitle','publishReviews','publishPassages','publishCovers'])$(id).addEventListener('input',()=>{invalidate();savePrefs();});
+for(const id of ['publishTitle','publishUsername','publishReviews','publishPassages','publishCovers'])$(id).addEventListener('input',()=>{invalidate();savePrefs();});
 $('publishApproved').addEventListener('change',refreshButtons);$('publishAccount').addEventListener('change',()=>{ $('publishApproved').checked=false;refreshButtons(); });
 window.addEventListener('pagehide',()=>{client=null;endAuth();});
 window.PathosPublishing={refresh};refresh();

@@ -5,7 +5,7 @@ const root=path.resolve(__dirname,'../public'),output=process.env.PATHOS_UI_SCRE
 const server=http.createServer(async(req,res)=>{try{const p=new URL(req.url,'http://localhost').pathname;if(!/^\/pathos-personal\/(fonts\/)?[a-z0-9.-]+$/i.test(p)){res.writeHead(404).end();return;}const body=await fs.readFile(path.join(root,p));res.writeHead(200,{'Cache-Control':'no-store','Content-Type':p.endsWith('.html')?'text/html':/\.m?js$/.test(p)?'text/javascript':p.endsWith('.css')?'text/css':p.endsWith('.woff2')?'font/woff2':p.endsWith('.png')?'image/png':'application/manifest+json'}).end(body);}catch{res.writeHead(404).end();}});
 let browser,origin;
 (async()=>{
-  if(process.env.PATHOS_PUBLISH_PREVIEW){const target=new URL(process.env.PATHOS_PUBLISH_PREVIEW);assert.match(target.hostname,/^deploy-preview-\d+--[a-z0-9-]+\.netlify\.app$/);origin=target.origin;}else{await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));origin='http://127.0.0.1:'+server.address().port;}
+  if(process.env.PATHOS_PUBLISH_PREVIEW){const target=new URL(process.env.PATHOS_PUBLISH_PREVIEW);if(target.origin!=='https://enricomattiasalonia.com')assert.match(target.hostname,/^deploy-preview-\d+--[a-z0-9-]+\.netlify\.app$/);origin=target.origin;}else{await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));origin='http://127.0.0.1:'+server.address().port;}
   await fs.mkdir(output,{recursive:true});browser=await chromium.launch({channel:process.env.PATHOS_BROWSER||'msedge',headless:true});
   const context=await browser.newContext({viewport:{width:1280,height:900},acceptDownloads:true}),calls=[],errors=[];
   let site,metadata={},deployNumber=0,uploaded={},failUpload=false,mismatch=false,authConfigured=true;
@@ -46,21 +46,29 @@ let browser,origin;
   const before=await page.evaluate(()=>JSON.stringify(db)),disk=await page.evaluate(()=>readLocalArchive());
   await page.locator('#settingsMenu>summary').click();await page.locator('#settingsMenu [data-view="publishing"]').click();
   assert.equal(await page.locator('#publishEntries input:checked').count(),0,'No existing entry becomes public automatically');
+  assert.equal(await page.locator('#publishUsername').inputValue(),'');
+  await page.locator('#publishUsername').fill('<img src=x onerror=alert(1)>');
   await page.locator('#publishTitle').fill('Synthetic public diary');await page.locator('[data-publish-entry="reading-1"]').check();
   await page.locator('#publishPreviewBtn').click();await page.locator('#publishPreviewWrap').waitFor();
   const frame=page.frameLocator('#publishPreview');await frame.locator('#profileTitle').getByText('Synthetic public diary').waitFor();
+  assert.equal(await frame.locator('#profileUsername').innerText(),'<img src=x onerror=alert(1)>');assert.equal(await frame.locator('#profileUsername img').count(),0,'A username is literal text');
+  await page.locator('#publishUsername').fill('maria');assert.equal(await page.locator('#publishPreviewWrap').isVisible(),false,'Changing a username invalidates the approved copy');
+  await page.locator('#publishPreviewBtn').click();await page.locator('#publishPreviewWrap').waitFor();await frame.locator('#profileUsername').getByText('maria',{exact:true}).waitFor();
   await frame.locator('#diary [data-work]').waitFor();assert.equal(await frame.locator('#diary [data-work]').count(),1);
   await frame.locator('#diary [data-work]').click();assert.equal(await frame.locator('.review strong').innerText(),'formatted');assert.equal(await frame.locator('script[src],input,textarea').count(),1,'Only the reader search input exists');
   assert.equal(await frame.locator('#workBody').getByText('UNSELECTED_REVIEW').count(),0);
   assert.equal(await frame.locator('.review script').count(),0);
   await frame.locator('#closeWork').click();
   const html=await page.locator('#publishPreview').getAttribute('srcdoc');for(const marker of ['PRIVATE_','UNSELECTED_','RECORD_SECRET',token,'publish-config','indexedDB'])assert(!html.includes(marker),marker);
+  const reader=await context.newPage();await reader.setContent(html);await reader.locator('#profileUsername').getByText('maria',{exact:true}).waitFor();
+  for(const width of [1280,390,320]){await reader.setViewportSize({width,height:800});assert(await reader.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));const logo=await reader.locator('h1').boundingBox(),name=await reader.locator('#profileUsername').boundingBox();assert(Math.abs(name.y-logo.y)<45,'Username is next to the Πathos wordmark');await reader.screenshot({path:path.join(output,'public-username-'+width+'.png'),fullPage:true});}await reader.close();
   await frame.getByRole('button',{name:'Library',exact:true}).click();assert.equal(await frame.locator('.book').count(),1);
   await frame.getByRole('button',{name:'Passages',exact:true}).click();assert.equal(await frame.locator('#quotes .passage').count(),1);
   await frame.getByRole('button',{name:'Insights',exact:true}).click();assert.match(await frame.locator('#stats').innerText(),/4.25/);
   // An unrelated postMessage cannot manufacture an authenticated connection.
   await page.evaluate(()=>postMessage({type:'pathos-netlify-auth',state:'fake',token:'fake-token'},location.origin));assert.equal(calls.length,0);
   await page.locator('#publishConnectBtn').click();await page.locator('#publishConnectionStatus').getByText('Connected as Synthetic publisher.').waitFor();
+  assert.equal(await page.locator('#publishUsername').inputValue(),'maria','Netlify identity never replaces the chosen public username');
   assert(await page.locator('#publishNowBtn').isDisabled());await page.locator('#publishApproved').check();
   await page.locator('#publishNowBtn').click();await page.locator('#publishProgress[data-state="success"]').waitFor();
   assert.equal(uploaded['/index.html'],html,'The upload exactly matches the approved preview');assert.equal(calls.filter(call=>call.p==='/test-team/sites').length,1);
@@ -69,13 +77,15 @@ let browser,origin;
   await page.setViewportSize({width:1280,height:900});
   await page.locator('#publishReviews').uncheck();assert.equal(await page.locator('#publishPreviewWrap').isVisible(),false);assert(await page.locator('#publishNowBtn').isDisabled());
   await page.locator('#publishPreviewBtn').click();await page.locator('#publishPreviewWrap').waitFor();await page.locator('#publishApproved').check();
-  mismatch=true;const priorPromotions=calls.filter(call=>call.p.endsWith('/restore')).length;await page.locator('#publishNowBtn').click();await page.locator('#publishProgress[data-state="error"]').waitFor();assert.match(await page.locator('#publishProgress').innerText(),/not the dedicated/);assert.equal(calls.filter(call=>call.p.endsWith('/restore')).length,priorPromotions);
-  mismatch=false;failUpload=true;await page.locator('#publishNowBtn').click();await page.locator('#publishProgress[data-state="error"]').waitFor();assert.equal(calls.filter(call=>call.p.endsWith('/restore')).length,priorPromotions);
-  failUpload=false;await page.locator('#publishNowBtn').click();await page.locator('#publishProgress[data-state="success"]').waitFor();assert(!uploaded['/index.html'].includes('Selected **formatted** review'));assert.equal(calls.filter(call=>call.p==='/test-team/sites').length,1,'Updates reuse the verified dedicated site');
+  // Exercise keyboard activation after responsive scrolling, as well as the initial pointer activation.
+  mismatch=true;const priorPromotions=calls.filter(call=>call.p.endsWith('/restore')).length;await page.locator('#publishNowBtn').press('Enter');await page.locator('#publishProgress[data-state="error"]').waitFor();assert.match(await page.locator('#publishProgress').innerText(),/not the dedicated/);assert.equal(calls.filter(call=>call.p.endsWith('/restore')).length,priorPromotions);
+  mismatch=false;failUpload=true;await page.locator('#publishNowBtn').press('Enter');await page.waitForFunction(()=>!archiveBusy);assert.match(await page.locator('#publishProgress').innerText(),/could not complete/);assert.equal(calls.filter(call=>call.p.endsWith('/restore')).length,priorPromotions);
+  failUpload=false;await page.locator('#publishNowBtn').press('Enter');await page.locator('#publishProgress[data-state="success"]').waitFor();assert(!uploaded['/index.html'].includes('Selected **formatted** review'));assert.equal(calls.filter(call=>call.p==='/test-team/sites').length,1,'Updates reuse the verified dedicated site');
   const storage=await page.evaluate(()=>({local:JSON.stringify(localStorage),session:JSON.stringify(sessionStorage)}));assert(!storage.local.includes(token)&&!storage.session.includes(token));
   assert.equal(await page.evaluate(()=>JSON.stringify(db)),before);assert.deepEqual(await page.evaluate(()=>readLocalArchive()),disk,'Publication never writes the local archive');
   await context.setOffline(true);await page.reload();await page.waitForFunction(()=>window.pathosPersonalReady&&window.PathosPublishing);
   await page.locator('#settingsMenu>summary').click();await page.locator('#settingsMenu [data-view="publishing"]').click();assert.equal(await page.locator('#publishEntries input:checked').count(),1);
+  assert.equal(await page.locator('#publishUsername').inputValue(),'maria','The display name persists separately from the archive');
   assert(await page.locator('#publishNowBtn').isDisabled(),'Reload forgets the account credential');
   await page.locator('#publishPreviewBtn').click();await page.locator('#publishPreviewWrap').waitFor();await frame.locator('#profileTitle').getByText('Synthetic public diary').waitFor();
   const download=page.waitForEvent('download');await page.evaluate(()=>document.getElementById('backupBtn').click());const chunks=[];for await(const chunk of await(await download).createReadStream())chunks.push(chunk);const backup=Buffer.concat(chunks).toString();assert(!backup.includes('publisherId')&&!backup.includes(token));assert.deepEqual(JSON.parse(backup).experiences,disk.experiences);

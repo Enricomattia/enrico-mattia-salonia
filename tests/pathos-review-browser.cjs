@@ -102,7 +102,7 @@ async function checkReviewFormatting(page,{backup,restore,outputDirectory}){
   // Toolbar scrolling can leave the browser selection pending on a narrow screen.
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   assert.equal(await command('bold').getAttribute('aria-pressed'),'true');
-  await page.keyboard.insertText('Offline addition');
+  await field.pressSequentially('Offline addition');
   await page.locator('#entryForm button[type="submit"]').click();await settle();await page.reload();await page.waitForFunction(()=>window.pathosPersonalReady);
   await page.evaluate(id=>openExperiencePage(id),id);assert.equal(await page.locator('#experience-'+id+' .experience-review strong').last().innerText(),'Offline addition');await page.locator('#closeWorkDialog').click();
   await page.context().setOffline(false);

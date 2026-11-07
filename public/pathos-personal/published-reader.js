@@ -27,6 +27,8 @@
     $('books').innerHTML=data.works.filter(work=>(work.title+' '+work.creator).toLocaleLowerCase().includes(query)).sort((a,b)=>a.title.localeCompare(b.title)).map(work=>`<button class="book" data-work="${esc(work.id)}">${cover(forWork(work.id)[0])}<div><h3>${esc(work.title)}</h3><div class="meta">${esc(work.creator)}</div></div></button>`).join('')||'<p class="empty">No matching works.</p>';bind($('books'));
   }
   document.title=data.title+' · Πathos';$('profileTitle').textContent=data.title;
+  const username=typeof data.username==='string'?data.username.trim():'';
+  $('profileUsername').textContent=username;$('profileUsername').hidden=!username;
   const current=entries.filter(entry=>entry.status==='in-progress');
   $('current').innerHTML=current.length?'<h2>Current</h2><div class="diary">'+current.map(card).join('')+'</div>':'';bind($('current'));
   const months=new Map();

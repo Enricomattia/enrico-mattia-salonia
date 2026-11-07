@@ -8,10 +8,11 @@ test('OAuth callback is reproducible and blocks hosting overlays',()=>{
 });
 const fixture={schemaVersion:6,secret:'ARCHIVE_SECRET',works:[{id:'private-work-id',title:'Selected work',type:'Book',creator:'Author',cover:'https://images.example/PRIVATE_COVER.jpg',owned:true,sourceMetadata:{notes:'PRIVATE_NOTES'},external:{isbn:'PRIVATE_ISBN'}}],experiences:[{id:'selected',workId:'private-work-id',rating:4.25,startDate:'2026-10-01',endDate:'2026-10-02',review:'Selected **review** $& $\' </script><script>alert(1)</script>',quotes:[{text:'Selected passage',note:'p. 4',private:'PRIVATE_EXTRA'}],edition:{publisher:'Publisher',isbn:'PRIVATE_ISBN',sourceId:'PRIVATE_UID',contributors:'PRIVATE_CONTRIBUTOR'},tags:['PRIVATE_TAG'],details:{secret:'PRIVATE_DETAILS'},venue:'PRIVATE_VENUE',isPublic:false},{id:'not-selected',workId:'private-work-id',review:'UNSELECTED_REVIEW',cover:'https://example.com/UNSELECTED_COVER.jpg',quotes:[{text:'UNSELECTED_PASSAGE'}]}]};
 test('public projection includes only selected visible fields and never mutates the archive',async()=>{
-  const{projectArchive}=await core,before=JSON.stringify(fixture),snapshot=projectArchive(fixture,['selected'],{title:'A public diary'}),raw=JSON.stringify(snapshot);
+  const{projectArchive}=await core,before=JSON.stringify(fixture),snapshot=projectArchive(fixture,['selected'],{title:'A public diary',username:'  maria  '}),raw=JSON.stringify(snapshot);
   for(const marker of ['PRIVATE_','ARCHIVE_SECRET','UNSELECTED_','private-work-id','isPublic','sourceMetadata','details','owned','tags','venue'])assert(!raw.includes(marker),marker);
   assert.equal(snapshot.experiences[0].rating,4.25);assert.equal(snapshot.experiences[0].cover,'');assert.equal(snapshot.experiences[0].edition.publisher,'Publisher');assert.equal(snapshot.experiences[0].quotes[0].text,'Selected passage');
   assert.equal(JSON.stringify(fixture),before);assert.throws(()=>projectArchive(fixture,[]),/Select/);
+  assert.equal(snapshot.username,'maria');assert.equal(projectArchive(fixture,['selected']).username,'');assert.equal(projectArchive(fixture,['selected'],{username:'x'.repeat(80)}).username.length,40);
   const minimal=projectArchive(fixture,['selected'],{reviews:false,passages:false,covers:false});assert.equal(minimal.experiences[0].review,'');assert.deepEqual(minimal.experiences[0].quotes,[]);
 });
 test('image credentials and executable data types cannot enter the public copy',async()=>{
