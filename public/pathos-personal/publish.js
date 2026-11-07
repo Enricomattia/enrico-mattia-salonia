@@ -84,6 +84,7 @@ function connect(){
   const clientId=window.PATHOS_PUBLISH_CONFIG?.netlifyClientId;
   if(!/^[A-Za-z0-9_-]{10,100}$/.test(clientId||'')){status('The Netlify connection is not available in this prototype yet. You can still preview your public website.','error');return;}
   const state=crypto.randomUUID()+crypto.randomUUID(),redirect=location.origin+'/pathos-personal/netlify-auth.html';
+  if(window.PATHOS_PUBLISH_CONFIG.redirectUri&&window.PATHOS_PUBLISH_CONFIG.redirectUri!==redirect){status('Netlify publishing is not available at this address yet. You can still preview your public website.','error');return;}
   const popup=window.open('https://app.netlify.com/authorize?'+new URLSearchParams({client_id:clientId,response_type:'token',redirect_uri:redirect,state}),'pathos-netlify-connect','popup,width=600,height=760');
   if(!popup){status('Allow the Netlify sign-in window, then choose Connect Netlify again.','error');return;}
   backgroundTasks++;pendingAuth={state,popup,started:Date.now(),timer:null};
