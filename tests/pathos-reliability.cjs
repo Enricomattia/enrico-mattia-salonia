@@ -345,7 +345,7 @@ async function checkArchiveViews(page){
     await app.waitForFunction(()=>document.querySelector('meta[name="pathos-test-release"]').content==='current');
     await app.waitForFunction(()=>window.pathosPersonalReady);
     assert.deepEqual((await archive(app)).experiences,updateFixture.experiences);
-    for(const asset of ['markdown-it.min.js','review-format.js','review-format.css','review-editor.js','catalogue-setup.js','catalogue-setup.css','publish.js','publish-core.mjs','publish-netlify.mjs','publish.css','publish-config.js','published-reader.html','published-reader.js','published-reader.css']){
+    for(const asset of ['markdown-it.min.js','review-format.js','review-format.css','review-editor.js','catalogue-setup.js','catalogue-setup.css','publish.js','publish-core.mjs','publish-netlify.mjs','publish.css','publish-config.js','published-reader.txt','published-reader.js','published-reader.css']){
       assert.equal(await app.evaluate(async name=>{
         const key=(await caches.keys()).find(key=>key.startsWith('pathos-personal-shell-'));
         return(await(await caches.open(key)).match('/pathos-personal/'+name)).text();

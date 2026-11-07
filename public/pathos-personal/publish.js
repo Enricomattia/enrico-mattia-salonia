@@ -55,7 +55,7 @@ function refresh(){
 }
 async function loadAssets(){
   if(!assetsPromise)assetsPromise=(async()=>{
-    const names={html:'published-reader.html',css:'published-reader.css',reader:'published-reader.js',parser:'markdown-it.min.js',parserLicense:'markdown-it.LICENSE.txt',fontLicense:'fonts/LICENSE.txt',format:'review-format.js',serif:'fonts/newsreader-latin.woff2',sans:'fonts/instrument-sans-latin.woff2'};
+    const names={html:'published-reader.txt',css:'published-reader.css',reader:'published-reader.js',parser:'markdown-it.min.js',parserLicense:'markdown-it.LICENSE.txt',fontLicense:'fonts/LICENSE.txt',format:'review-format.js',serif:'fonts/newsreader-latin.woff2',sans:'fonts/instrument-sans-latin.woff2'};
     const assets={};
     for(const[key,name]of Object.entries(names)){
       const response=await fetch('/pathos-personal/'+name,{credentials:'omit',redirect:'error'});if(!response.ok)throw new Error('The website preview could not load. Update Πathos or reconnect and try again.');
@@ -71,7 +71,7 @@ async function preview(){
   try{
     const value=snapshot(),signature=JSON.stringify(value),files=await buildPublication(value,await loadAssets());
     if(JSON.stringify(snapshot())!==signature)throw new Error('The selection changed. Preview it again.');
-    prepared={files,signature};$('publishPreview').srcdoc=files.get('/index.html');$('publishPreviewWrap').hidden=false;$('publishApproved').checked=false;status(value.experiences.length+' selected experiences are in this preview.');
+    prepared={files,signature};$('publishPreview').srcdoc=files.get('/index.html');$('publishPreviewWrap').hidden=false;$('publishApproved').checked=false;status(value.experiences.length===1?'1 selected experience is in this preview.':value.experiences.length+' selected experiences are in this preview.');
   }catch(error){invalidate();status(error.message,'error');}
   finally{busy=false;backgroundTasks--;refreshButtons();}
 }

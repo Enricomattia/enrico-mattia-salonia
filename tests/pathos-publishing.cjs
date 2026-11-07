@@ -16,12 +16,13 @@ test('image credentials and executable data types cannot enter the public copy',
 test('self-contained reader safely embeds literal text and hashes the executable scripts',async()=>{
   const{projectArchive,buildPublication}=await core;
   const base=path.resolve(__dirname,'../public/pathos-personal'),read=name=>fs.readFile(path.join(base,name),'utf8');
-  const assets={html:await read('published-reader.html'),css:await read('published-reader.css'),reader:await read('published-reader.js'),format:await read('review-format.js'),parser:await read('markdown-it.min.js'),parserLicense:await read('markdown-it.LICENSE.txt'),fontLicense:await read('fonts/LICENSE.txt'),serif:'test',sans:'test'};
+  const assets={html:await read('published-reader.txt'),css:await read('published-reader.css'),reader:await read('published-reader.js'),format:await read('review-format.js'),parser:await read('markdown-it.min.js'),parserLicense:await read('markdown-it.LICENSE.txt'),fontLicense:await read('fonts/LICENSE.txt'),serif:'test',sans:'test'};
   const files=await buildPublication(projectArchive(fixture,['selected']),assets),html=files.get('/index.html');
   assert(!html.includes('PUBLICATION_'));assert(!html.includes('PRIVATE_'));assert(!html.includes('UNSELECTED_'));
   assert(html.includes('\\u003c/script\\u003e'));assert(html.includes('$&'));assert.equal((html.match(/<script>/g)||[]).length,3);
   assert.match(html,/connect-src 'none'/);assert.match(files.get('/_headers'),/frame-ancestors 'none'/);assert.match(files.get('/robots.txt'),/Disallow: \//);
   assert(html.includes('Copyright (c) 2014 Vitaly Puzrin'));assert.match(html,/SIL Open Font License/i);
+  await assert.rejects(()=>buildPublication(projectArchive(fixture,['selected']),{...assets,html:assets.html+'<script src="https://example.com/preview-toolbar.js"></script>'}),/unexpected script/);
   assert(!html.includes('indexedDB')&&!html.includes('supabase')&&!html.includes('PATHOS_CONFIG'));
 });
 function apiMock({mismatch=false,failUpload=false}={}){

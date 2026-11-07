@@ -38,6 +38,8 @@ export async function digest(value,algorithm='SHA-256'){
 }
 const base64=bytes=>{let value='';for(let offset=0;offset<bytes.length;offset+=8192)value+=String.fromCharCode(...bytes.subarray(offset,offset+8192));return btoa(value);};
 export async function buildPublication(snapshot,assets){
+  const tags=assets.html.match(/<script\b[^>]*>/gi)||[];
+  if(tags.length!==2||tags.some(tag=>!/^<script id="publication(Data|Licenses)" type="application\/json">$/.test(tag)))throw new Error('The website template contains an unexpected script. Update Πathos before publishing.');
   // HTML parsing normalizes line endings before CSP checks inline script hashes.
   const scripts=[assets.parser,assets.format,assets.reader].map(script=>script.replace(/\r\n?/g,'\n').replace(/<\/script/gi,'<\\/script'));
   const hashes=await Promise.all(scripts.map(async script=>"'sha256-"+base64(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(script))))+"'"));
