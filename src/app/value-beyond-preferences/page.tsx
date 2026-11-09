@@ -70,6 +70,10 @@ export default function ValueBeyondPreferences() {
           themes, broadly construed. The workshop will feature up to <strong>six contributed talks</strong>.
         </p>
         <p>
+          Submissions should take the form of full papers, but work in progress is welcome.
+          Papers need not be fully polished at the time of submission.
+        </p>
+        <p>
           We particularly encourage submissions from early-career scholars and members of
           underrepresented groups. Thanks to INEM&apos;s generous support,{" "}
           <strong>limited financial assistance for travel and accommodation</strong> will be
