@@ -20,7 +20,7 @@ export default function Teaching() {
           link="/teaching/Plan_20232024.html"
         />
         */}
-        <a href="/notes/main.pdf" target="_blank" rel="noreferrer">
+        <a href="/docs/notes_micro.pdf" target="_blank" rel="noreferrer">
             Lecture Notes
         </a>
         <span style={{ display: "inline-block", width: 14 }} />
@@ -28,6 +28,12 @@ export default function Teaching() {
         <span style={{ display: "inline-block", width: 14 }} />
         <a href="/docs/solutions_micro.pdf" target="_blank" rel="noreferrer">
             Solutions
+        </a>
+        <span style={{ display: "inline-block", width: 14 }} />
+        <span className="opacity-60">•</span>
+        <span style={{ display: "inline-block", width: 14 }} />
+        <a href="/docs/microeconomics-exam-2025.pdf" target="_blank" rel="noreferrer">
+            Exam 2025
         </a>
       </PageSection>
     </main>

@@ -24,6 +24,7 @@ const courses: Course[] = [
     materials: [
       { label: "Notes", href: "/docs/notes_micro.pdf" },
       { label: "Syllabus", href: "/docs/micro_syl.pdf" },
+      { label: "Exam 2025", href: "/docs/microeconomics-exam-2025.pdf" },
     ],
   },
   {
