@@ -3,3 +3,6 @@
 #publishWaiting[hidden],#publishCheckBtn[hidden]{display:none}
 .publish-address{display:grid;gap:4px;margin:16px 0 8px;font-size:14px}
 .publish-status[data-state="working"]{font-weight:600}
+.publish-layout .btn:disabled{cursor:default}
+.publish-layout .btn[aria-busy="true"]:disabled{cursor:progress}
+.publish-layout [hidden]{display:none}
