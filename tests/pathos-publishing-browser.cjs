@@ -210,8 +210,11 @@ let browser,origin;
   deployState='ready';await page.locator('#publishNowBtn').press('Enter');await page.locator('#publishProgress[data-state="success"]').waitFor();assert(!uploaded['/index.html'].includes('Selected **formatted** review'));assert.equal(calls.filter(call=>call.p==='/test-team/sites').length,1,'Updates reuse the verified dedicated site');
   await page.getByRole('button',{name:'Exclude shown'}).click();
   await page.locator('#publishPreviewBtn').click();await frame.getByText('No diary entries published.',{exact:true}).waitFor();
-  await page.locator('#publishApproved').check();await page.locator('#publishNowBtn').click();
-  await page.locator('#publishProgress').getByText(/ready to share/).waitFor();
+  await page.locator('#publishApproved').check();await page.locator('#publishNowBtn').press('Enter');
+  await page.locator('#publishProgress').getByText(/ready to share/).waitFor().catch(async error=>{
+    console.error('Empty update status:',await page.locator('#publishProgress').textContent());
+    throw error;
+  });
   assert(!uploaded['/index.html'].includes('A selected book'),'An approved update removes previously published entries');
   assert.equal(calls.filter(call=>call.p==='/test-team/sites').length,1,'An empty update uses the same share address');
   await page.locator('[data-publish-entry="reading-1"]').check();
