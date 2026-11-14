@@ -27,7 +27,7 @@ export function projectArchive(archive,ids,options={}){
       cover:options.covers===false?'':publicImage(entry.cover||edition?.cover||(!edition&&work.type==='Book'?work.catalogueCover:'')||''),
       edition:edition?{title:text(edition.title),publisher:text(edition.publisher),publishYear:text(edition.publishYear,10),language:text(edition.language,100),format:text(edition.format,100),series:text(edition.series),seriesNumber:text(edition.seriesNumber,30)}:null});
   }
-  if(!experiences.length)throw new Error('Select at least one experience to publish.');
+  if(!experiences.length&&!options.allowEmpty)throw new Error('Include at least one experience to create a website.');
   if(experiences.length>10000)throw new Error('Publish up to 10,000 experiences at a time.');
   return{format:'pathos-publication-v1',title:text(options.title,120).trim()||'My Πathos',username:text(options.username,40).trim(),works,experiences};
 }
@@ -48,5 +48,7 @@ export async function buildPublication(snapshot,assets){
   const html=assets.html.replace('PUBLICATION_CSP',()=>csp).replace('PUBLICATION_STYLE',()=>css).replace('PUBLICATION_DATA',()=>jsonForHtml(snapshot)).replace('PUBLICATION_NOTICES',()=>jsonForHtml({parser:assets.parserLicense||'',fonts:assets.fontLicense||''}))
     .replace('PUBLICATION_SCRIPTS',()=>scripts.map(script=>'<script>'+script+'</script>').join('\n'));
   if(new TextEncoder().encode(html).length>20*1024*1024)throw new Error('The public website exceeds 20 MB. Select fewer covers or entries.');
-  return new Map([['/index.html',html],['/robots.txt','User-agent: *\nDisallow: /\n'],['/_headers','/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n  Referrer-Policy: no-referrer\n  X-Content-Type-Options: nosniff\n  Content-Security-Policy: '+csp+"; frame-ancestors 'none'\n"]]);
+  const headers='/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n  Referrer-Policy: no-referrer\n  X-Content-Type-Options: nosniff\n  Content-Security-Policy: '+csp+"; frame-ancestors 'none'\n";
+  const shareCheck='\n/\n  Access-Control-Allow-Origin: *\n  Access-Control-Expose-Headers: X-Pathos-Publication\n  X-Pathos-Publication: v1\n';
+  return new Map([['/index.html',html],['/robots.txt','User-agent: *\nDisallow: /\n'],['/_headers',headers+shareCheck]]);
 }

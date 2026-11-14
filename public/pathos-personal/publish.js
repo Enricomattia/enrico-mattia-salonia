@@ -1,16 +1,23 @@
 import{projectArchive,buildPublication}from'./publish-core.mjs';
-import{netlifyClient,publishTimeoutMessage}from'./publish-netlify.mjs';
+import{netlifyClient,publishTimeoutMessage,checkPublicWebsite}from'./publish-netlify.mjs';
 // Publishing preferences are deliberately outside the diary and its backups.
 const KEY='pathos-personal.publication-v1',$=id=>document.getElementById(id);
-let prefs={publisherId:crypto.randomUUID(),selected:[],title:'',username:'',reviews:true,passages:true,covers:true,sites:{},lastSiteUser:''};
+let prefs={publisherId:crypto.randomUUID(),entryMode:'all',excluded:[],selected:[],title:'',username:'',reviews:true,passages:true,covers:true,sites:{},lastSiteUser:''};
+const entryIds=value=>Array.isArray(value)?value.filter(id=>typeof id==='string'&&id.length<200):[];
 try{
   const saved=JSON.parse(localStorage.getItem(KEY)||'null');
   if(saved&&/^[A-Za-z0-9_-]{10,100}$/.test(saved.publisherId)){
-    prefs={...prefs,publisherId:saved.publisherId,title:typeof saved.title==='string'?saved.title.slice(0,120):'',username:typeof saved.username==='string'?saved.username.slice(0,40):'',selected:Array.isArray(saved.selected)?saved.selected.filter(id=>typeof id==='string'&&id.length<200).slice(0,10000):[],reviews:saved.reviews!==false,passages:saved.passages!==false,covers:saved.covers!==false,sites:saved.sites&&typeof saved.sites==='object'&&!Array.isArray(saved.sites)?saved.sites:{}};
+    const sites=saved.sites&&typeof saved.sites==='object'&&!Array.isArray(saved.sites)?saved.sites:{};
+    const selected=entryIds(saved.selected);
+    const previousSelection=Array.isArray(saved.selected)||Object.values(sites).some(validSite);
+    const entryMode=saved.entryMode==='all'||saved.entryMode==='selected'?saved.entryMode:previousSelection?'selected':'all';
+    prefs={...prefs,publisherId:saved.publisherId,entryMode,excluded:entryIds(saved.excluded),selected,title:typeof saved.title==='string'?saved.title.slice(0,120):'',username:typeof saved.username==='string'?saved.username.slice(0,40):'',reviews:saved.reviews!==false,passages:saved.passages!==false,covers:saved.covers!==false,sites};
     if(typeof saved.lastSiteUser==='string')prefs.lastSiteUser=saved.lastSiteUser;
   }
 }catch{/* A failed preference read never changes the archive. */}
-let selected=new Set(prefs.selected),prepared=null,assetsPromise=null,client=null,user=null,accounts=[],pendingAuth=null,busy=false,publishing=false,checkingConnection=false;
+const selected=new Set(prefs.selected),excluded=new Set(prefs.excluded);
+const visibilityChecks=new Map();
+let includedIds=[],prepared=null,assetsPromise=null,client=null,user=null,accounts=[],pendingAuth=null,busy=false,publishing=false,checkingConnection=false;
 const menu=document.createElement('button');menu.type='button';menu.className='menu-view';menu.dataset.view='publishing';menu.textContent='Publish online';
 menu.addEventListener('click',()=>showView('publishing'));$('settingsMenu').querySelector('.more-menu-panel').append(menu);
 $('publishTitle').value=prefs.title;$('publishUsername').value=prefs.username;for(const option of ['reviews','passages','covers'])$('publish'+option[0].toUpperCase()+option.slice(1)).checked=prefs[option];
@@ -22,13 +29,20 @@ function connectionStatus(message,state=''){
   const feedback=$('publishConnectionStatus');feedback.textContent=message;feedback.dataset.state=state;
 }
 function savePrefs(){
-  prefs.selected=[...selected];prefs.title=$('publishTitle').value;prefs.username=$('publishUsername').value;for(const option of ['reviews','passages','covers'])prefs[option]=$('publish'+option[0].toUpperCase()+option.slice(1)).checked;
+  prefs.selected=[...selected];prefs.excluded=[...excluded];prefs.title=$('publishTitle').value;prefs.username=$('publishUsername').value;for(const option of ['reviews','passages','covers'])prefs[option]=$('publish'+option[0].toUpperCase()+option.slice(1)).checked;
   try{localStorage.setItem(KEY,JSON.stringify(prefs));return true;}catch{status('Could not save publishing preferences on this device. Publication is paused until browser storage works.','error');return false;}
 }
-function snapshot(){return projectArchive(db,[...selected],{title:$('publishTitle').value,username:$('publishUsername').value,reviews:$('publishReviews').checked,passages:$('publishPassages').checked,covers:$('publishCovers').checked});}
+function isIncluded(id){return prefs.entryMode==='all'?!excluded.has(id):selected.has(id);}
+function updateIncludedEntries(){
+  includedIds=db.experiences.filter(entry=>isIncluded(entry.id)).map(entry=>entry.id);
+  $('publishSelectedCount').textContent=includedIds.length+' of '+db.experiences.length+' included';
+}
+function snapshot(){return projectArchive(db,includedIds,{title:$('publishTitle').value,username:$('publishUsername').value,reviews:$('publishReviews').checked,passages:$('publishPassages').checked,covers:$('publishCovers').checked,allowEmpty:Boolean(currentSite()?.deployId)});}
 function invalidate(){prepared=null;$('publishPreviewWrap').hidden=true;$('publishApproved').checked=false;$('publishPreview').removeAttribute('srcdoc');refreshButtons();}
 function refreshButtons(){
-  $('publishPreviewBtn').disabled=busy||Boolean(pendingAuth)||!selected.size||!window.pathosPersonalReady;
+  const ref=currentSite(),published=Boolean(ref?.deployId);
+  const canPreview=includedIds.length>0||published;
+  $('publishPreviewBtn').disabled=busy||Boolean(pendingAuth)||!canPreview||!window.pathosPersonalReady;
   $('publishConnectBtn').disabled=busy||Boolean(pendingAuth);
   $('publishConnectBtn').hidden=Boolean(client);
   $('publishConnectBtn').textContent=checkingConnection?'Checking Netlify…':pendingAuth?'Waiting for Netlify…':'Connect Netlify';
@@ -36,21 +50,20 @@ function refreshButtons(){
   $('publishNowBtn').hidden=!client;
   $('publishNowBtn').setAttribute('aria-busy',String(publishing));
   $('publishNowBtn').disabled=busy||!client||!prepared||!$('publishApproved').checked||!$('publishAccount').value;
-  const ref=currentSite(),published=Boolean(ref?.deployId);
   $('publishNowBtn').textContent=publishing?'Publishing…':published?'Update published version':'Publish website';
   $('publishWaiting').hidden=!publishing;
-  $('publishNextStep').textContent=publishing||!client?'':!selected.size?'Select the entries you want to share.':!prepared?'Preview your selected entries.':!$('publishApproved').checked?'Approve the public preview to continue.':'';
+  $('publishNextStep').textContent=publishing||!client?'':!canPreview?'Include at least one experience to create a website.':!prepared?'Preview your website.':!$('publishApproved').checked?'Approve the public preview to continue.':'';
   $('publishNextStep').hidden=!$('publishNextStep').textContent;
   $('publishDisconnectBtn').hidden=!client&&!pendingAuth;
   $('publishDisconnectBtn').disabled=busy;
   $('publishDisconnectBtn').textContent=pendingAuth?'Cancel sign-in':'Disconnect';
   $('publishSignInHelp').hidden=!pendingAuth?.channel;
   $('publishAccountField').hidden=!client;
-  for(const id of ['publishTitle','publishUsername','publishReviews','publishPassages','publishCovers','publishSearch','publishSelectShown','publishClear','publishAccount','publishApproved'])$(id).disabled=busy;
+  for(const id of ['publishTitle','publishUsername','publishReviews','publishPassages','publishCovers','publishSearch','publishIncludeAll','publishExcludeShown','publishAccount','publishApproved'])$(id).disabled=busy;
   $('publishEntries').querySelectorAll('input').forEach(input=>input.disabled=busy);
   showResult(ref);
 }
-function validSite(ref){return Boolean(ref&&/^[A-Za-z0-9_-]{1,100}$/.test(ref.id)&&/^[a-z0-9-]+$/.test(ref.name));}
+function validSite(ref){return Boolean(ref&&/^[A-Za-z0-9_-]{1,100}$/.test(ref.id)&&/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(ref.name));}
 function currentSite(){
   if(user)return prefs.sites[user.id];
   const last=prefs.sites[prefs.lastSiteUser];
@@ -60,32 +73,51 @@ function rememberSite(ref){
   prefs.sites[user.id]=ref;prefs.lastSiteUser=user.id;
   const saved=savePrefs();showResult(ref);return saved;
 }
+function visibilityKey(ref){return ref.name+'/'+ref.deployId;}
 function showResult(ref){
   const valid=validSite(ref);
-  $('publishResult').hidden=!valid;$('publishCheckBtn').hidden=!client||!valid;$('publishCheckBtn').disabled=busy;if(!valid)return;
+  $('publishResult').hidden=!valid;if(!valid)return;
   const published=typeof ref.deployId==='string'&&Boolean(ref.deployId);
+  $('publishCheckBtn').hidden=!published&&!client;$('publishCheckBtn').disabled=busy;
+  $('publishCheckBtn').textContent=published?'Check public link':'Check deployment';
+  const verified=published&&visibilityChecks.get(visibilityKey(ref));
   const url='https://'+ref.name+'.netlify.app';
-  $('publishAddressLabel').textContent=published?'Published website':'Website address (publication unconfirmed)';
+  $('publishAddressLabel').textContent=verified?'Public website':published?'Website address':'Website address (deployment unconfirmed)';
   $('publishWebsiteLink').href=url;$('publishWebsiteLink').textContent=url;
   $('publishVisibility').hidden=!published;
+  $('publishVisibility').dataset.state=verified?'success':'';
+  $('publishVisibility').textContent=verified?'Public link verified. Anyone with this address can open it.':visibilityChecks.has(visibilityKey(ref))?'Public access couldn’t be verified. Netlify may still have this project set to private.':'Check public access before sharing this link.';
+  $('publishVisibilityHelp').hidden=!published||verified;
   $('publishManageLink').href='https://app.netlify.com/projects/'+ref.name+'/overview';
+}
+async function verifyPublicLink(ref){
+  status('Checking the link without a Netlify account…','working');
+  const verified=await checkPublicWebsite(ref.name);
+  visibilityChecks.set(visibilityKey(ref),verified);
+  showResult(ref);
+  return verified;
 }
 function refresh(){
   if(!window.pathosPersonalReady)return;
-  const validIds=new Set(db.experiences.map(entry=>entry.id));selected=new Set([...selected].filter(id=>validIds.has(id)));
+  updateIncludedEntries();
   if(prepared){try{if(JSON.stringify(snapshot())!==prepared.signature)invalidate();}catch{invalidate();}}
   const query=$('publishSearch').value.trim().toLocaleLowerCase(),works=new Map(db.works.map(work=>[work.id,work]));
   const rows=db.experiences.filter(entry=>{const work=works.get(entry.workId);return work&&(work.title+' '+work.creator).toLocaleLowerCase().includes(query);}).sort((a,b)=>(b.endDate||b.startDate||'').localeCompare(a.endDate||a.startDate||''));
   $('publishEntries').replaceChildren();
   for(const entry of rows){
     const work=works.get(entry.workId),label=document.createElement('label');label.className='publish-entry';
-    const input=document.createElement('input');input.type='checkbox';input.checked=selected.has(entry.id);input.dataset.publishEntry=entry.id;
+    const input=document.createElement('input');input.type='checkbox';input.checked=isIncluded(entry.id);input.dataset.publishEntry=entry.id;
     const body=document.createElement('span'),title=document.createElement('strong'),meta=document.createElement('small');title.textContent=work.title;
     meta.textContent=[work.creator,work.type,entry.endDate||entry.startDate||'Undated',STATUS_LABELS[entry.status]||''].filter(Boolean).join(' · ');body.append(title,meta);label.append(input,body);$('publishEntries').append(label);
-    input.addEventListener('change',()=>{if(input.checked)selected.add(entry.id);else selected.delete(entry.id);invalidate();savePrefs();$('publishSelectedCount').textContent=selected.size+' selected';});
+    input.addEventListener('change',()=>{
+      if(prefs.entryMode==='all'){if(input.checked)excluded.delete(entry.id);else excluded.add(entry.id);}
+      else if(input.checked)selected.add(entry.id);else selected.delete(entry.id);
+      updateIncludedEntries();invalidate();savePrefs();
+    });
   }
   if(!rows.length){const empty=document.createElement('p');empty.className='empty';empty.textContent=db.experiences.length?'No matching entries.':'Log an experience before creating your public website.';$('publishEntries').append(empty);}
-  $('publishSelectedCount').textContent=selected.size+' selected';refreshButtons();
+  $('publishSelectionHint').textContent=prefs.entryMode==='all'?'All experiences are included by default. Uncheck anything you want to keep private.':'Your previous selection is still in use. Choose Include all entries to switch to the new default.';
+  refreshButtons();
 }
 async function loadAssets(){
   if(!assetsPromise)assetsPromise=(async()=>{
@@ -105,7 +137,9 @@ async function preview(){
   try{
     const value=snapshot(),signature=JSON.stringify(value),files=await buildPublication(value,await loadAssets());
     if(JSON.stringify(snapshot())!==signature)throw new Error('The selection changed. Preview it again.');
-    prepared={files,signature};$('publishPreview').srcdoc=files.get('/index.html');$('publishPreviewWrap').hidden=false;$('publishApproved').checked=false;status(value.experiences.length===1?'1 selected experience is in this preview.':value.experiences.length+' selected experiences are in this preview.');
+    prepared={files,signature};$('publishPreview').srcdoc=files.get('/index.html');$('publishPreviewWrap').hidden=false;$('publishApproved').checked=false;
+    const count=value.experiences.length;
+    status(count===0?'This update will remove all experiences from the live site.':count===1?'This preview includes 1 experience.':'This preview includes '+count+' experiences.');
   }catch(error){invalidate();status(error.message,'error');}
   finally{busy=false;backgroundTasks--;refreshButtons();}
 }
@@ -177,16 +211,22 @@ async function finishAuth(data){
 }
 async function checkPublication(){
   const ref=currentSite(),account=accounts.find(team=>team.id===ref?.accountId);
-  if(busy||!client||!ref||!account)return;
-  busy=true;backgroundTasks++;status('Checking the current website in Netlify…');refreshButtons();
+  if(busy||pendingAuth||!validSite(ref)||(!ref.deployId&&(!client||!account)))return;
+  busy=true;backgroundTasks++;refreshButtons();
   try{
-    const result=await client.publication(ref,account);
-    if(result){
-      const saved=rememberSite(result);
-      status(saved?'Netlify is serving a published version at the address below.':'Netlify confirmed the website. Keep the links below because this device could not save them.',saved?'success':'error');
-    }else{
-      status('Netlify hasn’t confirmed a published version. Open the project to check its deploys.','error');
+    // A known website can be checked even after the Netlify session is closed.
+    let result=ref;
+    if(client&&account){
+      status('Checking the current deployment in Netlify…','working');
+      result=await client.publication(ref,account);
     }
+    if(!result){
+      status('Netlify hasn’t confirmed a published version. Open the project to check its deploys.','error');
+      return;
+    }
+    const saved=result===ref||rememberSite(result);
+    await verifyPublicLink(result);
+    status(saved?'':'Keep the links below because this device could not save them.',saved?'':'error');
   }catch(error){status(error.message,'error');}
   finally{busy=false;backgroundTasks--;refreshButtons();}
 }
@@ -194,7 +234,9 @@ async function publish(){
   if(busy||archiveBusy||!client||!prepared||!$('publishApproved').checked)return;
   if(!navigator.onLine){status('Connect to the internet to publish.','error');return;}
   if($('entryDialog').open||$('catalogueGuide').open||pendingWrites||lastSaveFailed){status('Finish saving your diary and close the open entry or setup before publishing.','error');return;}
-  if(JSON.stringify(snapshot())!==prepared.signature){invalidate();status('The selected entries changed. Preview them again before publishing.','error');return;}
+  let signature;
+  try{signature=JSON.stringify(snapshot());}catch(error){invalidate();status(error.message,'error');return;}
+  if(signature!==prepared.signature){invalidate();status('The included entries changed. Preview the website again before publishing.','error');return;}
   const account=accounts.find(account=>account.id===$('publishAccount').value);if(!account)return;
   const previous=prefs.sites[user.id];if(previous&&previous.accountId!==account.id){status('Choose the team containing your existing Πathos publication.','error');return;}
   if(!savePrefs())return;
@@ -211,7 +253,9 @@ async function publish(){
     }
     const result=await client.deploy(ref,account,prepared.files,{signal,onProgress:message=>status(message,'working')});
     const remembered=rememberSite(result);
-    status(remembered?'Published to Netlify. Open your website below.':'Published to Netlify. Keep the links below because this device could not save them.',remembered?'success':'error');
+    publishing=false;refreshButtons();
+    const verified=await verifyPublicLink(result);
+    status(remembered?(verified?'Published to Netlify. Your link is ready to share.':'Published to Netlify. Check public access below before sharing.'):'Published to Netlify. Keep the links below because this device could not save them.',remembered?'success':'error');
   }catch(error){
     status(signal.aborted?publishTimeoutMessage:error.message,'error');
     $('publishProjectHelp').hidden=validSite(currentSite());
@@ -222,8 +266,13 @@ $('publishPreviewBtn').addEventListener('click',()=>void preview());$('publishNo
 $('publishConnectBtn').addEventListener('click',connect);$('publishDisconnectBtn').addEventListener('click',disconnect);
 $('publishCheckBtn').addEventListener('click',()=>void checkPublication());
 $('publishSearch').addEventListener('input',refresh);
-$('publishSelectShown').addEventListener('click',()=>{document.querySelectorAll('[data-publish-entry]').forEach(input=>selected.add(input.dataset.publishEntry));invalidate();savePrefs();refresh();});
-$('publishClear').addEventListener('click',()=>{selected.clear();invalidate();savePrefs();refresh();});
+$('publishIncludeAll').addEventListener('click',()=>{prefs.entryMode='all';selected.clear();excluded.clear();invalidate();savePrefs();refresh();});
+$('publishExcludeShown').addEventListener('click',()=>{
+  document.querySelectorAll('[data-publish-entry]').forEach(input=>{
+    if(prefs.entryMode==='all')excluded.add(input.dataset.publishEntry);else selected.delete(input.dataset.publishEntry);
+  });
+  invalidate();savePrefs();refresh();
+});
 for(const id of ['publishTitle','publishUsername','publishReviews','publishPassages','publishCovers'])$(id).addEventListener('input',()=>{invalidate();savePrefs();});
 $('publishApproved').addEventListener('change',refreshButtons);$('publishAccount').addEventListener('change',()=>{ $('publishApproved').checked=false;refreshButtons(); });
 window.addEventListener('pagehide',()=>{client=null;endAuth();});
