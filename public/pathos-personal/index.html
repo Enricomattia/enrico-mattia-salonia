@@ -925,7 +925,7 @@ body:not(.pathos-owner) .experience-edit{display:none}
 
 <section id="publishing" class="view">
   <div class="section-head"><h2>Publish online</h2></div>
-  <p class="muted">Publish a read-only website that anyone with the link can open. Your private diary stays on this device.</p>
+  <p class="muted">Share a read-only copy on your own Netlify account. Your personal diary stays on this device. Once the site is public, anyone with its address can view it.</p>
   <div class="publish-layout">
     <div>
       <h3>Choose what to share</h3>
@@ -938,27 +938,35 @@ body:not(.pathos-owner) .experience-edit{display:none}
       <div id="publishEntries" class="publish-entries"></div>
     </div>
     <div class="publish-controls">
-      <div class="panel"><h3>Preview your website</h3><p class="metadata-note">To remove an entry from your live site, exclude it, approve a new preview and publish the update.</p><button type="button" class="btn" id="publishPreviewBtn" disabled>Preview website</button><div id="publishPreviewWrap" hidden><iframe id="publishPreview" title="Preview of your public Πathos" sandbox="allow-scripts allow-popups" referrerpolicy="no-referrer"></iframe><label class="check"><input type="checkbox" id="publishApproved"> I approve this copy for anyone with the link</label></div></div>
+      <div class="panel"><h3>Preview your website</h3><p class="metadata-note">To remove an entry from your live site, exclude it, approve a new preview and publish the update. Older Netlify deploys or copies may still contain it.</p><button type="button" class="btn" id="publishPreviewBtn" disabled>Preview website</button><div id="publishPreviewWrap" hidden><iframe id="publishPreview" title="Preview of your public Πathos" sandbox="allow-scripts allow-popups" referrerpolicy="no-referrer"></iframe><label class="check"><input type="checkbox" id="publishApproved"> I approve this copy for anyone with the link</label></div></div>
       <div class="panel">
-        <h3>Your public website</h3>
-        <button type="button" class="btn primary" id="publishNowBtn" disabled>Publish website</button>
+        <h3>Publish to Netlify</h3>
+        <p class="metadata-note">Connect your Netlify account and approve the preview to publish.</p>
+        <div class="publish-actions"><button type="button" class="btn primary" id="publishConnectBtn">Connect Netlify</button><button type="button" class="btn subtle" id="publishDisconnectBtn" hidden>Disconnect</button></div>
+        <p class="publish-status" id="publishConnectionStatus" role="status" aria-live="polite"></p>
+        <p class="metadata-note" id="publishSignInHelp" hidden><a id="publishSignInLink" target="_blank" rel="noopener noreferrer">Open Netlify sign-in in a new tab ↗</a></p>
+        <div id="publishAccountField" hidden><label class="field" for="publishAccount">Netlify team</label><select class="input" id="publishAccount"></select></div>
+        <button type="button" class="btn primary" id="publishNowBtn" aria-describedby="publishNextStep" disabled hidden>Publish website</button>
+        <p id="publishNextStep" class="metadata-note"></p>
         <p id="publishProgress" class="publish-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
+        <div id="publishWaiting" hidden><progress aria-label="Publishing in progress"></progress><p class="metadata-note">This may take a few minutes. Keep Πathos open while Netlify finishes.</p></div>
+        <p class="metadata-note" id="publishProjectHelp" hidden><a href="https://app.netlify.com/" target="_blank" rel="noopener noreferrer">Open Netlify ↗</a></p>
         <div id="publishResult" hidden>
-          <p class="publish-address" id="publishAddress" hidden><strong>Share this link</strong><a id="publishWebsiteLink" target="_blank" rel="noopener noreferrer"></a></p>
-          <div class="publish-actions"><button type="button" class="btn subtle" id="publishCheckBtn">Check status</button><button type="button" class="btn danger" id="unpublishBtn" hidden>Take website offline</button></div>
-          <details id="publishKeyDetails"><summary>Publishing key</summary>
-            <p class="metadata-note">Save this key privately to manage the website from another browser or after clearing local data. Anyone with it can update or take down the site.</p>
-            <label class="field" for="publishKeyValue">Private publishing key</label><input class="input" id="publishKeyValue" type="password" readonly autocomplete="off">
-            <button type="button" class="btn subtle" id="publishKeyCopy">Copy key</button>
-          </details>
+          <p class="publish-address"><strong id="publishAddressLabel">Website address</strong><a id="publishWebsiteLink" target="_blank" rel="noopener noreferrer"></a></p>
+          <p class="publish-status" id="publishVisibility" role="status" hidden></p>
+          <p class="metadata-note" id="publishVisibilityHelp" hidden>In Netlify, open this project and choose <strong>Make public</strong>. Keep the project name to preserve the address. Then check the link again or open it in a private browser window.</p>
+          <div class="publish-actions"><a id="publishManageLink" target="_blank" rel="noopener noreferrer">Manage in Netlify ↗</a><button type="button" class="btn subtle" id="publishCheckBtn" hidden>Check status</button></div>
         </div>
-        <details id="publishRecover" hidden><summary>Manage an existing website</summary>
-          <label class="field" for="publishRecoverKey">Private publishing key</label><input class="input" type="password" id="publishRecoverKey" autocomplete="off" spellcheck="false">
-          <button type="button" class="btn subtle" id="publishRecoverBtn">Use key</button>
-        </details>
-        <details id="publishLegacy" hidden><summary>Previously published on Netlify</summary>
-          <p class="metadata-note">Your previous website has its own address. Manage its visibility or take it down in Netlify.</p>
-          <div id="publishLegacyLinks"></div>
+        <details id="publishOldCopy">
+          <summary>Manage previous Πathos-hosted copy</summary>
+          <div id="publishOldRecovery" hidden>
+            <label class="field" for="publishOldKey">Private publishing key</label>
+            <input class="input" type="password" id="publishOldKey" autocomplete="off" maxlength="64">
+            <button type="button" class="btn subtle" id="publishOldRestore">Use key</button>
+          </div>
+          <p class="publish-address"><a id="publishOldLink" target="_blank" rel="noopener noreferrer" hidden></a></p>
+          <p class="publish-status" id="publishOldStatus" role="status"></p>
+          <div class="publish-actions"><button type="button" class="btn subtle" id="publishOldCheck" hidden>Check old copy</button><button type="button" class="btn subtle" id="publishOldRemove" hidden>Take old copy offline</button></div>
         </details>
       </div>
     </div>
@@ -2252,7 +2260,7 @@ function showView(name){
   if($('moreMenu'))$('moreMenu').open=false;
   const settings=$('settingsMenu');
   if(settings){settings.open=false;settings.querySelector('summary').classList.toggle('active',['metadata','import','publishing'].includes(name));}
-  if(name==='publishing')void window.PathosPublishing?.open();
+  if(name==='publishing')window.PathosPublishing?.refresh();
   window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
 }
 document.querySelectorAll('.tab[data-view],.menu-view').forEach(t=>t.onclick=()=>showView(t.dataset.view));
@@ -2529,6 +2537,7 @@ if('serviceWorker' in navigator){
 </script>
 
 <script src="/pathos-personal/catalogue-setup.js"></script>
+<script src="/pathos-personal/publish-config.js"></script>
 <script type="module" src="/pathos-personal/publish.js"></script>
 <script type="module" src="/pathos-personal/cover-accent.mjs"></script>
 </body>

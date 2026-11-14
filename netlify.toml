@@ -1,5 +1,2 @@
-[functions.pathos-publication]
-  included_files = ["public/pathos-personal/published-reader.*", "public/pathos-personal/markdown-it.min.js", "public/pathos-personal/markdown-it.LICENSE.txt", "public/pathos-personal/review-format.js", "public/pathos-personal/fonts/LICENSE.txt", "public/pathos-personal/fonts/newsreader-latin.woff2", "public/pathos-personal/fonts/instrument-sans-latin.woff2"]
-
 [build.environment]
   NODE_VERSION = "22"

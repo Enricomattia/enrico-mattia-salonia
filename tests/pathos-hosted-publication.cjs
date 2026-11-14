@@ -1,89 +1,64 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {randomBytes,randomUUID}=require('node:crypto');
-const {readFile}=require('node:fs/promises');
-const {pageId,managePublication,readPublication,validSnapshot}=require('../netlify/lib/pathos-publication.mjs');
-const {digest,buildPublication,projectArchive}=require('../public/pathos-personal/publish-core.mjs');
+const {pageId,managePublication,readPublication}=require('../netlify/lib/pathos-publication.mjs');
 
-function memoryStore(){
-  const pages=new Map();
-  return {
-    pages,
-    getMetadata:async id=>pages.get(id)||null,
-    getWithMetadata:async id=>pages.get(id)||null,
-    async set(id,data,{metadata,onlyIfNew,onlyIfMatch}){
-      const existing=pages.get(id);
-      if(onlyIfNew?existing:existing?.etag!==onlyIfMatch)return {modified:false};
-      pages.set(id,{data,metadata,etag:randomUUID()});return {modified:true};
-    }
-  };
-}
-const key=randomBytes(32).toString('hex'),id=pageId(key),store=memoryStore();
-const auth={Authorization:'Bearer '+key};
 const origin='https://pathos.example';
-const request=(method,headers,body)=>new Request(origin+'/api/pathos-personal/publication/'+id,{method,headers,body});
+const key=randomBytes(32).toString('hex'),id=pageId(key);
+const auth={Authorization:'Bearer '+key};
+const manage=(method,headers=auth)=>new Request(origin+'/api/pathos-personal/publication/'+id,{method,headers});
 const share=method=>new Request(origin+'/pathos-share/'+id,{method});
-const snapshot=projectArchive({
-  works:[{id:'private-work',type:'Book',title:'A book',external:{secret:'Private data'}}],
-  experiences:[{id:'private-entry',workId:'private-work',status:'completed',review:'A **review** <script>window.injected=1</script>'}]
-},['private-entry'],{title:'A public website',username:'reader'});
 
-async function bodyFor(value){
-  const names={html:'published-reader.txt',css:'published-reader.css',reader:'published-reader.js',parser:'markdown-it.min.js',
-    parserLicense:'markdown-it.LICENSE.txt',fontLicense:'fonts/LICENSE.txt',format:'review-format.js',
-    serif:'fonts/newsreader-latin.woff2',sans:'fonts/instrument-sans-latin.woff2'};
-  const assets=Object.fromEntries(await Promise.all(Object.entries(names).map(async([key,name])=>[key,await readFile('public/pathos-personal/'+name,name.endsWith('.woff2')?'base64':'utf8')])));
-  const html=(await buildPublication(value,assets)).get('/index.html');
-  return {html,body:JSON.stringify({snapshot:value,digest:await digest(html)})};
+function previousCopy(){
+  const revision=randomUUID();
+  const html='<html><title>Previously published diary</title></html>';
+  let page={data:html,metadata:{revision,published:true,csp:"default-src 'none'"},etag:'original'};
+  const getStore=()=>({
+    getMetadata:async value=>value===id?page:null,
+    getWithMetadata:async value=>value===id?page:null,
+    async set(value,data,{metadata,onlyIfMatch}){
+      if(value!==id||onlyIfMatch!==page.etag)return {modified:false};
+      page={data,metadata,etag:'next'};
+      return {modified:true};
+    }
+  });
+  return {getStore,revision,html};
 }
 
-test('only approved reader fields are accepted',()=>{
-  assert(validSnapshot(snapshot));
-  for(const alter of [
-    state=>{state.privateArchive={};},
-    state=>{state.works[0].external={};},
-    state=>{state.experiences[0].id='private-entry';},
-    state=>{state.experiences[0].workId='missing';},
-    state=>{state.experiences[0].cover='https://example.com/image?token=private';},
-    state=>{state.experiences[0].quotes=[{text:'A quote',note:'',featured:true,id:'private-id'}];}
-  ]){
-    const state=structuredClone(snapshot);alter(state);assert(!validSnapshot(state));
+test('the retired uploader rejects even authenticated writes without using storage',async()=>{
+  for(const revision of ['new',randomUUID()]){
+    const response=await managePublication(manage('PUT',{...auth,'X-Pathos-Revision':revision}),id,()=>{
+      assert.fail('The retired uploader accessed storage');
+    });
+    assert.equal(response.status,410);
+    assert.match((await response.json()).error,/your Netlify account/);
   }
 });
 
-test('public read, owner-only edits, concurrency and immediate takedown',async()=>{
-  const getStore=()=>store;
-  const {html,body}=await bodyFor(snapshot);
-  const create={...auth,'Content-Type':'application/json','X-Pathos-Revision':'new'};
-  const manage=(method,headers,data)=>managePublication(request(method,headers,data),id,getStore);
-  const read=method=>readPublication(share(method),id,getStore);
-  assert.equal((await read('GET')).status,404);
-  assert.equal((await manage('GET',{})).status,403);
-  assert.equal((await manage('PUT',{...create,Origin:'https://other.example'},body)).status,403);
-  assert.equal((await manage('PUT',create,body.replace(/"digest":"[a-f0-9]{64}"/,'"digest":"'+'0'.repeat(64)+'"'))).status,409);
-  assert.equal((await manage('PUT',{...create,'Content-Length':5*1024*1024},body)).status,413);
-  const published=await manage('PUT',create,body);
-  assert.equal(published.status,201);
-  const {revision}=await published.json();
-  assert.equal((await manage('PUT',create,body)).status,409);
-  assert.equal((await manage('DELETE',{Authorization:'Bearer '+randomBytes(32).toString('hex'),'X-Pathos-Revision':revision})).status,403);
-  const rendered=await read('GET');
-  assert.equal(await rendered.text(),html);
-  assert(!html.includes(key)&&!html.includes('Private data')&&!html.includes('private-entry'));
-  assert.match(rendered.headers.get('Content-Security-Policy'),/frame-ancestors 'none'; sandbox allow-scripts allow-popups$/);
-  assert.equal(rendered.headers.get('Cache-Control'),'no-store');
-  assert.equal((await read('HEAD')).headers.get('X-Pathos-Publication'),'v1');
-  const update={...auth,'Content-Type':'application/json','X-Pathos-Revision':revision};
-  const edited=await bodyFor({...snapshot,title:'Edited public copy'});
-  const attempts=await Promise.all([manage('PUT',update,edited.body),manage('PUT',update,body)]);
-  assert.deepEqual(attempts.map(response=>response.status).sort(),[200,409]);
-  const current=await (await manage('GET',auth)).json();
-  assert.equal((await manage('DELETE',{...auth,'X-Pathos-Revision':revision})).status,409);
-  assert.equal((await manage('DELETE',{...auth,'X-Pathos-Revision':current.revision})).status,200);
-  assert.equal((await read('GET')).status,404);
-  assert.equal(store.pages.get(id).data,'','Takedown clears hosted content');
-  const offline=await (await manage('GET',auth)).json();
-  assert.equal(offline.published,false);
-  assert.equal((await manage('PUT',{...update,'X-Pathos-Revision':offline.revision},body)).status,200);
-  assert.equal(await (await read('GET')).text(),html,'Republishing uses the same link');
+test('a previous copy remains readable and only its editor can take it offline',async()=>{
+  const {getStore,revision,html}=previousCopy();
+  const page=await readPublication(share('GET'),id,getStore);
+  assert.equal(page.status,200);
+  assert.equal(page.headers.get('Cache-Control'),'no-store');
+  assert.match(page.headers.get('X-Robots-Tag'),/noindex/);
+  assert.match(page.headers.get('Content-Security-Policy'),/sandbox allow-scripts allow-popups/);
+  assert.equal(await page.text(),html);
+  const head=await readPublication(share('HEAD'),id,getStore);
+  assert.equal(head.status,200);
+  assert.equal(await head.text(),'');
+  const status=await managePublication(manage('GET'),id,getStore);
+  assert.deepEqual(await status.json(),{published:true,revision});
+  for(const headers of [{},{...auth,Origin:'https://other.example'},{Authorization:'Bearer '+'0'.repeat(64)}]){
+    assert.equal((await managePublication(manage('DELETE',headers),id,getStore)).status,403);
+  }
+  const remove=expected=>managePublication(manage('DELETE',{...auth,'X-Pathos-Revision':expected}),id,getStore);
+  assert.equal((await remove(randomUUID())).status,409);
+  assert.equal((await readPublication(share('GET'),id,getStore)).status,200);
+  const takenOffline=await remove(revision);
+  assert.equal(takenOffline.status,200);
+  assert.equal((await takenOffline.json()).published,false);
+  assert.equal((await remove(revision)).status,409);
+  const missing=await readPublication(share('GET'),id,getStore);
+  assert.equal(missing.status,404);
+  assert.doesNotMatch(await missing.text(),/Previously published/);
 });
