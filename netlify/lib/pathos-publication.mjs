@@ -105,8 +105,8 @@ export async function managePublication(request,id,getStore=publicationStore){
     const previous=await store.getMetadata(id);
     const before=previous?.metadata;
     if(request.method==='GET')return json({published:before?.published===true,revision:before?.revision??null});
-    const expected=request.headers.get('If-Match');
-    const create=request.method==='PUT'&&request.headers.get('If-None-Match')==='*'&&!previous;
+    const expected=request.headers.get('X-Pathos-Revision');
+    const create=request.method==='PUT'&&expected==='new'&&!previous;
     const replace=Boolean(previous?.etag&&expected&&revisionPattern.test(expected)&&before?.revision===expected);
     if(!create&&!replace)return json({error:'The public copy changed. Check its status, then try again.'},409);
     let html='',csp='';

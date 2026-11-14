@@ -89,7 +89,8 @@ async function preview(page){
     assert(!original.includes('PRIVATE_REVIEW')&&!original.includes('PRIVATE_METADATA'));
     await page.frameLocator('#publishPreview').getByRole('heading',{name:'Example novel'}).waitFor();
     await page.locator('#publishApproved').check();await page.locator('#publishNowBtn').click();
-    await page.locator('#publishProgress').getByText(/Anyone with the link/).waitFor();
+    await page.locator('#publishProgress[data-state="success"], #publishProgress[data-state="error"]').waitFor();
+    assert.match(await page.locator('#publishProgress').innerText(),/Anyone with the link/);
     websiteUrl=await page.locator('#publishWebsiteLink').getAttribute('href');
     assert.match(websiteUrl,new RegExp('^'+origin+'/pathos-share/[a-f0-9]{32}$'));
     const first=await reader.goto(websiteUrl);
@@ -133,7 +134,7 @@ async function preview(page){
         const url=websiteUrl.replace('/pathos-share/','/api/pathos-personal/publication/');
         const headers={Authorization:'Bearer '+key};
         const result=await context.request.get(url,{headers}).then(response=>response.json()).catch(()=>null);
-        if(result?.published)await context.request.delete(url,{headers:{...headers,'If-Match':result.revision}});
+        if(result?.published)await context.request.delete(url,{headers:{...headers,'X-Pathos-Revision':result.revision}});
       }
     }
     await visitor.close();await context.close();

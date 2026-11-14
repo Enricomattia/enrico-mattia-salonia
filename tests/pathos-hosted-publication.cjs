@@ -54,7 +54,7 @@ test('only approved reader fields are accepted',()=>{
 test('public read, owner-only edits, concurrency and immediate takedown',async()=>{
   const getStore=()=>store;
   const {html,body}=await bodyFor(snapshot);
-  const create={...auth,'Content-Type':'application/json','If-None-Match':'*'};
+  const create={...auth,'Content-Type':'application/json','X-Pathos-Revision':'new'};
   const manage=(method,headers,data)=>managePublication(request(method,headers,data),id,getStore);
   const read=method=>readPublication(share(method),id,getStore);
   assert.equal((await read('GET')).status,404);
@@ -66,24 +66,24 @@ test('public read, owner-only edits, concurrency and immediate takedown',async()
   assert.equal(published.status,201);
   const {revision}=await published.json();
   assert.equal((await manage('PUT',create,body)).status,409);
-  assert.equal((await manage('DELETE',{Authorization:'Bearer '+randomBytes(32).toString('hex'),'If-Match':revision})).status,403);
+  assert.equal((await manage('DELETE',{Authorization:'Bearer '+randomBytes(32).toString('hex'),'X-Pathos-Revision':revision})).status,403);
   const rendered=await read('GET');
   assert.equal(await rendered.text(),html);
   assert(!html.includes(key)&&!html.includes('Private data')&&!html.includes('private-entry'));
   assert.match(rendered.headers.get('Content-Security-Policy'),/frame-ancestors 'none'; sandbox allow-scripts allow-popups$/);
   assert.equal(rendered.headers.get('Cache-Control'),'no-store');
   assert.equal((await read('HEAD')).headers.get('X-Pathos-Publication'),'v1');
-  const update={...auth,'Content-Type':'application/json','If-Match':revision};
+  const update={...auth,'Content-Type':'application/json','X-Pathos-Revision':revision};
   const edited=await bodyFor({...snapshot,title:'Edited public copy'});
   const attempts=await Promise.all([manage('PUT',update,edited.body),manage('PUT',update,body)]);
   assert.deepEqual(attempts.map(response=>response.status).sort(),[200,409]);
   const current=await (await manage('GET',auth)).json();
-  assert.equal((await manage('DELETE',{...auth,'If-Match':revision})).status,409);
-  assert.equal((await manage('DELETE',{...auth,'If-Match':current.revision})).status,200);
+  assert.equal((await manage('DELETE',{...auth,'X-Pathos-Revision':revision})).status,409);
+  assert.equal((await manage('DELETE',{...auth,'X-Pathos-Revision':current.revision})).status,200);
   assert.equal((await read('GET')).status,404);
   assert.equal(store.pages.get(id).data,'','Takedown clears hosted content');
   const offline=await (await manage('GET',auth)).json();
   assert.equal(offline.published,false);
-  assert.equal((await manage('PUT',{...update,'If-Match':offline.revision},body)).status,200);
+  assert.equal((await manage('PUT',{...update,'X-Pathos-Revision':offline.revision},body)).status,200);
   assert.equal(await (await read('GET')).text(),html,'Republishing uses the same link');
 });

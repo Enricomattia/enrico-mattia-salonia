@@ -13,9 +13,8 @@ export function hostedPublication(editorKey,fetcher=fetch){
     const headers={Authorization:'Bearer '+editorKey};
     if(method==='PUT'){
       headers['Content-Type']='application/json';
-      if(!revision)headers['If-None-Match']='*';
     }
-    if(revision)headers['If-Match']=revision;
+    if(method!=='GET')headers['X-Pathos-Revision']=revision||'new';
     try{
       const response=await fetcher('/api/pathos-personal/publication/'+await id,{
         method,headers,body,signal:controller.signal,cache:'no-store',credentials:'omit',redirect:'error',referrerPolicy:'no-referrer'
