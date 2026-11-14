@@ -23,8 +23,8 @@ export function projectArchive(archive,ids,options={}){
       rating:typeof entry.rating==='number'&&Number.isFinite(entry.rating)&&entry.rating>=0&&entry.rating<=5?entry.rating:'',
       review:options.reviews===false?'':text(entry.review,100000),
       quotes:options.passages===false?[]:(entry.quotes||[]).filter(q=>q&&typeof q.text==='string').map(q=>({text:text(q.text,20000),note:text(q.note,500),featured:q.featured===true})),
-      // Artwork comes only from this selected experience / exact edition.
-      cover:options.covers===false?'':publicImage(entry.cover||edition?.cover||''),
+      // The catalogue cover represents the work and never uses another reading's artwork.
+      cover:options.covers===false?'':publicImage(entry.cover||edition?.cover||(!edition&&work.type==='Book'?work.catalogueCover:'')||''),
       edition:edition?{title:text(edition.title),publisher:text(edition.publisher),publishYear:text(edition.publishYear,10),language:text(edition.language,100),format:text(edition.format,100),series:text(edition.series),seriesNumber:text(edition.seriesNumber,30)}:null});
   }
   if(!experiences.length)throw new Error('Select at least one experience to publish.');
