@@ -109,7 +109,7 @@ export async function catalogue(body: Record<string, unknown>, tmdbToken = "", n
     if (typeof body.id !== "string" || !/^[A-Za-z0-9_-]{1,80}$/.test(body.id)) throw new CatalogueError("Choose a book from the results.");
     if (!/^[A-Za-z0-9_-]{20,200}$/.test(googleKey)) throw new CatalogueError("Add a Google Books API key under Metadata & covers.", 428);
     const item = googleBook(await publicJson("https://www.googleapis.com/books/v1/volumes/" + body.id + "?key=" + encodeURIComponent(googleKey), "", network, referrer));
-    if (!item) throw new CatalogueError("That book is unavailable.", 502);
+    if (!item?.title) throw new CatalogueError("That book is unavailable.", 502);
     return { item };
   }
   if (film) {
