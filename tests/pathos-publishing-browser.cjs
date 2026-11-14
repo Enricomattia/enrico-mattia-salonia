@@ -1,5 +1,6 @@
 // Isolated archives, a real OAuth popup/callback, and a synthetic Netlify API.
 const assert=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http');
+const {createHash,randomBytes,randomUUID}=require('node:crypto');
 const{chromium}=require('playwright');
 const root=path.resolve(__dirname,'../public'),output=process.env.PATHOS_UI_SCREENSHOTS||path.resolve(__dirname,'../output/pathos-publishing');
 const server=http.createServer(async(req,res)=>{try{const p=new URL(req.url,'http://localhost').pathname;if(!/^\/pathos-personal\/(fonts\/)?[a-z0-9.-]+$/i.test(p)){res.writeHead(404).end();return;}const body=await fs.readFile(path.join(root,p));res.writeHead(200,{'Cache-Control':'no-store','Content-Type':p.endsWith('.html')?'text/html':/\.m?js$/.test(p)?'text/javascript':p.endsWith('.css')?'text/css':p.endsWith('.woff2')?'font/woff2':p.endsWith('.png')?'image/png':'application/manifest+json'}).end(body);}catch{res.writeHead(404).end();}});
@@ -10,9 +11,22 @@ let browser,origin;
   const context=await browser.newContext({viewport:{width:1280,height:900},acceptDownloads:true}),calls=[],errors=[];
   let site,metadata={},deployNumber=0,uploaded={},failUpload=false,mismatch=false,authConfigured=true,pendingUpload,deployState='ready',authOutcome='approved',publicAccess=false;
   const token='synthetic-publishing-access-token';
+  const oldKey=randomBytes(32).toString('hex'),oldId=createHash('sha256').update('pathos-publication-v1:'+oldKey).digest('hex').slice(0,32);
+  let oldRevision=randomUUID(),oldPublished=true;
   await context.route('**/*',async route=>{
     const request=route.request(),url=new URL(request.url());
-    if(url.origin===origin){if(url.pathname.endsWith('/publish-config.js'))return route.fulfill({contentType:'text/javascript',body:'window.PATHOS_PUBLISH_CONFIG={netlifyClientId:'+(authConfigured?'"synthetic-client-id"':'""')+'};'});return route.continue();}
+    if(url.origin===origin){
+      if(url.pathname.endsWith('/publish-config.js'))return route.fulfill({contentType:'text/javascript',body:'window.PATHOS_PUBLISH_CONFIG={netlifyClientId:'+(authConfigured?'"synthetic-client-id"':'""')+'};'});
+      if(url.pathname==='/api/pathos-personal/publication/'+oldId){
+        assert.equal(request.headers().authorization,'Bearer '+oldKey);
+        if(request.method()==='DELETE'){
+          assert.equal(request.headers()['x-pathos-revision'],oldRevision);
+          oldPublished=false;oldRevision=randomUUID();
+        }else assert.equal(request.method(),'GET');
+        return route.fulfill({json:{published:oldPublished,revision:oldRevision}});
+      }
+      return route.continue();
+    }
     if(url.hostname==='app.netlify.com'&&url.pathname==='/authorize'){
       assert.equal(url.searchParams.get('response_type'),'token');
       const callback=new URL(url.searchParams.get('redirect_uri'));assert.equal(callback.origin,origin);
@@ -50,6 +64,27 @@ let browser,origin;
   await page.locator('#restoreInput').setInputFiles({name:'fixture.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(fixture))});await page.waitForFunction(()=>!document.getElementById('restoreInput').value&&pendingWrites===0&&!archiveBusy);
   const before=await page.evaluate(()=>JSON.stringify(db)),disk=await page.evaluate(()=>readLocalArchive());
   await page.locator('#settingsMenu>summary').click();await page.locator('#settingsMenu [data-view="publishing"]').click();
+  await page.locator('#publishOldCopy summary').click();
+  assert(!await page.locator('#publishOldRemove').isVisible(),'Old-copy takedown requires the key');
+  await page.locator('#publishOldKey').fill(oldKey);
+  await page.locator('#publishOldRestore').click();
+  await page.locator('#publishOldRemove').waitFor();
+  assert.equal(await page.evaluate(()=>localStorage.getItem('pathos-personal.hosted-publication-v1')),null,'A recovered key stays in memory');
+  await page.locator('#publishOldCopy summary').click();
+  const previousCopy=await context.newPage();
+  await previousCopy.addInitScript(key=>localStorage.setItem('pathos-personal.hosted-publication-v1',key),oldKey);
+  previousCopy.on('dialog',dialog=>dialog.accept());
+  await previousCopy.goto(origin+'/pathos-personal/index.html');
+  await previousCopy.waitForFunction(()=>window.pathosPersonalReady&&window.PathosPublishing);
+  await previousCopy.locator('#settingsMenu>summary').click();await previousCopy.locator('#settingsMenu [data-view="publishing"]').click();
+  await previousCopy.locator('#publishOldCopy summary').click();
+  await previousCopy.locator('#publishOldRemove').waitFor();
+  assert.equal(await previousCopy.locator('#publishOldLink').getAttribute('href'),origin+'/pathos-share/'+oldId);
+  await previousCopy.locator('#publishOldRemove').click();
+  await previousCopy.locator('#publishOldStatus').getByText('The old copy is offline.').waitFor();
+  assert(!await previousCopy.locator('#publishOldLink').isVisible());
+  await previousCopy.evaluate(()=>localStorage.removeItem('pathos-personal.hosted-publication-v1'));
+  await previousCopy.close();
   assert(!await page.locator('#publishNowBtn').isVisible(),'A disconnected app does not show an apparent publish action');
   assert.equal(await page.locator('#publishEntries input:checked').count(),2,'All experiences start included for a new publisher');
   assert.equal(calls.length,0,'Default inclusion does not upload anything');
