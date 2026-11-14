@@ -95,7 +95,14 @@ async function preview(page){
     assert.match(websiteUrl,new RegExp('^'+origin+'/pathos-share/[a-f0-9]{32}$'));
     const first=await reader.goto(websiteUrl);
     assert.equal(first.status(),200);
-    assert.equal(await first.text(),original,'The public page exactly matches the approved preview');
+    const served=await first.text();
+    const suffix=served.slice(original.length);
+    assert(served.startsWith(original),'The public reader HTML exactly matches the approved preview');
+    if(suffix){
+      assert(process.env.PATHOS_HOSTED_PUBLICATION_PREVIEW,'Only a Netlify preview can append markup');
+      assert.match(suffix,/^<div data-netlify-deploy-id=/);
+      assert(!suffix.includes('publicationData'));
+    }
     await reader.getByRole('heading',{name:'Example novel'}).click();
     assert.equal(await reader.locator('.review strong').innerText(),'public');
     assert.match(first.headers()['content-security-policy'],/sandbox allow-scripts allow-popups/);
