@@ -925,20 +925,20 @@ body:not(.pathos-owner) .experience-edit{display:none}
 
 <section id="publishing" class="view">
   <div class="section-head"><h2>Publish online</h2></div>
-  <p class="muted">Share a read-only copy on your own Netlify account. Your personal diary stays on this device. Anyone with the website address can view the published copy.</p>
+  <p class="muted">Share a read-only copy on your own Netlify account. Your personal diary stays on this device. Once the site is public, anyone with its address can view it.</p>
   <div class="publish-layout">
     <div>
       <h3>Choose what to share</h3>
       <label class="field" for="publishUsername">Username (optional)</label><input class="input" id="publishUsername" maxlength="40" autocomplete="nickname" placeholder="e.g. enrico" aria-describedby="publishUsernameHint"><p class="metadata-note" id="publishUsernameHint">Appears beside Πathos on your public website.</p>
       <label class="field" for="publishTitle">Website title</label><input class="input" id="publishTitle" maxlength="120" placeholder="My Πathos">
       <div class="publish-options"><label><input type="checkbox" id="publishReviews" checked> Reviews</label><label><input type="checkbox" id="publishPassages" checked> Passages</label><label><input type="checkbox" id="publishCovers" checked> Covers</label></div>
-      <p class="metadata-note">Selected entries include their title, creator, dates, rating and edition summary. Source links, import details, tags, moods, ownership and catalogue identifiers stay private.</p>
+      <p class="metadata-note" id="publishSelectionHint">All experiences are included by default. Uncheck anything you want to keep private.</p>
       <label class="field" for="publishSearch">Find entries</label><input class="input" id="publishSearch" type="search" placeholder="Title or creator">
-      <div class="publish-selection-actions"><span id="publishSelectedCount" role="status">0 selected</span><button type="button" class="btn subtle" id="publishSelectShown">Select shown</button><button type="button" class="btn subtle" id="publishClear">Clear selection</button></div>
+      <div class="publish-selection-actions"><span id="publishSelectedCount" role="status">0 included</span><button type="button" class="btn subtle" id="publishIncludeAll">Include all entries</button><button type="button" class="btn subtle" id="publishExcludeShown">Exclude shown</button></div>
       <div id="publishEntries" class="publish-entries"></div>
     </div>
     <div class="publish-controls">
-      <div class="panel"><h3>Preview your website</h3><p class="metadata-note">Check the exact public copy before publishing. New entries are always left unselected.</p><button type="button" class="btn" id="publishPreviewBtn" disabled>Preview selected entries</button><div id="publishPreviewWrap" hidden><iframe id="publishPreview" title="Preview of your public Πathos" sandbox="allow-scripts allow-popups" referrerpolicy="no-referrer"></iframe><label class="check"><input type="checkbox" id="publishApproved"> I have checked this public preview</label></div></div>
+      <div class="panel"><h3>Preview your website</h3><p class="metadata-note">To remove an entry from your live site, exclude it, approve a new preview and publish the update. Older Netlify deploys or copies may still contain it.</p><button type="button" class="btn" id="publishPreviewBtn" disabled>Preview website</button><div id="publishPreviewWrap" hidden><iframe id="publishPreview" title="Preview of your public Πathos" sandbox="allow-scripts allow-popups" referrerpolicy="no-referrer"></iframe><label class="check"><input type="checkbox" id="publishApproved"> I approve this copy for anyone with the link</label></div></div>
       <div class="panel">
         <h3>Publish to Netlify</h3>
         <p class="metadata-note">Connect your Netlify account and approve the preview to publish.</p>
@@ -953,7 +953,8 @@ body:not(.pathos-owner) .experience-edit{display:none}
         <p class="metadata-note" id="publishProjectHelp" hidden><a href="https://app.netlify.com/" target="_blank" rel="noopener noreferrer">Open Netlify ↗</a></p>
         <div id="publishResult" hidden>
           <p class="publish-address"><strong id="publishAddressLabel">Website address</strong><a id="publishWebsiteLink" target="_blank" rel="noopener noreferrer"></a></p>
-          <p class="metadata-note" id="publishVisibility" hidden>If friends can’t open the site, open Netlify and choose <strong>Make public</strong> for this project.</p>
+          <p class="publish-status" id="publishVisibility" role="status" hidden></p>
+          <p class="metadata-note" id="publishVisibilityHelp" hidden>In Netlify, open this project and choose <strong>Make public</strong>. Keep the project name to preserve the address. Then check the link again or open it in a private browser window.</p>
           <div class="publish-actions"><a id="publishManageLink" target="_blank" rel="noopener noreferrer">Manage in Netlify ↗</a><button type="button" class="btn subtle" id="publishCheckBtn" hidden>Check status</button></div>
         </div>
       </div>
