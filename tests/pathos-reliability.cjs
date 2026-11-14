@@ -26,9 +26,13 @@ let release='current';
 const copy=x=>JSON.parse(JSON.stringify(x));
 const pixel='data:image/png;base64,'+fs.readFileSync(path.join(publicRoot,'pathos-personal/icon-192.png')).toString('base64');
 const fixture={schemaVersion:6,works:[{id:'book-1',title:'Synthetic book',type:'Book',creator:'Test author',cover:pixel,aliases:[],liked:true,owned:true,genres:['Classics'],external:{isbn:'9780140328721'},sourceMetadata:{}}],experiences:[{id:'reading-1',workId:'book-1',startDate:'2026-10-01',endDate:'2026-10-01',status:'completed',rating:4.5,review:'A review\nwith paragraphs.',moods:['reflective'],pace:'slow',quotes:[{id:'quote-1',text:'A saved passage',note:'p. 12',featured:true}],tags:['test'],isPublic:true,edition:{isbn:'9780140328721',ean:'9780140328721',identifierType:'catalogue',identifierValue:'custom-1',sourceId:'storygraph-test-uid',publisher:'Manual publisher',publishYear:'2020',language:'Italian',format:'Paperback',pages:'123',printing:'2ª',contributors:'Test translator',cover:pixel,source:'manual'}}]};
+const versionedAssets=new Set([
+  'index.html','sw.js','cover-accent.mjs','book-catalogue.mjs','review-format.js','review-format.css','markdown-it.min.js','review-editor.js',
+  'publish.js','publish.css','publish-core.mjs','publish-netlify.mjs'
+]);
 const baseline={};
 if(process.env.PATHOS_UPDATE_BASELINE_REF){
-  for(const name of ['index.html','sw.js','cover-accent.mjs','book-catalogue.mjs','review-format.js','review-format.css','markdown-it.min.js','review-editor.js']){
+  for(const name of versionedAssets){
     try{baseline[name]=execFileSync('git',['show',process.env.PATHOS_UPDATE_BASELINE_REF+':public/pathos-personal/'+name],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','pipe']});}
     catch(error){if(['index.html','sw.js'].includes(name))throw error;}
   }
@@ -39,7 +43,7 @@ const server=http.createServer(async(req,res)=>{
     if(!/^\/(pathos|pathos-personal)\/(fonts\/)?[a-z0-9.-]+$/i.test(pathname)){res.writeHead(404).end();return;}
     const name=path.basename(pathname);
     let bytes=await fsp.readFile(path.join(publicRoot,pathname));
-    if(pathname.startsWith('/pathos-personal/')&&['index.html','sw.js','cover-accent.mjs','book-catalogue.mjs','review-format.js','review-format.css','markdown-it.min.js','review-editor.js'].includes(name)){
+    if(pathname.startsWith('/pathos-personal/')&&versionedAssets.has(name)){
       let source=release==='before'&&baseline[name]?baseline[name]:bytes.toString();
       if(name==='sw.js'&&!(release==='before'&&baseline[name]))source=source.replace(/pathos-personal-shell-v\d+/g,'pathos-personal-shell-test-'+release);
       if(name==='index.html')source=source.replace('</head>','<meta name="pathos-test-release" content="'+release+'"></head>');
