@@ -11,7 +11,8 @@ test('public projection includes only selected visible fields and never mutates 
   const{projectArchive}=await core,before=JSON.stringify(fixture),snapshot=projectArchive(fixture,['selected'],{title:'A public diary',username:'  maria  '}),raw=JSON.stringify(snapshot);
   for(const marker of ['PRIVATE_','ARCHIVE_SECRET','UNSELECTED_','private-work-id','isPublic','sourceMetadata','details','owned','tags','venue'])assert(!raw.includes(marker),marker);
   assert.equal(snapshot.experiences[0].rating,4.25);assert.equal(snapshot.experiences[0].cover,'');assert.equal(snapshot.experiences[0].edition.publisher,'Publisher');assert.equal(snapshot.experiences[0].quotes[0].text,'Selected passage');
-  assert.equal(JSON.stringify(fixture),before);assert.throws(()=>projectArchive(fixture,[]),/Select/);
+  assert.equal(JSON.stringify(fixture),before);assert.throws(()=>projectArchive(fixture,[]),/Include at least one/);
+  assert.deepEqual(projectArchive(fixture,[],{allowEmpty:true}).experiences,[]);
   assert.equal(snapshot.username,'maria');assert.equal(projectArchive(fixture,['selected']).username,'');assert.equal(projectArchive(fixture,['selected'],{username:'x'.repeat(80)}).username.length,40);
   const minimal=projectArchive(fixture,['selected'],{reviews:false,passages:false,covers:false});assert.equal(minimal.experiences[0].review,'');assert.deepEqual(minimal.experiences[0].quotes,[]);
 });
@@ -36,6 +37,7 @@ test('self-contained reader safely embeds literal text and hashes the executable
   assert(!html.includes('PUBLICATION_'));assert(!html.includes('PRIVATE_'));assert(!html.includes('UNSELECTED_'));
   assert(html.includes('\\u003c/script\\u003e'));assert(html.includes('$&'));assert.equal((html.match(/<script>/g)||[]).length,3);
   assert.match(html,/connect-src 'none'/);assert.match(files.get('/_headers'),/frame-ancestors 'none'/);assert.match(files.get('/robots.txt'),/Disallow: \//);
+  assert.match(files.get('/_headers'),/\n\/\n  Access-Control-Allow-Origin: \*\n  Access-Control-Expose-Headers: X-Pathos-Publication\n  X-Pathos-Publication: v1/);
   assert(html.includes('Copyright (c) 2014 Vitaly Puzrin'));assert.match(html,/SIL Open Font License/i);
   await assert.rejects(()=>buildPublication(projectArchive(fixture,['selected']),{...assets,html:assets.html+'<script src="https://example.com/preview-toolbar.js"></script>'}),/unexpected script/);
   assert(!html.includes('indexedDB')&&!html.includes('supabase')&&!html.includes('PATHOS_CONFIG'));
@@ -62,6 +64,23 @@ test('publication stages files and promotes only a ready deploy on the verified 
   const{netlifyClient}=await provider,mock=apiMock(),files=new Map([['/index.html','a public page'],['/robots.txt','Disallow: /'],['/_headers','headers']]);
   const result=await netlifyClient('synthetic-token',{fetcher:mock.fetcher}).deploy(mock.ref,mock.account,files);
   assert.equal(result.url,'https://pathos-publishertest12345.netlify.app');assert.equal(mock.calls.filter(call=>call.p.endsWith('/restore')).length,1);
+});
+test('public link verification requires an anonymous success from the expected website',async()=>{
+  const {checkPublicWebsite}=await provider;
+  const probe=(status,headers={})=>async(url,options)=>{
+    assert.equal(url,'https://pathos-test.netlify.app/');
+    assert.equal(options.method,'HEAD');assert.equal(options.credentials,'omit');assert.equal(options.redirect,'error');
+    assert.equal(options.headers,undefined);
+    return new Response(null,{status,headers});
+  };
+  assert.equal(await checkPublicWebsite('pathos-test',{fetcher:probe(200,{'X-Pathos-Publication':'v1'})}),true);
+  assert.equal(await checkPublicWebsite('pathos-test',{fetcher:probe(200)}),false);
+  assert.equal(await checkPublicWebsite('pathos-test',{fetcher:probe(302)}),false);
+  assert.equal(await checkPublicWebsite('pathos-test',{fetcher:probe(401)}),false);
+  assert.equal(await checkPublicWebsite('pathos-test',{fetcher:async()=>{throw new TypeError('CORS unavailable');}}),false);
+  let requested=false;
+  assert.equal(await checkPublicWebsite('evil.example/anything',{fetcher:async()=>{requested=true;}}),false);
+  assert.equal(requested,false);
 });
 test('ownership mismatch and failed upload never promote a deployment',async()=>{
   const{netlifyClient}=await provider;

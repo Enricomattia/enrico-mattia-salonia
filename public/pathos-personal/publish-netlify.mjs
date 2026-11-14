@@ -2,6 +2,17 @@ import{digest}from'./publish-core.mjs';
 const id=value=>typeof value==='string'&&/^[A-Za-z0-9_-]{1,100}$/.test(value);
 const failedDeployStates=new Set(['error','failed','canceled','cancelled','rejected','skipped']);
 export const publishTimeoutMessage='Πathos stopped waiting for Netlify. Check the project in Netlify before publishing again.';
+export async function checkPublicWebsite(name,{fetcher=fetch}={}){
+  if(!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(name))return false;
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
+  try{
+    const response=await fetcher('https://'+name+'.netlify.app/',{
+      method:'HEAD',credentials:'omit',redirect:'error',cache:'no-store',referrerPolicy:'no-referrer',signal:controller.signal
+    });
+    return response.ok&&response.headers.get('X-Pathos-Publication')==='v1';
+  }catch{return false;}
+  finally{clearTimeout(timer);}
+}
 export function netlifyClient(token,{fetcher=fetch,pause=ms=>new Promise(resolve=>setTimeout(resolve,ms))}={}){
   if(typeof token!=='string'||!token||/\s/.test(token)||token.length>8192)throw new Error('Reconnect your Netlify account.');
   async function request(path,{method='GET',json,body,signal}={}){
