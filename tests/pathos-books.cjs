@@ -39,6 +39,22 @@ test('provider outages preserve the other source; cancellation and page bounds r
  for(const page of [-1,1.5,100,'0'])await assert.rejects(api.searchBooks('Matilda',{page}),/Invalid catalogue page/);
  const controller=new AbortController();await assert.rejects(api.searchBooks('Matilda',{signal:controller.signal,getJson:async()=>{controller.abort();return{docs:[]}}}),error=>error.name==='AbortError');
 });
+test('catalogue titles cannot be replaced by an ISBN',async()=>{
+ const deepWorkIsbn='9780349411903',work={key:'/works/OL1W',title:'Deep Work',author_name:['Cal Newport']};
+ assert.equal(api.isbnInTitle('ISBN-10: 0-349-41190-5'),deepWorkIsbn);
+ assert.equal(api.isbnInTitle('Deep Work '+deepWorkIsbn),'');
+ assert.equal(api.isbnInTitle('1984'),'');
+ const getJson=async raw=>{
+  assert.equal(new URL(raw).searchParams.get('q'),'isbn:'+deepWorkIsbn);
+  return {docs:[{...work,editions:{docs:[{key:'/books/OL1M',title:deepWorkIsbn,isbn:[deepWorkIsbn]}]}},{key:'/works/OL2W',title:deepWorkIsbn}]};
+ };
+ const {items}=await api.searchBooks(deepWorkIsbn,{getJson});
+ assert.equal(items.length,1);
+ assert.equal(items[0].title,'Deep Work');
+ assert.deepEqual(items[0].aliases,[]);
+ assert.equal(items[0].suggestedEdition.title,'');
+ assert.equal(items[0].suggestedEdition.isbn,deepWorkIsbn);
+});
 test('exact ISBN lookup rejects unrelated volumes and exposes conflicting edition metadata',async()=>{
  const editions=await api.isbnEditions('0140328726',{googleKey:key,getJson:async url=>url.includes('openlibrary')?{key:'/books/OL1M',title:'Matilda',isbn_13:[isbn],publishers:['Puffin'],languages:[{key:'/languages/eng'}]}:{items:[google(),google({id:'wrong',volumeInfo:{title:'Wrong',industryIdentifiers:[{identifier:'9788806223387'}]}})]}});
  assert.equal(editions.length,1);assert.equal(editions[0].olid,'/books/OL1M');assert.equal(editions[0].googleBooksId,'volume_1');

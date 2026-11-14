@@ -13,6 +13,14 @@ export function isbn13(value) {
   }
   return /^97[89]\d{10}$/.test(isbn) && [...isbn].reduce((sum, digit, i) => sum + Number(digit) * (i % 2 ? 3 : 1), 0) % 10 === 0 ? isbn : '';
 }
+export function isbnInTitle(value) {
+  const title = text(value).replace(/^isbn(?:-1[03])?[\s:]+/i, '');
+  return /^[0-9][0-9Xx\s\p{Dash_Punctuation}]*$/u.test(title) ? isbn13(title) : '';
+}
+function bookTitle(value) {
+  const title = text(value);
+  return isbnInTitle(title) ? '' : title;
+}
 export function languageCode(value) {
   const code = normal(value).split('-')[0];
   return ({it:'ita',en:'eng',fr:'fre',fra:'fre',de:'ger',deu:'ger',es:'spa',pt:'por',italian:'ita',english:'eng',french:'fre',german:'ger',spanish:'spa',portuguese:'por'})[code] || (/^[a-z]{3}$/.test(code) ? code : '');
@@ -27,7 +35,7 @@ export function olEdition(data, workKey = '') {
   const cover = [data.cover_i, ...array(data.covers)].find(n => Number.isInteger(Number(n)) && Number(n) > 0);
   const language = array(data.languages || data.language).map(x => typeof x === 'string' ? x : String(x?.key || '').split('/').pop()).join(', ');
   return { isbn: identifiers.find(isbn13) || '', publisher: values(data.publishers || data.publisher).join(', '),
-    title: text(data.title), publishYear: String(data.publish_date || data.publish_year || '').match(/\b\d{4}\b/)?.[0] || '',
+    title: bookTitle(data.title), publishYear: String(data.publish_date || data.publish_year || '').match(/\b\d{4}\b/)?.[0] || '',
     language, format: text(data.physical_format || data.format), pages: String(data.number_of_pages || data.number_of_pages_median || ''),
     series: values(data.series).join(', '), cover: cover ? `https://covers.openlibrary.org/b/id/${cover}-L.jpg` : '',
     olid: /^\/books\/OL\d+M$/.test(data.key || '') ? data.key : '', workKey: /^\/works\/OL\d+W$/.test(workKey) ? workKey : '', source: 'Open Library' };
@@ -36,10 +44,10 @@ export function googleBook(data) {
   if (!/^[A-Za-z0-9_-]{1,80}$/.test(data?.id || '') || !data.volumeInfo?.title) return null;
   const info = data.volumeInfo, isbn = array(info.industryIdentifiers).map(x => x?.identifier).find(isbn13) || '';
   const sourceUrl = 'https://books.google.com/books?id=' + encodeURIComponent(data.id);
-  const edition = { isbn, title: text(info.title), publisher: text(info.publisher), publishYear: text(info.publishedDate).slice(0,4),
+  const edition = { isbn, title: bookTitle(info.title), publisher: text(info.publisher), publishYear: text(info.publishedDate).slice(0,4),
     language: text(info.language, 20), pages: String(info.pageCount || ''), format: data.saleInfo?.isEbook ? 'Ebook' : '',
     cover: coverUrl(info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail), googleBooksId: data.id, sourceUrl, source: 'Google Books' };
-  return { provider: 'googlebooks', id: data.id, type: 'Book', title: text(info.title), creator: values(info.authors).join(', '),
+  return { provider: 'googlebooks', id: data.id, type: 'Book', title: edition.title, creator: values(info.authors).join(', '),
     year: '', cover: edition.cover, description: text(info.description, 8000), genres: values(info.categories), sourceUrl, label: 'Google Books',
     external: { googleBooks: data.id }, suggestedEdition: edition,
     sourceMetadata: { genres: values(info.categories), overview: text(info.description, 1800) } };
@@ -47,10 +55,12 @@ export function googleBook(data) {
 function olBook(data) {
   if (!/^\/works\/OL\d+W$/.test(data?.key || '')) return null;
   const edition = data.editions?.docs?.[0] ? olEdition(data.editions.docs[0], data.key) : null;
-  return { provider: 'openlibrary', id: data.key, type: 'Book', title: edition?.title || text(data.title), creator: values(data.author_name).join(', '),
+  const workTitle = bookTitle(data.title), title = edition?.title || workTitle;
+  if (!title) return null;
+  return { provider: 'openlibrary', id: data.key, type: 'Book', title, creator: values(data.author_name).join(', '),
     year: String(data.first_publish_year || ''), cover: Number(data.cover_i) > 0 ? `https://covers.openlibrary.org/b/id/${Number(data.cover_i)}-M.jpg` : '',
     description: '', genres: values(data.subject).slice(0,12), sourceUrl: 'https://openlibrary.org' + data.key,
-    external: { openlibraryKey: data.key }, label: 'Open Library', aliases: edition?.title && normal(edition.title) !== normal(data.title) ? [text(data.title)] : [],
+    external: { openlibraryKey: data.key }, label: 'Open Library', aliases: workTitle && normal(title) !== normal(workTitle) ? [workTitle] : [],
     suggestedEdition: edition, sourceMetadata: { genres: values(data.subject).slice(0,12) } };
 }
 export function combineEditions(items) {
@@ -103,7 +113,7 @@ function options(input) {
   return { ...input, page, googleKey: key, getJson: input.getJson || (url => fetchBookJson(url, input)) };
 }
 export async function searchBooks(query, input = {}) {
-  const opt = options(input), q = text(query,120), isbn = isbn13(q);
+  const opt = options(input), q = text(query,120), isbn = isbnInTitle(q);
   if (q.length < 2) throw new Error('Enter a title, author or ISBN');
   const language = languageCode(opt.language), publisher = text(opt.publisher,120);
   const solr = (isbn ? 'isbn:' + isbn : q) + (language && opt.filterLanguage ? ' language:' + language : '') + (publisher ? ' publisher:' + JSON.stringify(publisher) : '');
@@ -113,7 +123,7 @@ export async function searchBooks(query, input = {}) {
     const googleParams=new URLSearchParams({q:isbn?'isbn:'+isbn:q+(publisher?' inpublisher:'+JSON.stringify(publisher):''),maxResults:'20',startIndex:String(opt.page*20),printType:'books',key:opt.googleKey});
     if(language&&opt.filterLanguage)googleParams.set('langRestrict',({ita:'it',eng:'en',fre:'fr',ger:'de',spa:'es',por:'pt'})[language]||language);
     const data=await opt.getJson('https://www.googleapis.com/books/v1/volumes?'+googleParams);
-    return{items:(data.items||[]).map(googleBook).filter(item=>item&&(!isbn||isbn13(item.suggestedEdition.isbn)===isbn)),more:Number(data.totalItems||0)>(opt.page+1)*20};
+    return{items:(data.items||[]).map(googleBook).filter(item=>item?.title&&(!isbn||isbn13(item.suggestedEdition.isbn)===isbn)),more:Number(data.totalItems||0)>(opt.page+1)*20};
   }});
   const results=await Promise.allSettled(sources.map(source=>source.load()));
   if(input.signal?.aborted)throw new DOMException('Lookup cancelled','AbortError');
@@ -121,7 +131,7 @@ export async function searchBooks(query, input = {}) {
   const items=combineBooks(successful.flatMap(result=>result.value.items));
   const warnings=results.flatMap((result,i)=>result.status==='rejected'?[sources[i].name+' is unavailable.']:[]);
   if(isbn&&opt.page===0&&!items.length&&opt.isbnFallback){
-    try{const editions=await opt.isbnFallback(isbn);if(input.signal?.aborted)throw new DOMException('Lookup cancelled','AbortError');items.push(...editions.filter(e=>isbn13(e.isbn)===isbn&&e.title).map(fallbackBook));}
+    try{const editions=await opt.isbnFallback(isbn);if(input.signal?.aborted)throw new DOMException('Lookup cancelled','AbortError');items.push(...editions.filter(e=>isbn13(e.isbn)===isbn).map(e=>({...e,title:bookTitle(e.title)})).filter(e=>e.title).map(fallbackBook));}
     catch(error){if(input.signal?.aborted)throw new DOMException('Lookup cancelled','AbortError');warnings.push('The additional ISBN catalogue is unavailable.');}
   }
   if(!successful.length&&!items.length)throw new Error('Book catalogues are unavailable. Manual entry still works.');
@@ -143,7 +153,7 @@ export async function isbnEditions(raw, input = {}) {
   if(input.signal?.aborted)throw new DOMException('Lookup cancelled','AbortError');
   const editions=combineEditions(results.flatMap(result=>result.status==='fulfilled'?result.value:[]));
   if(!editions.length&&opt.isbnFallback){
-    try{const extra=await opt.isbnFallback(isbn);if(input.signal?.aborted)throw new DOMException('Lookup cancelled','AbortError');editions.push(...combineEditions(extra.filter(e=>isbn13(e.isbn)===isbn)));}
+    try{const extra=await opt.isbnFallback(isbn);if(input.signal?.aborted)throw new DOMException('Lookup cancelled','AbortError');editions.push(...combineEditions(extra.filter(e=>isbn13(e.isbn)===isbn).map(e=>({...e,title:bookTitle(e.title)}))));}
     catch{if(input.signal?.aborted)throw new DOMException('Lookup cancelled','AbortError');throw new Error('No catalogue could supply this edition. Manual entry still works.');}
   }
   if(!editions.length&&results.every(result=>result.status==='rejected'))throw new Error('Book catalogues are unavailable. Manual entry still works.');
