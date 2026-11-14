@@ -8,7 +8,7 @@ let browser,origin;
   if(process.env.PATHOS_PUBLISH_PREVIEW){const target=new URL(process.env.PATHOS_PUBLISH_PREVIEW);if(target.origin!=='https://enricomattiasalonia.com')assert.match(target.hostname,/^deploy-preview-\d+--[a-z0-9-]+\.netlify\.app$/);origin=target.origin;}else{await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));origin='http://127.0.0.1:'+server.address().port;}
   await fs.mkdir(output,{recursive:true});browser=await chromium.launch({channel:process.env.PATHOS_BROWSER||'msedge',headless:true});
   const context=await browser.newContext({viewport:{width:1280,height:900},acceptDownloads:true}),calls=[],errors=[];
-  let site,metadata={},deployNumber=0,uploaded={},failUpload=false,mismatch=false,authConfigured=true;
+  let site,metadata={},deployNumber=0,uploaded={},failUpload=false,mismatch=false,authConfigured=true,pendingUpload,deployState='ready';
   const token='synthetic-publishing-access-token';
   await context.route('**/*',async route=>{
     const request=route.request(),url=new URL(request.url());
@@ -30,9 +30,9 @@ let browser,origin;
       else if(p==='/sites/site-123/metadata')value=mismatch?{...metadata,pathos_id:'another-publisher'}:metadata;
       else if(p==='/sites/site-123')value=site;
       else if(p==='/sites/site-123/deploys'&&method==='POST'){const json=request.postDataJSON();assert.equal(json.draft,true);deployNumber++;value={id:'deploy-'+deployNumber,site_id:site.id,required:Object.values(json.files)};}
-      else if(p.includes('/files/')){if(failUpload)return route.fulfill({status:500,json:{}});uploaded[p.slice(p.indexOf('/files/')+6)]=body;}
-      else if(p.endsWith('/restore'))value={id:'deploy-'+deployNumber,site_id:site.id};
-      else if(p.startsWith('/sites/site-123/deploys/'))value={id:'deploy-'+deployNumber,site_id:site.id,state:'ready'};
+      else if(p.includes('/files/')){if(pendingUpload)await pendingUpload;if(failUpload)return route.fulfill({status:500,json:{}});uploaded[p.slice(p.indexOf('/files/')+6)]=body;}
+      else if(p.endsWith('/restore')){site.published_deploy={id:'deploy-'+deployNumber,site_id:site.id,state:'ready'};value=site.published_deploy;}
+      else if(p.startsWith('/sites/site-123/deploys/'))value={id:'deploy-'+deployNumber,site_id:site.id,state:deployState};
       else throw new Error('Unexpected Netlify operation '+p);
       return route.fulfill({json:value});
     }
@@ -70,7 +70,18 @@ let browser,origin;
   await page.locator('#publishConnectBtn').click();await page.locator('#publishConnectionStatus').getByText('Connected as Synthetic publisher.').waitFor();
   assert.equal(await page.locator('#publishUsername').inputValue(),'maria','Netlify identity never replaces the chosen public username');
   assert(await page.locator('#publishNowBtn').isDisabled());await page.locator('#publishApproved').check();
-  await page.locator('#publishNowBtn').click();await page.locator('#publishProgress[data-state="success"]').waitFor();
+  let finishUpload;pendingUpload=new Promise(resolve=>{finishUpload=resolve;});
+  await page.locator('#publishNowBtn').click();
+  await page.locator('#publishProgress').getByText(/Uploading your website files/).waitFor();
+  assert.equal(await page.locator('#publishNowBtn').innerText(),'Publishing…');
+  assert(await page.getByRole('progressbar',{name:'Publishing in progress'}).isVisible());
+  assert(await page.getByText(/This may take a few minutes/).isVisible());
+  assert.match(await page.locator('#publishAddressLabel').innerText(),/unconfirmed/);
+  finishUpload();pendingUpload=null;
+  await page.locator('#publishProgress[data-state="success"]').waitFor();
+  assert.equal(await page.locator('#publishWebsiteLink').innerText(),'https://'+site.name+'.netlify.app');
+  assert.equal(await page.locator('#publishAddressLabel').innerText(),'Published website');
+  assert(!await page.locator('#publishWaiting').isVisible());
   assert.equal(uploaded['/index.html'],html,'The upload exactly matches the approved preview');assert.equal(calls.filter(call=>call.p==='/test-team/sites').length,1);
   assert.equal(await page.locator('#publishNowBtn').innerText(),'Update published version');
   for(const width of [1280,390,320]){await page.setViewportSize({width,height:850});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:path.join(output,'publishing-'+width+'.png'),fullPage:true});}
@@ -80,13 +91,33 @@ let browser,origin;
   // Exercise keyboard activation after responsive scrolling, as well as the initial pointer activation.
   mismatch=true;const priorPromotions=calls.filter(call=>call.p.endsWith('/restore')).length;await page.locator('#publishNowBtn').press('Enter');await page.locator('#publishProgress[data-state="error"]').waitFor();assert.match(await page.locator('#publishProgress').innerText(),/not the dedicated/);assert.equal(calls.filter(call=>call.p.endsWith('/restore')).length,priorPromotions);
   mismatch=false;failUpload=true;await page.locator('#publishNowBtn').press('Enter');await page.waitForFunction(()=>!archiveBusy);assert.match(await page.locator('#publishProgress').innerText(),/could not complete/);assert.equal(calls.filter(call=>call.p.endsWith('/restore')).length,priorPromotions);
-  failUpload=false;await page.locator('#publishNowBtn').press('Enter');await page.locator('#publishProgress[data-state="success"]').waitFor();assert(!uploaded['/index.html'].includes('Selected **formatted** review'));assert.equal(calls.filter(call=>call.p==='/test-team/sites').length,1,'Updates reuse the verified dedicated site');
+  failUpload=false;deployState='canceled';await page.locator('#publishNowBtn').press('Enter');await page.locator('#publishProgress[data-state="error"]').waitFor();
+  assert.match(await page.locator('#publishProgress').innerText(),/could not prepare/);assert(!await page.locator('#publishWaiting').isVisible());
+  await page.locator('#publishCheckBtn').click();await page.locator('#publishProgress').getByText('Netlify is serving a published version at the address below.').waitFor();
+  assert.equal(calls.filter(call=>call.p.endsWith('/restore')).length,priorPromotions,'The status check is read-only');
+  await page.evaluate(()=>{
+    const schedule=window.setTimeout;
+    window.setTimeout=(fn,delay,...args)=>{
+      if(delay!==180000)return schedule(fn,delay,...args);
+      window.setTimeout=schedule;
+      return schedule(fn,500,...args);
+    };
+  });
+  pendingUpload=new Promise(resolve=>{finishUpload=resolve;});
+  await page.locator('#publishNowBtn').press('Enter');
+  await page.locator('#publishProgress').getByText(/stopped waiting for Netlify/).waitFor();
+  assert(!await page.locator('#publishWaiting').isVisible());
+  assert(!await page.locator('#publishNowBtn').isDisabled());
+  assert.equal(calls.filter(call=>call.p.endsWith('/restore')).length,priorPromotions);
+  finishUpload();pendingUpload=null;
+  deployState='ready';await page.locator('#publishNowBtn').press('Enter');await page.locator('#publishProgress[data-state="success"]').waitFor();assert(!uploaded['/index.html'].includes('Selected **formatted** review'));assert.equal(calls.filter(call=>call.p==='/test-team/sites').length,1,'Updates reuse the verified dedicated site');
   const storage=await page.evaluate(()=>({local:JSON.stringify(localStorage),session:JSON.stringify(sessionStorage)}));assert(!storage.local.includes(token)&&!storage.session.includes(token));
   assert.equal(await page.evaluate(()=>JSON.stringify(db)),before);assert.deepEqual(await page.evaluate(()=>readLocalArchive()),disk,'Publication never writes the local archive');
   await context.setOffline(true);await page.reload();await page.waitForFunction(()=>window.pathosPersonalReady&&window.PathosPublishing);
   await page.locator('#settingsMenu>summary').click();await page.locator('#settingsMenu [data-view="publishing"]').click();assert.equal(await page.locator('#publishEntries input:checked').count(),1);
   assert.equal(await page.locator('#publishUsername').inputValue(),'maria','The display name persists separately from the archive');
   assert(await page.locator('#publishNowBtn').isDisabled(),'Reload forgets the account credential');
+  assert.equal(await page.locator('#publishWebsiteLink').innerText(),'https://'+site.name+'.netlify.app','The website address is available before reconnecting');
   await page.locator('#publishPreviewBtn').click();await page.locator('#publishPreviewWrap').waitFor();await frame.locator('#profileTitle').getByText('Synthetic public diary').waitFor();
   const download=page.waitForEvent('download');await page.evaluate(()=>document.getElementById('backupBtn').click());const chunks=[];for await(const chunk of await(await download).createReadStream())chunks.push(chunk);const backup=Buffer.concat(chunks).toString();assert(!backup.includes('publisherId')&&!backup.includes(token));assert.deepEqual(JSON.parse(backup).experiences,disk.experiences);
   assert.deepEqual(errors,[]);console.log('PASS public projection, interactive isolated preview, OAuth callback, dedicated-site publish/update, failures, mobile fit, offline preview, persistence and unchanged backups');

@@ -1,5 +1,7 @@
 import{digest}from'./publish-core.mjs';
 const id=value=>typeof value==='string'&&/^[A-Za-z0-9_-]{1,100}$/.test(value);
+const failedDeployStates=new Set(['error','failed','canceled','cancelled','rejected','skipped']);
+export const publishTimeoutMessage='Πathos stopped waiting for Netlify. Check the project in Netlify before publishing again.';
 export function netlifyClient(token,{fetcher=fetch,pause=ms=>new Promise(resolve=>setTimeout(resolve,ms))}={}){
   if(typeof token!=='string'||!token||/\s/.test(token)||token.length>8192)throw new Error('Reconnect your Netlify account.');
   async function request(path,{method='GET',json,body,signal}={}){
@@ -15,7 +17,8 @@ export function netlifyClient(token,{fetcher=fetch,pause=ms=>new Promise(resolve
       const raw=await response.text();if(raw.length>2*1024*1024)throw new Error('Netlify returned an unexpected response.');
       try{return raw?JSON.parse(raw):null;}catch{throw new Error('Netlify returned an unexpected response.');}
     }catch(error){
-      if(error.name==='AbortError')throw new Error('The Netlify operation stopped or timed out. Check your project before retrying.');
+      if(signal?.aborted)throw new Error(publishTimeoutMessage);
+      if(controller.signal.aborted)throw new Error('Netlify did not respond. Check the project in Netlify before publishing again.');
       if(error instanceof TypeError)throw new Error('Could not connect to Netlify. Check your internet connection.');
       throw error;
     }finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
@@ -27,9 +30,16 @@ export function netlifyClient(token,{fetcher=fetch,pause=ms=>new Promise(resolve
     if(site.account_id!==account.id||site.name!==ref.name||metadata?.pathos_kind!=='personal-publication-v1'||metadata.pathos_id!==ref.publisherId||site.build_settings?.repo_url||site.repo?.repo_url||site.custom_domain||(site.domain_aliases||[]).length)throw new Error('This project is not the dedicated Πathos publication. Nothing was uploaded.');
     return site;
   }
+  function publishedVersion(ref,deploy){
+    return {...ref,deployId:deploy.id,url:'https://'+ref.name+'.netlify.app',publishedAt:deploy.published_at||new Date().toISOString()};
+  }
   return{
     user:signal=>request('/user',{signal}),
     accounts:signal=>request('/accounts',{signal}),
+    async publication(ref,account,signal){
+      const {published_deploy:live}=await verify(ref,account,signal);
+      return id(live?.id)&&live.site_id===ref.id&&live.state==='ready'?publishedVersion(ref,live):null;
+    },
     async create(account,publisherId,signal){
       if(!id(account?.slug)||!id(account?.id)||!id(publisherId))throw new Error('Choose a valid Netlify team.');
       const name='pathos-'+publisherId.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,24);
@@ -41,33 +51,34 @@ export function netlifyClient(token,{fetcher=fetch,pause=ms=>new Promise(resolve
       return ref;
     },
     async deploy(ref,account,files,{signal,onProgress=()=>{}}={}){
+      onProgress('Checking your Netlify project…');
       await verify(ref,account,signal);
       if(!(files instanceof Map)||!files.has('/index.html')||[...files.keys()].some(path=>!['/index.html','/robots.txt','/_headers'].includes(path)))throw new Error('The public website is invalid. Preview it again.');
       const hashes={},byHash=new Map();
       for(const[path,content]of files){const hash=await digest(content,'SHA-1');hashes[path]=hash;byHash.set(hash,{path,content});}
-      onProgress('Uploading the approved public copy…');
+      onProgress('Starting the upload in Netlify…');
       const deploy=await request('/sites/'+ref.id+'/deploys?draft=true',{method:'POST',json:{files:hashes,draft:true},signal});
       if(!id(deploy?.id)||deploy.site_id!==ref.id||!Array.isArray(deploy.required))throw new Error('Netlify did not confirm the upload destination.');
-      for(const hash of deploy.required){
+      for(const [index,hash] of deploy.required.entries()){
         const file=byHash.get(hash);if(!file)throw new Error('Netlify requested an unexpected file. Upload stopped.');
+        onProgress(`Uploading your website files (${index+1} of ${deploy.required.length})…`);
         await request('/deploys/'+deploy.id+'/files'+file.path,{method:'PUT',body:file.content,signal});
       }
       onProgress('Netlify is preparing the website…');
-      let ready=false;
-      for(let attempt=0;attempt<60;attempt++){
+      for(let attempt=0;;attempt++){
+        if(signal?.aborted)throw new Error(publishTimeoutMessage);
         const state=await request('/sites/'+ref.id+'/deploys/'+deploy.id,{signal});
-        if(state?.site_id!==ref.id)throw new Error('Netlify returned a different project. Publication stopped.');
-        if(state.state==='ready'){ready=true;break;}
-        if(['error','failed'].includes(state.state))throw new Error('Netlify could not prepare this version. Your previous published version is unchanged.');
-        if(signal?.aborted)throw new Error('Publication stopped.');
-        await pause(1500);
+        if(state?.site_id!==ref.id||state.id!==deploy.id)throw new Error('Netlify returned a different deployment. Publication stopped.');
+        if(state.state==='ready')break;
+        if(failedDeployStates.has(state.state))throw new Error('Netlify could not prepare this version. Check the deploy in Netlify for details.');
+        if(attempt>=59)throw new Error(publishTimeoutMessage);
+        await pause(3000);
       }
-      if(!ready)throw new Error('Netlify is still preparing this version. Open Netlify before trying another upload.');
       await verify(ref,account,signal);
       onProgress('Setting the current website version…');
       const promoted=await request('/sites/'+ref.id+'/deploys/'+deploy.id+'/restore',{method:'POST',signal});
       if(promoted?.id!==deploy.id||promoted.site_id!==ref.id)throw new Error('Netlify did not confirm the current version. Check the project before retrying.');
-      return{...ref,deployId:deploy.id,url:'https://'+ref.name+'.netlify.app',publishedAt:new Date().toISOString()};
+      return publishedVersion(ref,promoted);
     }
   };
 }

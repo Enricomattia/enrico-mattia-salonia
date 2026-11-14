@@ -19,6 +19,15 @@ test('image credentials and executable data types cannot enter the public copy',
   const{publicImage}=await core;for(const value of ['javascript:alert(1)','data:image/svg+xml;base64,PHN2Zz4=','https://u:p@example.com/a.png','https://example.com/a.png?access%5ftoken=secret','https://example.com/a.png?apiKey=secret'])assert.equal(publicImage(value),'');
   assert.equal(publicImage('data:image/png;base64,YWJj'),'data:image/png;base64,YWJj');
 });
+test('only selected readings without an edition can share the work catalogue cover',async()=>{
+  const {projectArchive}=await core, archive=structuredClone(fixture);
+  const cover='https://covers.openlibrary.org/b/id/10-M.jpg';
+  archive.works[0].catalogueCover=cover;
+  assert.equal(projectArchive(archive,['selected']).experiences[0].cover,'');
+  archive.experiences[0].edition=null;
+  assert.equal(projectArchive(archive,['selected']).experiences[0].cover,cover);
+  assert.equal(projectArchive(archive,['selected'],{covers:false}).experiences[0].cover,'');
+});
 test('self-contained reader safely embeds literal text and hashes the executable scripts',async()=>{
   const{projectArchive,buildPublication}=await core;
   const base=path.resolve(__dirname,'../public/pathos-personal'),read=name=>fs.readFile(path.join(base,name),'utf8');
@@ -31,7 +40,7 @@ test('self-contained reader safely embeds literal text and hashes the executable
   await assert.rejects(()=>buildPublication(projectArchive(fixture,['selected']),{...assets,html:assets.html+'<script src="https://example.com/preview-toolbar.js"></script>'}),/unexpected script/);
   assert(!html.includes('indexedDB')&&!html.includes('supabase')&&!html.includes('PATHOS_CONFIG'));
 });
-function apiMock({mismatch=false,failUpload=false}={}){
+function apiMock({mismatch=false,failUpload=false,deployState='ready'}={}){
   const calls=[],metadata={pathos_kind:'personal-publication-v1',pathos_id:'publisher-test-12345'},site={id:'site-123',name:'pathos-publishertest12345',account_id:'team-123',build_settings:{}};
   let ready=false,required=[];
   const fetcher=async(url,options)=>{
@@ -42,7 +51,7 @@ function apiMock({mismatch=false,failUpload=false}={}){
     else if(p.endsWith('/metadata')&&options.method==='GET')value=mismatch?{...metadata,pathos_id:'someone-else'}:metadata;
     else if(p==='/sites/site-123/deploys'&&options.method==='POST'){const body=JSON.parse(options.body);assert.equal(target.searchParams.get('draft'),'true');assert.equal(body.draft,true);required=Object.values(body.files);value={id:'deploy-123',site_id:site.id,required};}
     else if(p.startsWith('/deploys/deploy-123/files/')){if(failUpload)return new Response('{}',{status:500});value={};}
-    else if(p==='/sites/site-123/deploys/deploy-123'){ready=true;value={id:'deploy-123',site_id:site.id,state:'ready'};}
+    else if(p==='/sites/site-123/deploys/deploy-123'){ready=deployState==='ready';value={id:'deploy-123',site_id:site.id,state:deployState};}
     else if(p.endsWith('/restore')){assert(ready);value={id:'deploy-123',site_id:site.id};}
     else throw new Error('Unexpected API request: '+p);
     return new Response(JSON.stringify(value),{status:200});
@@ -57,4 +66,11 @@ test('publication stages files and promotes only a ready deploy on the verified 
 test('ownership mismatch and failed upload never promote a deployment',async()=>{
   const{netlifyClient}=await provider;
   for(const options of [{mismatch:true},{failUpload:true}]){const mock=apiMock(options);await assert.rejects(()=>netlifyClient('synthetic-token',{fetcher:mock.fetcher}).deploy(mock.ref,mock.account,new Map([['/index.html','safe page']])));assert(!mock.calls.some(call=>call.p.endsWith('/restore')));}
+});
+test('a hung deployment stops polling and cannot promote an unconfirmed version',async()=>{
+  const {netlifyClient}=await provider,mock=apiMock({deployState:'processing'}),controller=new AbortController();
+  const client=netlifyClient('synthetic-token',{fetcher:mock.fetcher,pause:async()=>controller.abort()});
+  await assert.rejects(client.deploy(mock.ref,mock.account,new Map([['/index.html','safe page']]),{signal:controller.signal}),/stopped waiting for Netlify/);
+  assert.equal(mock.calls.filter(call=>call.p==='/sites/site-123/deploys/deploy-123').length,1);
+  assert(!mock.calls.some(call=>call.p.endsWith('/restore')));
 });
