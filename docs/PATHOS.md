@@ -148,6 +148,8 @@ Reviews remain strings in `experience.review` under schema version 6. Existing s
 
 Personal shell **v25** stages the direct editor and its CSS/parser through the existing Update / Later flow, retaining the same IndexedDB database and records. The manifest and hosted/public authorization boundary are unchanged. The v24 → v25 regression harness serves each release's own formatting assets, so a waiting release cannot change the running editor.
 
+The hosted Library can contain a work with no experiences after a reading is moved. Open that card and choose **Delete work** to remove it after confirmation. Πathos checks that no experience references that work and removes only the selected work ID through the normal owner save flow. This also lets the owner clear older empty cards.
+
 ### Owner-only discovery and free local matching
 
 The signed-in hosted owner has a **Find a work** action. Search books (Open Library plus optional Google Books) or films (TMDB), open a preview without adding anything, then optionally open **Add to Planned** or **Log experience**. Book search has language/publisher filters and More results. Only the existing form's Save writes records. Open Library previews represent works; Google Books previews represent editions. Generic work covers never fill an exact-edition cover. Logging a new work opens the existing edition picker with the edition unselected, including Google Books suggestions. Existing works retain their recorded editions. Current remains above the Home timeline; public navigation and Personal's local-only storage are unchanged.

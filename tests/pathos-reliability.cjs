@@ -429,6 +429,13 @@ async function checkArchiveViews(page){
     assert.equal(await guest.locator('.experience-review img').count(),0);
     assert.equal(await guest.locator('.experience-edit').isVisible(),false);
     await guest.locator('#closeWorkDialog').click();
+    await guest.evaluate(()=>{
+      db.works.push({id:'empty-work',type:'Book',title:'Empty work'});
+      openWork('empty-work');
+    });
+    assert.equal(await guest.locator('#deleteEmptyWork').count(),0,'Public readers never get the empty-work delete action');
+    await guest.locator('#closeWorkDialog').click();
+    await guest.evaluate(()=>db.works.pop());
     assert.deepEqual(await guest.evaluate(()=>window.mockCalls),['pathos_get_public_archive'],'Formatted public reads never save');
     await checkArchiveViews(guest);
     await hosted.addInitScript(()=>{window.mockOwner=true;});

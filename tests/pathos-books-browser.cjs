@@ -50,6 +50,33 @@ let origin,browser;
   await page.goto(origin+(variant==='personal'?'/pathos-personal/index.html':'/pathos/app.html'));await page.waitForFunction(()=>window.pathosCanEdit);
   await checkBookProfile(page,{backup,restore,outputDirectory:process.env.PATHOS_UI_SCREENSHOTS});
   await checkIsbnFallback(page,{backup,restore});
+  if(variant==='hosted'){
+   const book={title:'Deep Work',type:'Book',creator:'Cal Newport'};
+   await restore(page,{schemaVersion:6,works:[{...book,id:'empty-deep-work'},{...book,id:'covered-deep-work',cover}],experiences:[
+    {id:'deep-work-reading',workId:'covered-deep-work',status:'completed',rating:3,review:'Keep the review',quotes:[{id:'deep-work-passage',text:'Keep the passage'}],edition:{isbn:'9780349411903',cover,source:'manual'}}
+   ]});
+   const before=await backup(page);
+   await page.evaluate(()=>showView('library'));
+   await page.locator('#libraryGrid [data-work="covered-deep-work"]').click();
+   assert.equal(await page.locator('#deleteEmptyWork').count(),0,'A work with a reading cannot be deleted from its work page');
+   await page.locator('#closeWorkDialog').click();
+   await page.locator('#libraryGrid [data-work="empty-deep-work"]').click();
+   assert(await page.getByText('No experiences yet.',{exact:true}).isVisible());
+   const deleteEmpty=page.getByRole('button',{name:'Delete work',exact:true});
+   const dismiss=async dialog=>{assert.match(dialog.message(),/Deep Work.*no logged experiences/);await dialog.dismiss();};
+   const accept=page.listeners('dialog')[0];
+   page.off('dialog',accept);page.once('dialog',dismiss);
+   await deleteEmpty.click();
+   assert(await deleteEmpty.isVisible(),'Cancelling keeps the empty work');
+   page.on('dialog',accept);
+   await deleteEmpty.click();
+   await page.waitForFunction(()=>document.querySelector('.pathos-sync-status').textContent==='Saved online');
+   await page.reload();await page.waitForFunction(()=>window.pathosCanEdit);
+   const after=await backup(page);
+   assert.deepEqual(after.works,before.works.filter(work=>work.id!=='empty-deep-work'));
+   assert.deepEqual(after.experiences,before.experiences);
+   await restore(page,{schemaVersion:6,works:[],experiences:[]});
+  }
   const field=name=>page.locator('#entryForm [name="'+name+'"]');
   const deepWorkIsbn='9780349411903',exactUrl='https://openlibrary.org/isbn/'+deepWorkIsbn+'.json';
   await page.route(exactUrl,route=>route.fulfill({json:{...edition,title:'Deep Work',isbn_13:[deepWorkIsbn]}}));
