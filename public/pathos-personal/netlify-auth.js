@@ -3,9 +3,31 @@
   const values=new URLSearchParams(location.hash.slice(1));
   history.replaceState(null,'',location.pathname);
   const token=values.get('access_token'),state=values.get('state');
-  if(!window.opener||!state||state.length>200){document.getElementById('connectionStatus').textContent='Open Connect Netlify from Πathos again and keep that window open.';return;}
+  const feedback=document.getElementById('connectionStatus');
+  if(!/^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(state||'')){
+    feedback.textContent='Start again from Connect Netlify in Πathos and keep that window open.';
+    return;
+  }
   const valid=typeof token==='string'&&/^[A-Za-z0-9._~+\/=-]{10,8192}$/.test(token);
-  window.opener.postMessage({type:'pathos-netlify-auth',state,token:valid?token:null,error:valid?'':'Netlify connection was cancelled or refused.'},location.origin);
-  document.getElementById('connectionStatus').textContent=valid?'Connected. Return to Πathos.':'Connection cancelled. Return to Πathos to try again.';
-  window.close();
+  const message={type:'pathos-netlify-auth',state,token:valid?token:null};
+  const opener=window.opener;
+  let channel;
+  try{channel=new BroadcastChannel('pathos-netlify-auth:'+state);}catch{}
+  if(channel){
+    channel.onmessage=event=>{
+      if(event.data?.type!=='pathos-netlify-received'||event.data.state!==state)return;
+      clearTimeout(timeout);channel.close();
+      feedback.textContent=valid?'Sign-in returned to Πathos. You can close this tab.':'Return to Πathos to try again.';
+      if(opener)window.close();
+    };
+    channel.postMessage(message);
+  }
+  // Keep the opener path for browsers without BroadcastChannel and cached older app shells.
+  try{opener?.postMessage(message,location.origin);}catch{}
+  const timeout=setTimeout(()=>{
+    channel?.close();
+    feedback.textContent='Πathos did not confirm the connection. Return to the original tab or app window and try again.';
+    // With only the opener available, the callback cannot check receipt.
+    if(opener&&!channel){feedback.textContent='Return to Πathos to check the connection.';window.close();}
+  },5000);
 })();

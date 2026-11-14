@@ -8,14 +8,15 @@ let browser,origin;
   if(process.env.PATHOS_PUBLISH_PREVIEW){const target=new URL(process.env.PATHOS_PUBLISH_PREVIEW);if(target.origin!=='https://enricomattiasalonia.com')assert.match(target.hostname,/^deploy-preview-\d+--[a-z0-9-]+\.netlify\.app$/);origin=target.origin;}else{await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));origin='http://127.0.0.1:'+server.address().port;}
   await fs.mkdir(output,{recursive:true});browser=await chromium.launch({channel:process.env.PATHOS_BROWSER||'msedge',headless:true});
   const context=await browser.newContext({viewport:{width:1280,height:900},acceptDownloads:true}),calls=[],errors=[];
-  let site,metadata={},deployNumber=0,uploaded={},failUpload=false,mismatch=false,authConfigured=true,pendingUpload,deployState='ready';
+  let site,metadata={},deployNumber=0,uploaded={},failUpload=false,mismatch=false,authConfigured=true,pendingUpload,deployState='ready',authOutcome='approved';
   const token='synthetic-publishing-access-token';
   await context.route('**/*',async route=>{
     const request=route.request(),url=new URL(request.url());
     if(url.origin===origin){if(url.pathname.endsWith('/publish-config.js'))return route.fulfill({contentType:'text/javascript',body:'window.PATHOS_PUBLISH_CONFIG={netlifyClientId:'+(authConfigured?'"synthetic-client-id"':'""')+'};'});return route.continue();}
     if(url.hostname==='app.netlify.com'&&url.pathname==='/authorize'){
       assert.equal(url.searchParams.get('response_type'),'token');
-      const callback=new URL(url.searchParams.get('redirect_uri'));assert.equal(callback.origin,origin);callback.hash=new URLSearchParams({access_token:token,state:url.searchParams.get('state')}).toString();
+      const callback=new URL(url.searchParams.get('redirect_uri'));assert.equal(callback.origin,origin);
+      callback.hash=new URLSearchParams({state:url.searchParams.get('state'),...(authOutcome==='refused'?{error:'access_denied'}:{access_token:token})}).toString();
       return route.fulfill({contentType:'text/html',body:'<script>location.href='+JSON.stringify(callback.href)+'</script>'});
     }
     if(url.hostname==='api.netlify.com'){
@@ -45,6 +46,7 @@ let browser,origin;
   await page.locator('#restoreInput').setInputFiles({name:'fixture.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(fixture))});await page.waitForFunction(()=>!document.getElementById('restoreInput').value&&pendingWrites===0&&!archiveBusy);
   const before=await page.evaluate(()=>JSON.stringify(db)),disk=await page.evaluate(()=>readLocalArchive());
   await page.locator('#settingsMenu>summary').click();await page.locator('#settingsMenu [data-view="publishing"]').click();
+  assert(!await page.locator('#publishNowBtn').isVisible(),'A disconnected app does not show an apparent publish action');
   assert.equal(await page.locator('#publishEntries input:checked').count(),0,'No existing entry becomes public automatically');
   assert.equal(await page.locator('#publishUsername').inputValue(),'');
   await page.locator('#publishUsername').fill('<img src=x onerror=alert(1)>');
@@ -67,9 +69,51 @@ let browser,origin;
   await frame.getByRole('button',{name:'Insights',exact:true}).click();assert.match(await frame.locator('#stats').innerText(),/4.25/);
   // An unrelated postMessage cannot manufacture an authenticated connection.
   await page.evaluate(()=>postMessage({type:'pathos-netlify-auth',state:'fake',token:'fake-token'},location.origin));assert.equal(calls.length,0);
-  await page.locator('#publishConnectBtn').click();await page.locator('#publishConnectionStatus').getByText('Connected as Synthetic publisher.').waitFor();
+  await page.evaluate(()=>{
+    const open=window.open,timer=window.setTimeout;
+    window.open=()=>null;
+    window.setTimeout=(fn,delay,...args)=>{
+      if(delay!==300000)return timer(fn,delay,...args);
+      window.setTimeout=timer;
+      return timer(fn,300,...args);
+    };
+    window.addEventListener('restore-test-window-open',()=>{window.open=open;},{once:true});
+  });
+  await page.locator('#publishConnectBtn').click();
+  await page.locator('#publishConnectionStatus').getByText(/didn’t finish connecting/).waitFor();
+  assert(await page.locator('#publishConnectBtn').isEnabled());
+  assert(!await page.locator('#publishSignInHelp').isVisible());
+  await page.locator('#publishConnectBtn').click();
+  await page.getByRole('button',{name:'Cancel sign-in'}).click();
+  await page.locator('#publishConnectionStatus').getByText(/Sign-in cancelled/).waitFor();
+  assert(await page.locator('#publishConnectBtn').isEnabled());
+  await page.evaluate(()=>window.dispatchEvent(new Event('restore-test-window-open')));
+  authOutcome='refused';
+  await page.locator('#publishConnectBtn').click();
+  await page.locator('#publishConnectionStatus').getByText(/cancelled or refused/).waitFor();
+  assert(await page.locator('#publishConnectBtn').isEnabled());
+  assert(!await page.locator('#publishNowBtn').isVisible());
+  assert.equal(calls.length,0,'A refused authorization cannot reach the Netlify API');
+  authOutcome='approved';
+  await page.evaluate(()=>{
+    const open=window.open;window.open=()=>null;
+    window.addEventListener('restore-test-window-open',()=>{window.open=open;},{once:true});
+  });
+  await page.locator('#publishConnectBtn').click();
+  await page.locator('#publishConnectionStatus').getByText(/sign-in window didn’t open/).waitFor();
+  const manualSignIn=page.locator('#publishSignInLink');
+  const callbackTab=context.waitForEvent('page');
+  await manualSignIn.click();
+  const detached=await callbackTab;
+  await detached.waitForURL(origin+'/pathos-personal/netlify-auth.html');
+  assert.equal(await detached.evaluate(()=>window.opener),null);
+  assert.equal(new URL(detached.url()).hash,'','The callback removes the token from the address');
+  await page.locator('#publishConnectionStatus').getByText('Connected as Synthetic publisher.').waitFor();
+  await detached.close();
+  await page.evaluate(()=>window.dispatchEvent(new Event('restore-test-window-open')));
   assert.equal(await page.locator('#publishUsername').inputValue(),'maria','Netlify identity never replaces the chosen public username');
   assert(await page.locator('#publishNowBtn').isDisabled());await page.locator('#publishApproved').check();
+  assert.equal(await page.locator('#publishDisconnectBtn').isVisible(),true);
   let finishUpload;pendingUpload=new Promise(resolve=>{finishUpload=resolve;});
   await page.locator('#publishNowBtn').click();
   await page.locator('#publishProgress').getByText(/Uploading your website files/).waitFor();

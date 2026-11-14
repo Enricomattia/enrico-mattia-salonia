@@ -10,13 +10,16 @@ try{
     if(typeof saved.lastSiteUser==='string')prefs.lastSiteUser=saved.lastSiteUser;
   }
 }catch{/* A failed preference read never changes the archive. */}
-let selected=new Set(prefs.selected),prepared=null,assetsPromise=null,client=null,user=null,accounts=[],pendingAuth=null,busy=false,publishing=false;
+let selected=new Set(prefs.selected),prepared=null,assetsPromise=null,client=null,user=null,accounts=[],pendingAuth=null,busy=false,publishing=false,checkingConnection=false;
 const menu=document.createElement('button');menu.type='button';menu.className='menu-view';menu.dataset.view='publishing';menu.textContent='Publish online';
 menu.addEventListener('click',()=>showView('publishing'));$('settingsMenu').querySelector('.more-menu-panel').append(menu);
 $('publishTitle').value=prefs.title;$('publishUsername').value=prefs.username;for(const option of ['reviews','passages','covers'])$('publish'+option[0].toUpperCase()+option.slice(1)).checked=prefs[option];
 function status(message,state=''){
   const progress=$('publishProgress');progress.hidden=!message;progress.textContent=message;progress.dataset.state=state;
   $('publishProjectHelp').hidden=true;
+}
+function connectionStatus(message,state=''){
+  const feedback=$('publishConnectionStatus');feedback.textContent=message;feedback.dataset.state=state;
 }
 function savePrefs(){
   prefs.selected=[...selected];prefs.title=$('publishTitle').value;prefs.username=$('publishUsername').value;for(const option of ['reviews','passages','covers'])prefs[option]=$('publish'+option[0].toUpperCase()+option.slice(1)).checked;
@@ -25,15 +28,23 @@ function savePrefs(){
 function snapshot(){return projectArchive(db,[...selected],{title:$('publishTitle').value,username:$('publishUsername').value,reviews:$('publishReviews').checked,passages:$('publishPassages').checked,covers:$('publishCovers').checked});}
 function invalidate(){prepared=null;$('publishPreviewWrap').hidden=true;$('publishApproved').checked=false;$('publishPreview').removeAttribute('srcdoc');refreshButtons();}
 function refreshButtons(){
-  $('publishPreviewBtn').disabled=busy||!selected.size||!window.pathosPersonalReady;
+  $('publishPreviewBtn').disabled=busy||Boolean(pendingAuth)||!selected.size||!window.pathosPersonalReady;
   $('publishConnectBtn').disabled=busy||Boolean(pendingAuth);
+  $('publishConnectBtn').hidden=Boolean(client);
+  $('publishConnectBtn').textContent=checkingConnection?'Checking Netlify…':pendingAuth?'Waiting for Netlify…':'Connect Netlify';
+  $('publishConnectBtn').setAttribute('aria-busy',String(checkingConnection||Boolean(pendingAuth)));
+  $('publishNowBtn').hidden=!client;
+  $('publishNowBtn').setAttribute('aria-busy',String(publishing));
   $('publishNowBtn').disabled=busy||!client||!prepared||!$('publishApproved').checked||!$('publishAccount').value;
   const ref=currentSite(),published=Boolean(ref?.deployId);
   $('publishNowBtn').textContent=publishing?'Publishing…':published?'Update published version':'Publish website';
   $('publishWaiting').hidden=!publishing;
-  $('publishNextStep').textContent=publishing?'':!client?'Connect Netlify to publish.':!selected.size?'Select the entries you want to share.':!prepared?'Preview your selected entries.':!$('publishApproved').checked?'Approve the public preview to continue.':'';
+  $('publishNextStep').textContent=publishing||!client?'':!selected.size?'Select the entries you want to share.':!prepared?'Preview your selected entries.':!$('publishApproved').checked?'Approve the public preview to continue.':'';
   $('publishNextStep').hidden=!$('publishNextStep').textContent;
   $('publishDisconnectBtn').hidden=!client&&!pendingAuth;
+  $('publishDisconnectBtn').disabled=busy;
+  $('publishDisconnectBtn').textContent=pendingAuth?'Cancel sign-in':'Disconnect';
+  $('publishSignInHelp').hidden=!pendingAuth?.channel;
   $('publishAccountField').hidden=!client;
   for(const id of ['publishTitle','publishUsername','publishReviews','publishPassages','publishCovers','publishSearch','publishSelectShown','publishClear','publishAccount','publishApproved'])$(id).disabled=busy;
   $('publishEntries').querySelectorAll('input').forEach(input=>input.disabled=busy);
@@ -89,7 +100,7 @@ async function loadAssets(){
   return assetsPromise;
 }
 async function preview(){
-  if(busy||archiveBusy||!window.pathosPersonalReady)return;
+  if(busy||pendingAuth||archiveBusy||!window.pathosPersonalReady)return;
   busy=true;backgroundTasks++;refreshButtons();status('Preparing your public preview…');
   try{
     const value=snapshot(),signature=JSON.stringify(value),files=await buildPublication(value,await loadAssets());
@@ -98,39 +109,72 @@ async function preview(){
   }catch(error){invalidate();status(error.message,'error');}
   finally{busy=false;backgroundTasks--;refreshButtons();}
 }
-function endAuth(){if(!pendingAuth)return;clearInterval(pendingAuth.timer);try{pendingAuth.popup?.close();}catch{}pendingAuth=null;backgroundTasks--;refreshButtons();}
-function disconnect(){if(busy)return;endAuth();client=null;user=null;accounts=[];$('publishConnectionStatus').textContent='Disconnected from Netlify.';$('publishAccount').replaceChildren();refreshButtons();}
+function endAuth(){
+  if(!pendingAuth)return;
+  const {timer,channel,popup}=pendingAuth;
+  pendingAuth=null;clearTimeout(timer);channel?.close();
+  try{popup?.close();}catch{}
+  $('publishSignInLink').removeAttribute('href');
+  backgroundTasks--;refreshButtons();
+}
+function disconnect(){
+  if(busy)return;
+  const wasSigningIn=Boolean(pendingAuth);
+  endAuth();client=null;user=null;accounts=[];$('publishAccount').replaceChildren();
+  connectionStatus(wasSigningIn?'Sign-in cancelled. You can connect again.':'Disconnected from Netlify.');
+  refreshButtons();
+}
 function connect(){
   if(busy||archiveBusy||pendingAuth)return;
-  if(!navigator.onLine){status('Connect to the internet to sign in to Netlify. Your local diary is unchanged.','error');return;}
-  if($('entryDialog').open||$('catalogueGuide').open){status('Save or close your open entry or catalogue setup first.','error');return;}
+  if(!navigator.onLine){connectionStatus('Connect to the internet to sign in to Netlify.','error');return;}
+  if($('entryDialog').open||$('catalogueGuide').open){connectionStatus('Save or close your open entry or catalogue setup first.','error');return;}
   const clientId=window.PATHOS_PUBLISH_CONFIG?.netlifyClientId;
-  if(!/^[A-Za-z0-9_-]{10,100}$/.test(clientId||'')){status('The Netlify connection is not available in this prototype yet. You can still preview your public website.','error');return;}
+  if(!/^[A-Za-z0-9_-]{10,100}$/.test(clientId||'')){connectionStatus('Netlify sign-in is unavailable here. You can still preview your website.','error');return;}
   const state=crypto.randomUUID()+crypto.randomUUID(),redirect=location.origin+'/pathos-personal/netlify-auth.html';
-  if(window.PATHOS_PUBLISH_CONFIG.redirectUri&&window.PATHOS_PUBLISH_CONFIG.redirectUri!==redirect){status('Netlify publishing is not available at this address yet. You can still preview your public website.','error');return;}
-  const popup=window.open('https://app.netlify.com/authorize?'+new URLSearchParams({client_id:clientId,response_type:'token',redirect_uri:redirect,state}),'pathos-netlify-connect','popup,width=600,height=760');
-  if(!popup){status('Allow the Netlify sign-in window, then choose Connect Netlify again.','error');return;}
-  backgroundTasks++;pendingAuth={state,popup,started:Date.now(),timer:null};
-  pendingAuth.timer=setInterval(()=>{if(!pendingAuth)return;if(pendingAuth.popup.closed||Date.now()-pendingAuth.started>5*60*1000){endAuth();$('publishConnectionStatus').textContent='Netlify sign-in ended. Connect again when you are ready.';}},700);
-  $('publishConnectionStatus').textContent='Finish signing in and approving the connection in Netlify.';refreshButtons();
+  if(window.PATHOS_PUBLISH_CONFIG.redirectUri&&window.PATHOS_PUBLISH_CONFIG.redirectUri!==redirect){connectionStatus('Netlify sign-in is unavailable at this address. Open the original Πathos Personal page to connect.','error');return;}
+  const url='https://app.netlify.com/authorize?'+new URLSearchParams({client_id:clientId,response_type:'token',redirect_uri:redirect,state});
+  let channel;
+  try{channel=new BroadcastChannel('pathos-netlify-auth:'+state);}catch{}
+  // A browser can report popup.closed when it separates the two windows.
+  let popup;
+  try{popup=window.open(url,'pathos-netlify-connect','popup,width=600,height=760');}catch{}
+  if(!popup&&!channel){connectionStatus('Allow the Netlify sign-in window in your browser and try again.','error');return;}
+  backgroundTasks++;
+  const attempt={state,popup,channel,timer:setTimeout(()=>{
+    endAuth();connectionStatus('Netlify didn’t finish connecting. Try again and approve access in the Netlify window.','error');
+  },5*60*1000)};
+  pendingAuth=attempt;
+  if(channel)channel.onmessage=event=>{if(pendingAuth===attempt)void finishAuth(event.data);};
+  $('publishSignInLink').href=url;
+  const signIn='Finish signing in and approve access in the Netlify window.';
+  connectionStatus(popup?(channel?signIn+' If it didn’t open, use the link below.':signIn):'The sign-in window didn’t open. Use the link below to continue.','working');
+  refreshButtons();
 }
-window.addEventListener('message',async event=>{
-  if(!pendingAuth||event.origin!==location.origin||event.source!==pendingAuth.popup||event.data?.type!=='pathos-netlify-auth'||event.data.state!==pendingAuth.state)return;
-  const token=event.data.token;endAuth();
-  if(typeof token!=='string'||!/^[A-Za-z0-9._~+\/=-]{10,8192}$/.test(token)){status('Netlify connection was cancelled or refused.','error');return;}
-  busy=true;backgroundTasks++;refreshButtons();
+window.addEventListener('message',event=>{
+  if(pendingAuth?.popup&&event.origin===location.origin&&event.source===pendingAuth.popup)void finishAuth(event.data);
+});
+async function finishAuth(data){
+  const attempt=pendingAuth;
+  if(!attempt||data?.type!=='pathos-netlify-auth'||data.state!==attempt.state)return;
+  attempt.channel?.postMessage({type:'pathos-netlify-received',state:attempt.state});
+  endAuth();
+  const token=data.token;
+  if(typeof token!=='string'||!/^[A-Za-z0-9._~+\/=-]{10,8192}$/.test(token)){connectionStatus('Netlify sign-in was cancelled or refused. Connect again to retry.','error');return;}
+  busy=true;checkingConnection=true;backgroundTasks++;
+  connectionStatus('Checking your Netlify account and teams…','working');refreshButtons();
   try{
-    const candidate=netlifyClient(token),who=await candidate.user(),teams=await candidate.accounts();
+    const candidate=netlifyClient(token);
+    const [who,teams]=await Promise.all([candidate.user(),candidate.accounts()]);
     if(typeof who?.id!=='string'||!Array.isArray(teams))throw new Error('Netlify did not confirm the account.');
     const allowed=teams.filter(team=>typeof team.id==='string'&&/^[A-Za-z0-9_-]+$/.test(team.slug||''));
     if(!allowed.length)throw new Error('No Netlify team is available. Finish account setup in Netlify, then connect again.');
     client=candidate;user=who;accounts=allowed;$('publishAccount').replaceChildren();
     for(const team of accounts){const option=document.createElement('option');option.value=team.id;option.textContent=team.name||team.slug;$('publishAccount').append(option);}
     const previous=prefs.sites[user.id];if(previous&&accounts.some(account=>account.id===previous.accountId))$('publishAccount').value=previous.accountId;
-    $('publishConnectionStatus').textContent='Connected as '+(who.full_name||who.email||'your Netlify account')+'.';status('');
-  }catch(error){client=null;user=null;status(error.message,'error');}
-  finally{busy=false;backgroundTasks--;refreshButtons();}
-});
+    connectionStatus('Connected as '+(who.full_name||who.email||'your Netlify account')+'.','success');status('');
+  }catch(error){client=null;user=null;connectionStatus(error.message,'error');}
+  finally{busy=false;checkingConnection=false;backgroundTasks--;refreshButtons();}
+}
 async function checkPublication(){
   const ref=currentSite(),account=accounts.find(team=>team.id===ref?.accountId);
   if(busy||!client||!ref||!account)return;

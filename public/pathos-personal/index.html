@@ -941,11 +941,12 @@ body:not(.pathos-owner) .experience-edit{display:none}
       <div class="panel"><h3>Preview your website</h3><p class="metadata-note">Check the exact public copy before publishing. New entries are always left unselected.</p><button type="button" class="btn" id="publishPreviewBtn" disabled>Preview selected entries</button><div id="publishPreviewWrap" hidden><iframe id="publishPreview" title="Preview of your public Πathos" sandbox="allow-scripts allow-popups" referrerpolicy="no-referrer"></iframe><label class="check"><input type="checkbox" id="publishApproved"> I have checked this public preview</label></div></div>
       <div class="panel">
         <h3>Publish to Netlify</h3>
-        <p class="metadata-note">Connect Netlify, approve your preview, then publish. Reconnect after you close or reload Πathos.</p>
-        <div class="publish-actions"><button type="button" class="btn" id="publishConnectBtn">Connect Netlify</button><button type="button" class="btn subtle" id="publishDisconnectBtn" hidden>Disconnect</button></div>
-        <p class="metadata-note" id="publishConnectionStatus" role="status"></p>
+        <p class="metadata-note">Connect your Netlify account and approve the preview to publish.</p>
+        <div class="publish-actions"><button type="button" class="btn primary" id="publishConnectBtn">Connect Netlify</button><button type="button" class="btn subtle" id="publishDisconnectBtn" hidden>Disconnect</button></div>
+        <p class="publish-status" id="publishConnectionStatus" role="status" aria-live="polite"></p>
+        <p class="metadata-note" id="publishSignInHelp" hidden><a id="publishSignInLink" target="_blank" rel="noopener noreferrer">Open Netlify sign-in in a new tab ↗</a></p>
         <div id="publishAccountField" hidden><label class="field" for="publishAccount">Netlify team</label><select class="input" id="publishAccount"></select></div>
-        <button type="button" class="btn primary" id="publishNowBtn" aria-describedby="publishNextStep" disabled>Publish website</button>
+        <button type="button" class="btn primary" id="publishNowBtn" aria-describedby="publishNextStep" disabled hidden>Publish website</button>
         <p id="publishNextStep" class="metadata-note"></p>
         <p id="publishProgress" class="publish-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
         <div id="publishWaiting" hidden><progress aria-label="Publishing in progress"></progress><p class="metadata-note">This may take a few minutes. Keep Πathos open while Netlify finishes.</p></div>
