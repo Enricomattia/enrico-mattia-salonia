@@ -933,15 +933,20 @@ body:not(.pathos-owner) .experience-edit{display:none}
       <label class="field" for="publishTitle">Website title</label><input class="input" id="publishTitle" maxlength="120" placeholder="My Πathos">
       <div class="publish-options"><label><input type="checkbox" id="publishReviews" checked> Reviews</label><label><input type="checkbox" id="publishPassages" checked> Passages</label><label><input type="checkbox" id="publishCovers" checked> Covers</label></div>
       <p class="metadata-note" id="publishSelectionHint">All experiences are included by default. Uncheck anything you want to keep private.</p>
+      <p class="metadata-note">To remove an entry from your live site, exclude it and publish an update. Older Netlify deploys or copies may still contain it.</p>
       <label class="field" for="publishSearch">Find entries</label><input class="input" id="publishSearch" type="search" placeholder="Title or creator">
       <div class="publish-selection-actions"><span id="publishSelectedCount" role="status">0 included</span><button type="button" class="btn subtle" id="publishIncludeAll">Include all entries</button><button type="button" class="btn subtle" id="publishExcludeShown">Exclude shown</button></div>
       <div id="publishEntries" class="publish-entries"></div>
     </div>
     <div class="publish-controls">
-      <div class="panel"><h3>Preview your website</h3><p class="metadata-note">To remove an entry from your live site, exclude it, approve a new preview and publish the update. Older Netlify deploys or copies may still contain it.</p><button type="button" class="btn" id="publishPreviewBtn" disabled>Preview website</button><div id="publishPreviewWrap" hidden><iframe id="publishPreview" title="Preview of your public Πathos" sandbox="allow-scripts allow-popups" referrerpolicy="no-referrer"></iframe><label class="check"><input type="checkbox" id="publishApproved"> I approve this copy for anyone with the link</label></div></div>
+      <div class="panel">
+        <h3>Preview your website (optional)</h3>
+        <button type="button" class="btn" id="publishPreviewBtn" disabled>Preview website</button>
+        <div id="publishPreviewWrap" hidden><iframe id="publishPreview" title="Preview of your public Πathos" sandbox="allow-scripts allow-popups" referrerpolicy="no-referrer"></iframe></div>
+      </div>
       <div class="panel">
         <h3>Publish to Netlify</h3>
-        <p class="metadata-note">Connect your Netlify account and approve the preview to publish.</p>
+        <p class="metadata-note">Connect Netlify to publish the entries and options you selected.</p>
         <div class="publish-actions"><button type="button" class="btn primary" id="publishConnectBtn">Connect Netlify</button><button type="button" class="btn subtle" id="publishDisconnectBtn" hidden>Disconnect</button></div>
         <p class="publish-status" id="publishConnectionStatus" role="status" aria-live="polite"></p>
         <p class="metadata-note" id="publishSignInHelp" hidden><a id="publishSignInLink" target="_blank" rel="noopener noreferrer">Open Netlify sign-in in a new tab ↗</a></p>

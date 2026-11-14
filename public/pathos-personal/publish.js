@@ -18,7 +18,7 @@ try{
 }catch{/* A failed preference read never changes the archive. */}
 const selected=new Set(prefs.selected),excluded=new Set(prefs.excluded);
 const visibilityChecks=new Map();
-let includedIds=[],prepared=null,assetsPromise=null,client=null,user=null,accounts=[],pendingAuth=null,busy=false,publishing=false,checkingConnection=false;
+let includedCount=0,previewSignature=null,assetsPromise=null,client=null,user=null,accounts=[],pendingAuth=null,busy=false,publishing=false,checkingConnection=false;
 const menu=document.createElement('button');menu.type='button';menu.className='menu-view';menu.dataset.view='publishing';menu.textContent='Publish online';
 menu.addEventListener('click',()=>showView('publishing'));$('settingsMenu').querySelector('.more-menu-panel').append(menu);
 $('publishTitle').value=prefs.title;$('publishUsername').value=prefs.username;for(const option of ['reviews','passages','covers'])$('publish'+option[0].toUpperCase()+option.slice(1)).checked=prefs[option];
@@ -86,33 +86,35 @@ function savePrefs(){
   try{localStorage.setItem(KEY,JSON.stringify(prefs));return true;}catch{status('Could not save publishing preferences on this device. Publication is paused until browser storage works.','error');return false;}
 }
 function isIncluded(id){return prefs.entryMode==='all'?!excluded.has(id):selected.has(id);}
+function includedEntryIds(){return db.experiences.filter(entry=>isIncluded(entry.id)).map(entry=>entry.id);}
 function updateIncludedEntries(){
-  includedIds=db.experiences.filter(entry=>isIncluded(entry.id)).map(entry=>entry.id);
-  $('publishSelectedCount').textContent=includedIds.length+' of '+db.experiences.length+' included';
+  includedCount=includedEntryIds().length;
+  $('publishSelectedCount').textContent=includedCount+' of '+db.experiences.length+' included';
 }
-function snapshot(){return projectArchive(db,includedIds,{title:$('publishTitle').value,username:$('publishUsername').value,reviews:$('publishReviews').checked,passages:$('publishPassages').checked,covers:$('publishCovers').checked,allowEmpty:Boolean(currentSite()?.deployId)});}
-function invalidate(){prepared=null;$('publishPreviewWrap').hidden=true;$('publishApproved').checked=false;$('publishPreview').removeAttribute('srcdoc');refreshButtons();}
+function snapshot(){return projectArchive(db,includedEntryIds(),{title:$('publishTitle').value,username:$('publishUsername').value,reviews:$('publishReviews').checked,passages:$('publishPassages').checked,covers:$('publishCovers').checked,allowEmpty:Boolean(currentSite()?.deployId)});}
+function invalidate(){previewSignature=null;$('publishPreviewWrap').hidden=true;$('publishPreview').removeAttribute('srcdoc');refreshButtons();}
 function refreshButtons(){
   const ref=currentSite(),published=Boolean(ref?.deployId);
-  const canPreview=includedIds.length>0||published;
-  $('publishPreviewBtn').disabled=busy||Boolean(pendingAuth)||!canPreview||!window.pathosPersonalReady;
+  const canBuild=includedCount>0||published;
+  const unavailable=busy||!canBuild||!window.pathosPersonalReady;
+  $('publishPreviewBtn').disabled=unavailable||Boolean(pendingAuth);
   $('publishConnectBtn').disabled=busy||Boolean(pendingAuth);
   $('publishConnectBtn').hidden=Boolean(client);
   $('publishConnectBtn').textContent=checkingConnection?'Checking Netlify…':pendingAuth?'Waiting for Netlify…':'Connect Netlify';
   $('publishConnectBtn').setAttribute('aria-busy',String(checkingConnection||Boolean(pendingAuth)));
   $('publishNowBtn').hidden=!client;
   $('publishNowBtn').setAttribute('aria-busy',String(publishing));
-  $('publishNowBtn').disabled=busy||!client||!prepared||!$('publishApproved').checked||!$('publishAccount').value;
+  $('publishNowBtn').disabled=unavailable||!client||!$('publishAccount').value;
   $('publishNowBtn').textContent=publishing?'Publishing…':published?'Update published version':'Publish website';
   $('publishWaiting').hidden=!publishing;
-  $('publishNextStep').textContent=publishing||!client?'':!canPreview?'Include at least one experience to create a website.':!prepared?'Preview your website.':!$('publishApproved').checked?'Approve the public preview to continue.':'';
+  $('publishNextStep').textContent=client&&!canBuild?'Include at least one experience to create a website.':'';
   $('publishNextStep').hidden=!$('publishNextStep').textContent;
   $('publishDisconnectBtn').hidden=!client&&!pendingAuth;
   $('publishDisconnectBtn').disabled=busy;
   $('publishDisconnectBtn').textContent=pendingAuth?'Cancel sign-in':'Disconnect';
   $('publishSignInHelp').hidden=!pendingAuth?.channel;
   $('publishAccountField').hidden=!client;
-  for(const id of ['publishTitle','publishUsername','publishReviews','publishPassages','publishCovers','publishSearch','publishIncludeAll','publishExcludeShown','publishAccount','publishApproved'])$(id).disabled=busy;
+  for(const id of ['publishTitle','publishUsername','publishReviews','publishPassages','publishCovers','publishSearch','publishIncludeAll','publishExcludeShown','publishAccount'])$(id).disabled=busy;
   $('publishEntries').querySelectorAll('input').forEach(input=>input.disabled=busy);
   showResult(ref);
 }
@@ -153,7 +155,7 @@ async function verifyPublicLink(ref){
 function refresh(){
   if(!window.pathosPersonalReady)return;
   updateIncludedEntries();
-  if(prepared){try{if(JSON.stringify(snapshot())!==prepared.signature)invalidate();}catch{invalidate();}}
+  if(previewSignature){try{if(JSON.stringify(snapshot())!==previewSignature)invalidate();}catch{invalidate();}}
   const query=$('publishSearch').value.trim().toLocaleLowerCase(),works=new Map(db.works.map(work=>[work.id,work]));
   const rows=db.experiences.filter(entry=>{const work=works.get(entry.workId);return work&&(work.title+' '+work.creator).toLocaleLowerCase().includes(query);}).sort((a,b)=>(b.endDate||b.startDate||'').localeCompare(a.endDate||a.startDate||''));
   $('publishEntries').replaceChildren();
@@ -172,12 +174,12 @@ function refresh(){
   $('publishSelectionHint').textContent=prefs.entryMode==='all'?'All experiences are included by default. Uncheck anything you want to keep private.':'Your previous selection is still in use. Choose Include all entries to switch to the new default.';
   refreshButtons();
 }
-async function loadAssets(){
+async function loadAssets(signal){
   if(!assetsPromise)assetsPromise=(async()=>{
     const names={html:'published-reader.txt',css:'published-reader.css',reader:'published-reader.js',parser:'markdown-it.min.js',parserLicense:'markdown-it.LICENSE.txt',fontLicense:'fonts/LICENSE.txt',format:'review-format.js',serif:'fonts/newsreader-latin.woff2',sans:'fonts/instrument-sans-latin.woff2'};
     const assets={};
     for(const[key,name]of Object.entries(names)){
-      const response=await fetch('/pathos-personal/'+name,{credentials:'omit',redirect:'error'});if(!response.ok)throw new Error('The website preview could not load. Update Πathos or reconnect and try again.');
+      const response=await fetch('/pathos-personal/'+name,{credentials:'omit',redirect:'error',signal});if(!response.ok)throw new Error('Could not load the website files. Update Πathos or reconnect and try again.');
       if(key==='serif'||key==='sans'){const bytes=new Uint8Array(await response.arrayBuffer());let raw='';for(let offset=0;offset<bytes.length;offset+=8192)raw+=String.fromCharCode(...bytes.subarray(offset,offset+8192));assets[key]=btoa(raw);}else assets[key]=await response.text();
     }
     return assets;
@@ -190,7 +192,7 @@ async function preview(){
   try{
     const value=snapshot(),signature=JSON.stringify(value),files=await buildPublication(value,await loadAssets());
     if(JSON.stringify(snapshot())!==signature)throw new Error('The selection changed. Preview it again.');
-    prepared={files,signature};$('publishPreview').srcdoc=files.get('/index.html');$('publishPreviewWrap').hidden=false;$('publishApproved').checked=false;
+    previewSignature=signature;$('publishPreview').srcdoc=files.get('/index.html');$('publishPreviewWrap').hidden=false;
     const count=value.experiences.length;
     status(count===0?'This update will remove all experiences from the live site.':count===1?'This preview includes 1 experience.':'This preview includes '+count+' experiences.');
   }catch(error){invalidate();status(error.message,'error');}
@@ -284,33 +286,35 @@ async function checkPublication(){
   finally{busy=false;backgroundTasks--;refreshButtons();}
 }
 async function publish(){
-  if(busy||archiveBusy||!client||!prepared||!$('publishApproved').checked)return;
+  if(busy||archiveBusy||!client||!window.pathosPersonalReady)return;
   if(!navigator.onLine){status('Connect to the internet to publish.','error');return;}
   if($('entryDialog').open||$('catalogueGuide').open||pendingWrites||lastSaveFailed){status('Finish saving your diary and close the open entry or setup before publishing.','error');return;}
-  let signature;
-  try{signature=JSON.stringify(snapshot());}catch(error){invalidate();status(error.message,'error');return;}
-  if(signature!==prepared.signature){invalidate();status('The included entries changed. Preview the website again before publishing.','error');return;}
   const account=accounts.find(account=>account.id===$('publishAccount').value);if(!account)return;
   const previous=prefs.sites[user.id];if(previous&&previous.accountId!==account.id){status('Choose the team containing your existing Πathos publication.','error');return;}
   if(!savePrefs())return;
   busy=true;publishing=true;archiveBusy=true;backgroundTasks++;refreshButtons();
-  status('Starting publication…','working');$('publishProgress').focus();
+  status('Preparing your website…','working');$('publishProgress').focus();
   const controller=new AbortController(),deadline=setTimeout(()=>controller.abort(),3*60*1000);
   const signal=controller.signal;
+  let preparing=true;
   try{
+    const files=await buildPublication(snapshot(),await loadAssets(signal));
+    signal.throwIfAborted();
+    preparing=false;
     let ref=previous;
     if(!ref){
       status('Creating your website in Netlify…','working');
       ref=await client.create(account,prefs.publisherId,signal);
       if(!rememberSite(ref))throw new Error('Netlify created the website. Keep the links below because this device could not save them.');
     }
-    const result=await client.deploy(ref,account,prepared.files,{signal,onProgress:message=>status(message,'working')});
+    const result=await client.deploy(ref,account,files,{signal,onProgress:message=>status(message,'working')});
     const remembered=rememberSite(result);
     publishing=false;refreshButtons();
     const verified=await verifyPublicLink(result);
     status(remembered?(verified?'Published to Netlify. Your link is ready to share.':'Published to Netlify. Check public access below before sharing.'):'Published to Netlify. Keep the links below because this device could not save them.',remembered?'success':'error');
   }catch(error){
-    status(signal.aborted?publishTimeoutMessage:error.message,'error');
+    const timeout=preparing?'Preparing the website took too long. Try again.':publishTimeoutMessage;
+    status(signal.aborted?timeout:error.message,'error');
     $('publishProjectHelp').hidden=validSite(currentSite());
   }
   finally{clearTimeout(deadline);busy=false;publishing=false;archiveBusy=false;backgroundTasks--;refreshButtons();}
@@ -327,6 +331,6 @@ $('publishExcludeShown').addEventListener('click',()=>{
   invalidate();savePrefs();refresh();
 });
 for(const id of ['publishTitle','publishUsername','publishReviews','publishPassages','publishCovers'])$(id).addEventListener('input',()=>{invalidate();savePrefs();});
-$('publishApproved').addEventListener('change',refreshButtons);$('publishAccount').addEventListener('change',()=>{ $('publishApproved').checked=false;refreshButtons(); });
+$('publishAccount').addEventListener('change',refreshButtons);
 window.addEventListener('pagehide',()=>{client=null;endAuth();});
 window.PathosPublishing={refresh};refresh();manageOldCopy();
