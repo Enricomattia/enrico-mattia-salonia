@@ -7,6 +7,9 @@ const server=http.createServer(async(req,res)=>{try{const p=new URL(req.url,'htt
 let browser,origin;
 (async()=>{
   if(process.env.PATHOS_PUBLISH_PREVIEW){const target=new URL(process.env.PATHOS_PUBLISH_PREVIEW);if(target.origin!=='https://enricomattiasalonia.com')assert.match(target.hostname,/^deploy-preview-\d+--[a-z0-9-]+\.netlify\.app$/);origin=target.origin;}else{await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));origin='http://127.0.0.1:'+server.address().port;}
+  const appUrl=new URL('/pathos-personal/index.html',origin);
+  // The Netlify feedback drawer can cover the app's bottom navigation on phones.
+  if(appUrl.hostname.endsWith('.netlify.app'))appUrl.searchParams.set('ntl-drawer-state','hidden');
   await fs.mkdir(output,{recursive:true});browser=await chromium.launch({channel:process.env.PATHOS_BROWSER||'msedge',headless:true});
   const context=await browser.newContext({viewport:{width:1280,height:900},acceptDownloads:true}),calls=[],errors=[];
   let site,metadata={},deployNumber=0,uploaded={},failUpload=false,mismatch=false,authConfigured=true,pendingUpload,deployState='ready',authOutcome='approved',publicAccess=false;
@@ -58,7 +61,7 @@ let browser,origin;
     return route.abort();
   });
   const page=await context.newPage();page.on('pageerror',error=>{errors.push(error.message);console.error('Browser error: '+error.message);});page.on('dialog',dialog=>dialog.accept());
-  await page.goto(origin+'/pathos-personal/index.html');await page.waitForFunction(()=>window.pathosPersonalReady&&window.PathosPublishing);
+  await page.goto(appUrl.href);await page.waitForFunction(()=>window.pathosPersonalReady&&window.PathosPublishing);
   await page.evaluate(()=>navigator.serviceWorker.ready);await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
   const fixture={schemaVersion:6,works:[{id:'book-1',type:'Book',title:'A selected book',creator:'Test author',owned:true,cover:'https://example.com/PRIVATE_COVER.jpg',sourceMetadata:{secret:'PRIVATE_METADATA'}}],experiences:[{id:'reading-1',workId:'book-1',status:'completed',endDate:'2026-11-07',rating:4.25,review:'Selected **formatted** review $& <script>window.attack=1</script>',tags:['PRIVATE_TAG'],details:{secret:'RECORD_SECRET'},quotes:[{id:'q-1',text:'A selected passage',note:'p. 2'}],edition:{publisher:'Selected publisher',sourceId:'PRIVATE_UID',isbn:'9780140328721'}},{id:'reading-2',workId:'book-1',status:'completed',endDate:'2026-11-06',rating:2,review:'UNSELECTED_REVIEW',quotes:[{id:'q-2',text:'UNSELECTED_PASSAGE'}]}]};
   await page.locator('#restoreInput').setInputFiles({name:'fixture.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(fixture))});await page.waitForFunction(()=>!document.getElementById('restoreInput').value&&pendingWrites===0&&!archiveBusy);
@@ -88,7 +91,7 @@ let browser,origin;
   const previousCopy=await context.newPage();
   await previousCopy.addInitScript(key=>localStorage.setItem('pathos-personal.hosted-publication-v1',key),oldKey);
   previousCopy.on('dialog',dialog=>dialog.accept());
-  await previousCopy.goto(origin+'/pathos-personal/index.html');
+  await previousCopy.goto(appUrl.href);
   await previousCopy.waitForFunction(()=>window.pathosPersonalReady&&window.PathosPublishing);
   await previousCopy.locator('#settingsMenu>summary').click();await previousCopy.locator('#settingsMenu [data-view="publishing"]').click();
   await previousCopy.locator('#publishOldCopy summary').click();
