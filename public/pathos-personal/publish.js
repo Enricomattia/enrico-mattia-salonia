@@ -1,9 +1,10 @@
 import{projectArchive,buildPublication}from'./publish-core.mjs';
+import{profilePhoto}from'./public-profile.mjs';
 import{netlifyClient,publishTimeoutMessage,checkPublicWebsite}from'./publish-netlify.mjs';
 import{hostedPublication,readPublishingKey}from'./publish-hosted.mjs';
 // Publishing preferences are deliberately outside the diary and its backups.
 const KEY='pathos-personal.publication-v1',$=id=>document.getElementById(id);
-let prefs={publisherId:crypto.randomUUID(),entryMode:'all',excluded:[],selected:[],title:'',username:'',reviews:true,passages:true,covers:true,sites:{},lastSiteUser:''};
+let prefs={publisherId:crypto.randomUUID(),entryMode:'all',excluded:[],selected:[],title:'',username:'',photo:'',reviews:true,passages:true,covers:true,sites:{},lastSiteUser:''};
 const entryIds=value=>Array.isArray(value)?value.filter(id=>typeof id==='string'&&id.length<200):[];
 try{
   const saved=JSON.parse(localStorage.getItem(KEY)||'null');
@@ -12,13 +13,13 @@ try{
     const selected=entryIds(saved.selected);
     const previousSelection=Array.isArray(saved.selected)||Object.values(sites).some(validSite);
     const entryMode=saved.entryMode==='all'||saved.entryMode==='selected'?saved.entryMode:previousSelection?'selected':'all';
-    prefs={...prefs,publisherId:saved.publisherId,entryMode,excluded:entryIds(saved.excluded),selected,title:typeof saved.title==='string'?saved.title.slice(0,120):'',username:typeof saved.username==='string'?saved.username.slice(0,40):'',reviews:saved.reviews!==false,passages:saved.passages!==false,covers:saved.covers!==false,sites};
+    prefs={...prefs,publisherId:saved.publisherId,entryMode,excluded:entryIds(saved.excluded),selected,title:typeof saved.title==='string'?saved.title.slice(0,120):'',username:typeof saved.username==='string'?saved.username.slice(0,40):'',photo:profilePhoto(saved.photo),reviews:saved.reviews!==false,passages:saved.passages!==false,covers:saved.covers!==false,sites};
     if(typeof saved.lastSiteUser==='string')prefs.lastSiteUser=saved.lastSiteUser;
   }
 }catch{/* A failed preference read never changes the archive. */}
 const selected=new Set(prefs.selected),excluded=new Set(prefs.excluded);
 const visibilityChecks=new Map();
-let includedCount=0,previewSignature=null,assetsPromise=null,client=null,user=null,accounts=[],pendingAuth=null,busy=false,publishing=false,checkingConnection=false;
+let includedCount=0,previewSignature=null,assetsPromise=null,client=null,user=null,accounts=[],pendingAuth=null,busy=false,publishing=false,checkingConnection=false,readingPhoto=false;
 const menu=document.createElement('button');menu.type='button';menu.className='menu-view';menu.dataset.view='publishing';menu.textContent='Publish online';
 function openPublishing(){
   showView('publishing');
@@ -27,6 +28,33 @@ function openPublishing(){
 menu.addEventListener('click',openPublishing);$('settingsMenu').querySelector('.more-menu-panel').append(menu);
 $('openPublishingBtn').addEventListener('click',openPublishing);$('openPublishingBtn').hidden=false;
 $('publishTitle').value=prefs.title;$('publishUsername').value=prefs.username;for(const option of ['reviews','passages','covers'])$('publish'+option[0].toUpperCase()+option.slice(1)).checked=prefs[option];
+function renderPhoto(){
+  const image=$('publishPhoto');
+  image.hidden=$('publishRemovePhoto').hidden=!prefs.photo;
+  if(prefs.photo)image.src=prefs.photo;else image.removeAttribute('src');
+}
+function photoFeedback(message,state=''){
+  const feedback=$('publishPhotoFeedback');
+  feedback.hidden=!message;feedback.textContent=message;feedback.dataset.state=state;
+}
+function usePhoto(photo){
+  prefs.photo=photo;renderPhoto();invalidate();
+  if(!savePrefs())photoFeedback('The change could not be saved on this device.','error');
+}
+async function choosePhoto(event){
+  const file=event.target.files[0];event.target.value='';
+  if(!file||busy||readingPhoto)return;
+  if(file.size>10*1024*1024||file.type&&!['image/jpeg','image/png','image/webp'].includes(file.type)){
+    photoFeedback('Choose a JPEG, PNG or WebP image up to 10 MB.','error');return;
+  }
+  readingPhoto=true;backgroundTasks++;refreshButtons();photoFeedback('Preparing photo…');
+  try{
+    const photo=profilePhoto(await compressCover(file,192,192));
+    if(!photo)throw new Error('Invalid photo');
+    photoFeedback('');usePhoto(photo);
+  }catch{photoFeedback('Could not read that image. Choose another photo.','error');}
+  finally{readingPhoto=false;backgroundTasks--;refreshButtons();}
+}
 function status(message,state=''){
   const progress=$('publishProgress');progress.hidden=!message;progress.textContent=message;progress.dataset.state=state;
   $('publishProjectHelp').hidden=true;
@@ -96,14 +124,15 @@ function updateIncludedEntries(){
   includedCount=includedEntryIds().length;
   $('publishSelectedCount').textContent=includedCount+' of '+db.experiences.length+' included';
 }
-function snapshot(){return projectArchive(db,includedEntryIds(),{title:$('publishTitle').value,username:$('publishUsername').value,reviews:$('publishReviews').checked,passages:$('publishPassages').checked,covers:$('publishCovers').checked,allowEmpty:Boolean(currentSite()?.deployId)});}
+function snapshot(){return projectArchive(db,includedEntryIds(),{title:$('publishTitle').value,username:$('publishUsername').value,photo:prefs.photo,reviews:$('publishReviews').checked,passages:$('publishPassages').checked,covers:$('publishCovers').checked,allowEmpty:Boolean(currentSite()?.deployId)});}
 function invalidate(){previewSignature=null;$('publishPreviewWrap').hidden=true;$('publishPreview').removeAttribute('srcdoc');refreshButtons();}
 function refreshButtons(){
   const ref=currentSite(),published=Boolean(ref?.deployId);
   const canBuild=includedCount>0||published;
-  const unavailable=busy||!canBuild||!window.pathosPersonalReady;
+  const unavailable=busy||readingPhoto||!canBuild||!window.pathosPersonalReady;
   $('publishPreviewBtn').disabled=unavailable||Boolean(pendingAuth);
-  $('publishConnectBtn').disabled=busy||Boolean(pendingAuth);
+  $('publishConnectBtn').disabled=busy||readingPhoto||Boolean(pendingAuth);
+  $('publishPhotoInput').disabled=$('publishRemovePhoto').disabled=busy||readingPhoto;
   $('publishConnectBtn').hidden=Boolean(client);
   $('publishConnectBtn').textContent=checkingConnection?'Checking your account…':pendingAuth?'Waiting for sign-in…':published?'Reconnect to update':'Start publishing';
   $('publishSetup').hidden=Boolean(client);
@@ -151,12 +180,23 @@ function showResult(ref){
   const verified=published&&visibilityChecks.get(visibilityKey(ref));
   const url='https://'+ref.name+'.netlify.app';
   $('publishAddressLabel').textContent=verified?'Public website':published?'Website address':'Website address (deployment unconfirmed)';
+  if($('publishWebsiteLink').getAttribute('href')!==url)$('publishCopyStatus').hidden=true;
   $('publishWebsiteLink').href=url;$('publishWebsiteLink').textContent=url;
+  $('publishCopyLink').hidden=!published;
   $('publishVisibility').hidden=!published;
   $('publishVisibility').dataset.state=verified?'success':'';
   $('publishVisibility').textContent=verified?'Public link verified. Anyone with this address can open it.':visibilityChecks.has(visibilityKey(ref))?'Public access couldn’t be verified. Netlify may still have this project set to private.':'Check public access before sharing this link.';
   $('publishVisibilityHelp').hidden=!published||verified;
   $('publishManageLink').href='https://app.netlify.com/projects/'+ref.name+'/overview';
+}
+async function copyPublicLink(){
+  const link=$('publishWebsiteLink'),feedback=$('publishCopyStatus');
+  const url=link.href;
+  let message='Public link copied.';
+  try{await navigator.clipboard.writeText(url);}
+  catch{message='Could not copy the link. You can select and copy the website address.';}
+  if(link.href!==url)return;
+  feedback.hidden=false;feedback.textContent=message;
 }
 async function verifyPublicLink(ref){
   status('Checking the link without a Netlify account…','working');
@@ -200,7 +240,7 @@ async function loadAssets(signal){
   return assetsPromise;
 }
 async function preview(){
-  if(busy||pendingAuth||archiveBusy||!window.pathosPersonalReady)return;
+  if(busy||readingPhoto||pendingAuth||archiveBusy||!window.pathosPersonalReady)return;
   busy=true;backgroundTasks++;refreshButtons();status('Preparing your public preview…');
   try{
     const value=snapshot(),signature=JSON.stringify(value),files=await buildPublication(value,await loadAssets());
@@ -227,7 +267,7 @@ function disconnect(){
   refreshButtons();
 }
 function connect(){
-  if(busy||archiveBusy||pendingAuth)return;
+  if(busy||readingPhoto||archiveBusy||pendingAuth)return;
   if(!navigator.onLine){connectionStatus('Connect to the internet to sign in to Netlify.','error');return;}
   if($('entryDialog').open||$('catalogueGuide').open){connectionStatus('Save or close your open entry or catalogue setup first.','error');return;}
   const clientId=window.PATHOS_PUBLISH_CONFIG?.netlifyClientId;
@@ -299,7 +339,7 @@ async function checkPublication(){
   finally{busy=false;backgroundTasks--;refreshButtons();}
 }
 async function publish(){
-  if(busy||archiveBusy||!client||!window.pathosPersonalReady)return;
+  if(busy||readingPhoto||archiveBusy||!client||!window.pathosPersonalReady)return;
   if(!navigator.onLine){status('Connect to the internet to publish.','error');return;}
   if($('entryDialog').open||$('catalogueGuide').open||pendingWrites||lastSaveFailed){status('Finish saving your diary and close the open entry or setup before publishing.','error');return;}
   const account=accounts.find(account=>account.id===$('publishAccount').value);if(!account)return;
@@ -335,6 +375,10 @@ async function publish(){
 $('publishPreviewBtn').addEventListener('click',()=>void preview());$('publishNowBtn').addEventListener('click',()=>void publish());
 $('publishConnectBtn').addEventListener('click',connect);$('publishDisconnectBtn').addEventListener('click',disconnect);
 $('publishCheckBtn').addEventListener('click',()=>void checkPublication());
+$('publishCopyLink').addEventListener('click',()=>void copyPublicLink());
+$('publishPhotoInput').addEventListener('change',event=>void choosePhoto(event));
+$('publishRemovePhoto').addEventListener('click',()=>{photoFeedback('');usePhoto('');});
+renderPhoto();
 $('publishSearch').addEventListener('input',refresh);
 $('publishIncludeAll').addEventListener('click',()=>{prefs.entryMode='all';selected.clear();excluded.clear();invalidate();savePrefs();refresh();});
 $('publishExcludeShown').addEventListener('click',()=>{

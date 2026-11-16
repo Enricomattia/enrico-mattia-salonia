@@ -1,11 +1,14 @@
 /* Πathos Personal offline application shell. No access to /pathos or Supabase. */
-const CACHE='pathos-personal-shell-v38';
+const CACHE='pathos-personal-shell-v39';
 const COVERS='pathos-personal-covers-v1';
 const SHELL=[
  '/pathos-personal/index.html',
  '/pathos-personal/catalogue-setup.js',
  '/pathos-personal/catalogue-setup.css',
  '/pathos-personal/publish.css',
+ '/pathos-personal/friends.css',
+ '/pathos-personal/friends.js',
+ '/pathos-personal/public-profile.mjs',
  '/pathos-personal/publish.js',
  '/pathos-personal/publish-config.js',
  '/pathos-personal/publish-core.mjs',

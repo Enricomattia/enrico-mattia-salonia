@@ -1,0 +1,16 @@
+#openFriendsBtn{min-height:44px;white-space:nowrap}
+.friends-list{max-width:640px;list-style:none;padding:0;margin:20px 0 0;border-top:1px solid var(--line)}
+.friends-list:empty{display:none}
+.friends-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.friend-identity{display:flex;align-items:center;gap:12px;min-width:0;color:var(--ink);overflow-wrap:anywhere;text-underline-offset:4px}
+.friend-identity strong{font:500 22px var(--serif)}
+.friend-avatar,.publish-photo{position:relative;flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;overflow:hidden;background:var(--soft);color:var(--ink)}
+.friend-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#friendDialog{max-width:480px}
+#friendDialog .input{width:100%}
+#friendDialog .field{margin-top:14px}
+#friendDialog [hidden],#friends [hidden]{display:none}
+#friendPreview{margin:12px 0}
+#friendFeedback,#friendsStatus{overflow-wrap:anywhere}
+#friendDialog .dialog-actions{flex-wrap:wrap}
+@media(max-width:360px){header.topbar .top-actions{gap:3px}.top-actions #openFriendsBtn,.top-actions #openPublishingBtn,.top-actions #installPersonalBtn{padding-inline:5px}}
