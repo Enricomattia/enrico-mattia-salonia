@@ -1,4 +1,5 @@
 import{digest}from'./publish-core.mjs';
+import{profilePath}from'./public-profile.mjs';
 const id=value=>typeof value==='string'&&/^[A-Za-z0-9_-]{1,100}$/.test(value);
 const failedDeployStates=new Set(['error','failed','canceled','cancelled','rejected','skipped']);
 export const publishTimeoutMessage='Πathos stopped waiting for Netlify. Check the project in Netlify before publishing again.';
@@ -64,7 +65,7 @@ export function netlifyClient(token,{fetcher=fetch,pause=ms=>new Promise(resolve
     async deploy(ref,account,files,{signal,onProgress=()=>{}}={}){
       onProgress('Checking your Netlify project…');
       await verify(ref,account,signal);
-      if(!(files instanceof Map)||!files.has('/index.html')||[...files.keys()].some(path=>!['/index.html','/robots.txt','/_headers'].includes(path)))throw new Error('The public website is invalid. Preview it again.');
+      if(!(files instanceof Map)||!files.has('/index.html')||[...files.keys()].some(path=>!['/index.html','/robots.txt','/_headers',profilePath].includes(path)))throw new Error('The public website is invalid. Preview it again.');
       const hashes={},byHash=new Map();
       for(const[path,content]of files){const hash=await digest(content,'SHA-1');hashes[path]=hash;byHash.set(hash,{path,content});}
       onProgress('Starting the upload in Netlify…');

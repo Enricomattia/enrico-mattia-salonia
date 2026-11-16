@@ -28,7 +28,8 @@ const pixel='data:image/png;base64,'+fs.readFileSync(path.join(publicRoot,'patho
 const fixture={schemaVersion:6,works:[{id:'book-1',title:'Synthetic book',type:'Book',creator:'Test author',cover:pixel,aliases:[],liked:true,owned:true,genres:['Classics'],external:{isbn:'9780140328721'},sourceMetadata:{}}],experiences:[{id:'reading-1',workId:'book-1',startDate:'2026-10-01',endDate:'2026-10-01',status:'completed',rating:4.5,review:'A review\nwith paragraphs.',moods:['reflective'],pace:'slow',quotes:[{id:'quote-1',text:'A saved passage',note:'p. 12',featured:true}],tags:['test'],isPublic:true,edition:{isbn:'9780140328721',ean:'9780140328721',identifierType:'catalogue',identifierValue:'custom-1',sourceId:'storygraph-test-uid',publisher:'Manual publisher',publishYear:'2020',language:'Italian',format:'Paperback',pages:'123',printing:'2ª',contributors:'Test translator',cover:pixel,source:'manual'}}]};
 const versionedAssets=new Set([
   'index.html','sw.js','cover-accent.mjs','book-catalogue.mjs','review-format.js','review-format.css','markdown-it.min.js','review-editor.js',
-  'publish.js','publish.css','publish-core.mjs','publish-netlify.mjs','publish-hosted.mjs','publish-config.js'
+  'publish.js','publish.css','publish-core.mjs','publish-netlify.mjs','publish-hosted.mjs','publish-config.js',
+  'friends.js','friends.css','public-profile.mjs','published-reader.txt','published-reader.css','published-reader.js'
 ]);
 const baseline={};
 if(process.env.PATHOS_UPDATE_BASELINE_REF){
@@ -349,7 +350,7 @@ async function checkArchiveViews(page){
     await app.waitForFunction(()=>document.querySelector('meta[name="pathos-test-release"]').content==='current');
     await app.waitForFunction(()=>window.pathosPersonalReady);
     assert.deepEqual((await archive(app)).experiences,updateFixture.experiences);
-    for(const asset of ['markdown-it.min.js','review-format.js','review-format.css','review-editor.js','catalogue-setup.js','catalogue-setup.css','publish.js','publish-core.mjs','publish-netlify.mjs','publish-hosted.mjs','publish.css','publish-config.js','published-reader.txt','published-reader.js','published-reader.css']){
+    for(const asset of ['markdown-it.min.js','review-format.js','review-format.css','review-editor.js','catalogue-setup.js','catalogue-setup.css','publish.js','publish-core.mjs','publish-netlify.mjs','publish-hosted.mjs','publish.css','publish-config.js','published-reader.txt','published-reader.js','published-reader.css','friends.js','friends.css','public-profile.mjs']){
       assert.equal(await app.evaluate(async name=>{
         const key=(await caches.keys()).find(key=>key.startsWith('pathos-personal-shell-'));
         return(await(await caches.open(key)).match('/pathos-personal/'+name)).text();
@@ -376,6 +377,12 @@ async function checkArchiveViews(page){
     assert.equal(await app.locator('meta[name="pathos-test-release"]').getAttribute('content'),'current');
     assert.equal(await app.locator('#tmdbTokenInput').inputValue(),'unfinished-setup-token');
     await app.locator('#catalogueGuideDone').click();
+    await app.locator('#openFriendsBtn').click();await app.locator('#friendAdd').click();
+    await app.locator('#friendAddress').fill('https://pathos-unfinished.netlify.app/');
+    await app.evaluate(()=>document.getElementById('pathosUpdateNow').click());
+    assert.equal(await app.locator('#friendDialog').evaluate(el=>el.open),true);
+    assert.equal(await app.locator('#friendAddress').inputValue(),'https://pathos-unfinished.netlify.app/');
+    await app.locator('#closeFriendDialog').click();
     await app.locator('#addBtn').click();await app.locator('[name="title"]').fill('Unfinished draft');
     await app.evaluate(()=>document.getElementById('pathosUpdateNow').click());
     assert.equal(await app.locator('#entryDialog').evaluate(el=>el.open),true);

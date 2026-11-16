@@ -333,7 +333,7 @@ dialog::backdrop {background:rgba(25,38,36,.42)}
 
 /* Hosted private editor: hide editing controls unless authenticated as owner. */
 body:not(.pathos-owner) #addBtn, body:not(.pathos-owner) #backupBtn,
-body:not(.pathos-owner) #navLogBtn, body:not(.pathos-owner) #settingsMenu,
+body:not(.pathos-owner) #navLogBtn, body:not(.pathos-owner) #settingsMenu, body:not(.pathos-owner) #openFriendsBtn,
 body:not(.pathos-owner) #restoreInput, body:not(.pathos-owner) label:has(#restoreInput), body:not(.pathos-owner) #resetSnapshotBtn,
 body:not(.pathos-owner) #enrichBooksBtn, body:not(.pathos-owner) #enrichFilmsBtn,
 body:not(.pathos-owner) #enrichAllBtn, body:not(.pathos-owner) #saveTmdbBtn,
@@ -759,13 +759,14 @@ body:not(.pathos-owner) .experience-edit{display:none}
 .edition-cover-preview{width:100px;max-width:100%;height:140px;overflow:hidden;background:var(--soft)}.edition-cover-preview img{width:100%;height:100%;object-fit:contain}.vocabulary-suggestions{display:flex;flex-wrap:wrap;gap:6px}.vocabulary-suggestions[hidden],[hidden]#experienceCoverField,[hidden]#experienceCoverPreview{display:none!important}.vocabulary-suggestions button{font:inherit;min-height:36px;border:1px solid var(--line);background:var(--paper);border-radius:20px;padding:6px 10px;cursor:pointer}.experience-cover{float:right;width:64px;height:90px;position:relative;overflow:hidden;margin:12px 0 12px 16px}.experience-cover img{width:100%;height:100%;object-fit:cover}.experience:after{content:'';display:block;clear:both}
 </style>
 <link rel="stylesheet" href="/pathos/discover.css">
+<link rel="stylesheet" href="/pathos-personal/friends.css">
 <link rel="stylesheet" href="/pathos/review-format.css">
 </head>
 <body>
 
 <header class="topbar">
   <div class="archive-heading"><h1 class="pathos-wordmark" aria-label="Πathos"><span class="pathos-pi" aria-hidden="true">Π</span><span>athos</span></h1></div>
-  <div class="top-actions"><button type="button" class="btn" id="discoverBtn" aria-label="Find a book or film" hidden>Find<span class="desktop-action-text"> a work</span></button><details class="settings-menu" id="settingsMenu"><summary class="btn subtle" aria-label="Metadata, import and backup" title="Metadata, import and backup"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></summary><div class="more-menu-panel"><button type="button" class="menu-view" data-view="metadata">Metadata & covers</button><button type="button" class="menu-view" data-view="import">Import & backup</button></div></details><button class="btn primary" id="addBtn" aria-label="Add experience">+ Add<span class="desktop-action-text"> experience</span></button></div>
+  <div class="top-actions"><button type="button" class="btn" id="discoverBtn" aria-label="Find a book or film" hidden>Find<span class="desktop-action-text"> a work</span></button><button type="button" class="btn" id="openFriendsBtn" aria-controls="friends" data-hosted hidden>Friends</button><details class="settings-menu" id="settingsMenu"><summary class="btn subtle" aria-label="Metadata, import and backup" title="Metadata, import and backup"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></summary><div class="more-menu-panel"><button type="button" class="menu-view" data-view="metadata">Metadata & covers</button><button type="button" class="menu-view" data-view="import">Import & backup</button></div></details><button class="btn primary" id="addBtn" aria-label="Add experience">+ Add<span class="desktop-action-text"> experience</span></button></div>
 </header>
 <nav class="tabs" aria-label="Πathos pages">
   <button data-view="home" class="tab active"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z"/></svg><span class="tab-label">Home</span></button>
@@ -889,6 +890,13 @@ body:not(.pathos-owner) .experience-edit{display:none}
   </div>
 </section>
 
+<section id="friends" class="view">
+  <div class="section-head"><h2 id="friendsHeading" tabindex="-1">Friends</h2><button type="button" class="btn primary" id="friendAdd">Add friend</button></div>
+  <p class="muted" id="friendsEmpty">Ask a friend for the link to their published Πathos diary.</p>
+  <p class="muted" id="friendsStatus" role="status"></p>
+  <ul class="friends-list" id="friendsList" aria-label="Saved friends"></ul>
+</section>
+
 <section id="import" class="view">
   <div class="section-head"><div><h2>Import</h2></div></div>
   <div id="importReport" class="import-report hidden"></div>
@@ -920,6 +928,25 @@ body:not(.pathos-owner) .experience-edit{display:none}
   </div>
 </section>
 </main>
+
+<dialog id="friendDialog" aria-labelledby="friendDialogTitle">
+  <form id="friendForm">
+    <div class="dialog-head"><h2 id="friendDialogTitle">Add friend</h2><button class="icon-btn" id="closeFriendDialog" type="button" aria-label="Close friend form">×</button></div>
+    <label class="field" for="friendAddress">Public Πathos link</label>
+    <input class="input" id="friendAddress" type="url" maxlength="2048" autocomplete="off" spellcheck="false" required>
+    <p class="muted" id="friendFeedback" role="status"></p>
+    <div id="friendDetails" hidden>
+      <div class="friend-identity" id="friendPreview" hidden></div>
+      <label class="field" for="friendNickname" id="friendNicknameLabel">Nickname (optional)</label>
+      <input class="input" id="friendNickname" maxlength="60" autocomplete="off">
+    </div>
+    <div class="dialog-actions">
+      <button class="btn subtle" id="friendRemove" type="button" hidden>Remove friend</button>
+      <button class="btn subtle" id="friendRefresh" type="button" hidden>Refresh profile</button>
+      <button class="btn primary" id="friendSave" type="submit">Find profile</button>
+    </div>
+  </form>
+</dialog>
 
 <dialog id="entryDialog">
   <div class="dialog-head"><div><h2>Add or edit</h2></div><button class="icon-btn" id="closeDialog">×</button></div>
@@ -1962,6 +1989,7 @@ document.fonts.ready.then(scheduleNavigation);
 scheduleNavigation();
 
 function showView(name){
+  if(name==='friends'&&!window.pathosCanEdit)return;
   // The former Timeline page is now Home's diary.
   if(name==='timeline')name='home';
   if(name==='home')scheduleDiaryLayout();
@@ -1972,6 +2000,7 @@ function showView(name){
   if($('moreMenu'))$('moreMenu').open=false;
   const settings=$('settingsMenu');
   if(settings){settings.open=false;settings.querySelector('summary').classList.toggle('active',['metadata','import'].includes(name));}
+  if(name==='friends')window.PathosFriends?.refresh();
   window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
 }
 document.querySelectorAll('.tab[data-view],.menu-view').forEach(t=>t.onclick=()=>showView(t.dataset.view));
@@ -2118,6 +2147,7 @@ renderAll();
 <script src="/pathos/config.js"></script>
 <script type="module" src="/pathos/sync.js"></script>
 <script type="module" src="/pathos/discover.js"></script>
+<script type="module" src="/pathos-personal/friends.js"></script>
 <script type="module" src="/pathos/cover-accent.mjs"></script>
 </body>
 </html>

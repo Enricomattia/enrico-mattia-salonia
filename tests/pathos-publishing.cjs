@@ -36,11 +36,23 @@ test('self-contained reader safely embeds literal text and hashes the executable
   const files=await buildPublication(projectArchive(fixture,['selected']),assets),html=files.get('/index.html');
   assert(!html.includes('PUBLICATION_'));assert(!html.includes('PRIVATE_'));assert(!html.includes('UNSELECTED_'));
   assert(html.includes('\\u003c/script\\u003e'));assert(html.includes('$&'));assert.equal((html.match(/<script>/g)||[]).length,3);
+  assert.deepEqual(JSON.parse(files.get('/pathos-profile.json')),{format:'pathos-profile-v1',name:'My Πathos',photo:''});
+  assert.match(files.get('/_headers'),/\n\/pathos-profile\.json\n  Access-Control-Allow-Origin: \*/);
   assert.match(html,/connect-src 'none'/);assert.match(files.get('/_headers'),/frame-ancestors 'none'/);assert.match(files.get('/robots.txt'),/Disallow: \//);
   assert.match(files.get('/_headers'),/\n\/\n  Access-Control-Allow-Origin: \*\n  Access-Control-Expose-Headers: X-Pathos-Publication\n  X-Pathos-Publication: v1/);
   assert(html.includes('Copyright (c) 2014 Vitaly Puzrin'));assert.match(html,/SIL Open Font License/i);
   await assert.rejects(()=>buildPublication(projectArchive(fixture,['selected']),{...assets,html:assets.html+'<script src="https://example.com/preview-toolbar.js"></script>'}),/unexpected script/);
   assert(!html.includes('indexedDB')&&!html.includes('supabase')&&!html.includes('PATHOS_CONFIG'));
+});
+test('friend addresses use stable Πathos website links and profile photos are bounded JPEGs',async()=>{
+  const {friendAddress,profilePhoto,publicProfile}=await import('../public/pathos-personal/public-profile.mjs');
+  assert.equal(friendAddress('https://PATHOS-ABC.netlify.app/index.html?source=chat#recent'),'https://pathos-abc.netlify.app/');
+  const legacy='https://enricomattiasalonia.com/pathos-share/'+'a'.repeat(32);
+  assert.equal(friendAddress(legacy+'/'),legacy);
+  for(const url of ['http://pathos-abc.netlify.app','https://pathos-abc.netlify.app.evil.test','https://user@pathos-abc.netlify.app','https://deploy-preview-2--pathos-abc.netlify.app','https://pathos-abc.netlify.app/profile','https://127.0.0.1'])assert.equal(friendAddress(url),'');
+  for(const photo of ['https://example.com/photo.jpg','data:image/svg+xml;base64,PHN2Zz4=','data:image/jpeg;base64,/9j/'+'A'.repeat(70000)])assert.equal(profilePhoto(photo),'');
+  const photo='data:image/jpeg;base64,/9j/AA==';
+  assert.deepEqual(publicProfile({username:'  maria  ',title:'My diary',photo,token:'PRIVATE'}),{format:'pathos-profile-v1',name:'maria',photo});
 });
 function apiMock({mismatch=false,failUpload=false,deployState='ready'}={}){
   const calls=[],metadata={pathos_kind:'personal-publication-v1',pathos_id:'publisher-test-12345'},site={id:'site-123',name:'pathos-publishertest12345',account_id:'team-123',build_settings:{}};

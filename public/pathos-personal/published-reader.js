@@ -29,6 +29,10 @@
   document.title=data.title+' · Πathos';$('profileTitle').textContent=data.title;
   const username=typeof data.username==='string'?data.username.trim():'';
   $('profileUsername').textContent=username;$('profileUsername').hidden=!username;
+  const photo=$('profilePhoto');
+  if(photo&&typeof data.photo==='string'&&data.photo.length<=64*1024&&/^data:image\/jpeg;base64,\/9j\/[A-Za-z0-9+/]+={0,2}$/.test(data.photo)){
+    photo.addEventListener('error',()=>{photo.hidden=true;},{once:true});photo.src=data.photo;photo.hidden=false;
+  }
   const current=entries.filter(entry=>entry.status==='in-progress');
   $('current').innerHTML=current.length?'<h2>Current</h2><div class="diary">'+current.map(card).join('')+'</div>':'';bind($('current'));
   const months=new Map();
