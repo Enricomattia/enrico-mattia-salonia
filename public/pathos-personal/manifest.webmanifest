@@ -1,7 +1,7 @@
 {
   "id": "/pathos-personal/",
-  "name": "Πathos Personal",
-  "short_name": "Πathos",
+  "name": "Pathos",
+  "short_name": "Pathos",
   "description": "Private, offline-first cultural diary for books, films, theatre, games and experiences.",
   "start_url": "/pathos-personal/index.html",
   "scope": "/pathos-personal/",

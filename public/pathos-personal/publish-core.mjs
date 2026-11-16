@@ -30,7 +30,7 @@ export function projectArchive(archive,ids,options={}){
   }
   if(!experiences.length&&!options.allowEmpty)throw new Error('Include at least one experience to create a website.');
   if(experiences.length>10000)throw new Error('Publish up to 10,000 experiences at a time.');
-  return{format:'pathos-publication-v1',title:text(options.title,120).trim()||'My Πathos',username:text(options.username,40).trim(),photo:profilePhoto(options.photo),works,experiences};
+  return{format:'pathos-publication-v1',title:text(options.title,120).trim()||'My Pathos',username:text(options.username,40).trim(),photo:profilePhoto(options.photo),works,experiences};
 }
 export function jsonForHtml(value){return JSON.stringify(value).replace(/[<>&\u2028\u2029]/g,char=>'\\u'+char.charCodeAt(0).toString(16).padStart(4,'0'));}
 export async function digest(value,algorithm='SHA-256'){

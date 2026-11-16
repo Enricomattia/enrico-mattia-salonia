@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <link rel="manifest" href="/pathos-personal/manifest.webmanifest">
-<meta name="application-name" content="Πathos Personal">
+<meta name="application-name" content="Pathos">
+<meta name="apple-mobile-web-app-title" content="Pathos">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="robots" content="noindex, nofollow, noarchive">
@@ -10,7 +11,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#f8f8f5">
-<title>Πathos Personal</title>
+<title>Pathos</title>
 <style>
 :root{--bg:#f4f0e8;--paper:#fffdf8;--ink:#1e1d1a;--muted:#716d65;--line:#d8d0c3;--accent:#222;--soft:#ebe4d8;--danger:#9f2c2c;--shadow:0 14px 40px rgba(40,32,18,.09)}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -986,7 +987,7 @@ body:not(.pathos-owner) .experience-edit{display:none}
       </div>
       <p class="metadata-note" id="publishPhotoHint">Appears on your public website and in friends’ saved lists.</p>
       <p class="publish-status" id="publishPhotoFeedback" role="status" hidden></p>
-      <label class="field" for="publishTitle">Website title</label><input class="input" id="publishTitle" maxlength="120" placeholder="My Πathos">
+      <label class="field" for="publishTitle">Website title</label><input class="input" id="publishTitle" maxlength="120" placeholder="My Pathos">
       <div class="publish-options"><label><input type="checkbox" id="publishReviews" checked> Reviews</label><label><input type="checkbox" id="publishPassages" checked> Passages</label><label><input type="checkbox" id="publishCovers" checked> Covers</label></div>
       <p class="metadata-note" id="publishSelectionHint">All experiences are included by default. Uncheck anything you want to keep private.</p>
       <p class="metadata-note">To remove an entry from your live site, exclude it and publish an update. Older versions or saved copies may still contain it.</p>
@@ -1052,8 +1053,8 @@ body:not(.pathos-owner) .experience-edit{display:none}
   </form>
 </dialog>
 
-<dialog id="entryDialog">
-  <div class="dialog-head"><div><h2>Add or edit</h2></div><button class="icon-btn" id="closeDialog">×</button></div>
+<dialog id="entryDialog" aria-labelledby="entryDialogTitle">
+  <div class="dialog-head"><div><h2 id="entryDialogTitle">Add experience</h2></div><button class="icon-btn" id="closeDialog">×</button></div>
   <form id="entryForm">
     <div class="form-grid">
       <label class="field">Medium<select class="input" name="type"><option>Book</option><option>Film</option><option>TV</option><option>Theatre</option><option>Videogame</option><option>Album</option><option>Concert</option><option>Exhibition</option><option>Podcast</option><option>Opera</option><option>Other</option></select></label>
@@ -2224,13 +2225,15 @@ function resetFormSections(existing=false){
 function openEntryDialog(opts={}){
   if(!window.pathosCanEdit||archiveBusy){toast('Local archive is still loading');return;}
   editingExperienceId=null;selectedCatalogItem=null;$('deleteBtn').classList.add('hidden');$('entryForm').reset();clearEditionForm();renderQuoteEditor([]);const w=opts.work;
+  $('entryDialogTitle').textContent=w?'Log again':'Add experience';
+  $('cancelBtn').textContent=w?'Discard draft':'Cancel';
   if(w){['title','type','creator','year','cover'].forEach(k=>{if($('entryForm').elements[k])$('entryForm').elements[k].value=w[k]||''});$('entryForm').elements.repeat.checked=true;selectedCatalogItem=localItemFromWork(w);const lastEd=experiencesFor(w.id).find(e=>e.edition)?.edition;if(lastEd)fillEditionForm(lastEd)}
   fillWorkFlags(w);fillBookProfile(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(false);$('entryDialog').showModal();
 }
 function openExperience(id){
   if(archiveBusy)return;
   if(!window.pathosCanEdit){const item=db.experiences.find(x=>x.id===id);if(item)openWork(item.workId);return;}
-  const e=db.experiences.find(x=>x.id===id);if(!e)return;const w=workFor(e.workId);if(!w)return;editingExperienceId=id;const f=$('entryForm');f.reset();clearEditionForm();Object.entries({title:w.title,type:w.type,creator:w.creator,year:w.year,cover:e.cover||w.cover,status:e.status||'completed',startDate:e.startDate,endDate:e.endDate,rating:e.rating,venue:e.venue,viewingLanguage:e.viewingLanguage,sourceUrl:e.sourceUrl||'',tags:(e.tags||[]).join(', '),review:e.review}).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??''});fillWorkFlags(w);fillBookProfile(w,e);f.elements.repeat.checked=e.repeat;renderQuoteEditor(e.quotes||[]);if(e.edition)fillEditionForm(e.edition);selectedCatalogItem=localItemFromWork(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(true);$('deleteBtn').classList.remove('hidden');$('entryDialog').showModal();void findPageImages(true);
+  const e=db.experiences.find(x=>x.id===id);if(!e)return;const w=workFor(e.workId);if(!w)return;editingExperienceId=id;const f=$('entryForm');f.reset();clearEditionForm();Object.entries({title:w.title,type:w.type,creator:w.creator,year:w.year,cover:e.cover||w.cover,status:e.status||'completed',startDate:e.startDate,endDate:e.endDate,rating:e.rating,venue:e.venue,viewingLanguage:e.viewingLanguage,sourceUrl:e.sourceUrl||'',tags:(e.tags||[]).join(', '),review:e.review}).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??''});fillWorkFlags(w);fillBookProfile(w,e);f.elements.repeat.checked=e.repeat;renderQuoteEditor(e.quotes||[]);if(e.edition)fillEditionForm(e.edition);selectedCatalogItem=localItemFromWork(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(true);$('entryDialogTitle').textContent='Edit experience';$('cancelBtn').textContent='Cancel';$('deleteBtn').classList.remove('hidden');$('entryDialog').showModal();void findPageImages(true);
 }
 const reviewEditor=PathosReview.attach($('reviewEditor'));
 $('entryForm').addEventListener('submit',async ev=>{if(!window.pathosCanEdit||archiveBusy){ev.preventDefault();return;}

@@ -19,10 +19,23 @@ async function checkEntryDetails(page,{backup,restore}){
   assert.equal(film.viewingLanguage,'English');
   assert.equal(film.isPublic,hosted);
   await page.evaluate(id=>openExperience(id),film.id);
+  assert(await page.getByRole('dialog',{name:'Edit experience',exact:true}).isVisible());
+  assert(await page.getByRole('button',{name:'Delete',exact:true}).isVisible());
   assert.equal(await field('viewingLanguage').inputValue(),'English');
   await field('viewingLanguage').fill('Italian');
   await submit();
-  await page.evaluate(id=>openEntryDialog({work:workFor(id)}),film.workId);
+  const beforeDraft=await page.evaluate(()=>structuredClone(db));
+  const logAgain=async()=>{
+    await page.evaluate(id=>openWork(id),film.workId);
+    await page.getByRole('button',{name:'Log again',exact:true}).click();
+  };
+  await logAgain();
+  assert(await page.getByRole('dialog',{name:'Log again',exact:true}).isVisible());
+  assert(!await page.locator('#deleteBtn').isVisible());
+  await field('viewingLanguage').fill('Spanish');
+  await page.getByRole('button',{name:'Discard draft',exact:true}).click();
+  assert.deepEqual(await page.evaluate(()=>db),beforeDraft,'Discarding a repeat draft preserves every saved experience');
+  await logAgain();
   assert.equal(await field('viewingLanguage').inputValue(),'','Do not infer the language of a rewatch');
   if(hosted){assert.equal(await field('isPrivate').isChecked(),false);await field('isPrivate').check();}
   await field('viewingLanguage').fill('French');

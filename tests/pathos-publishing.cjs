@@ -36,7 +36,7 @@ test('self-contained reader safely embeds literal text and hashes the executable
   const files=await buildPublication(projectArchive(fixture,['selected']),assets),html=files.get('/index.html');
   assert(!html.includes('PUBLICATION_'));assert(!html.includes('PRIVATE_'));assert(!html.includes('UNSELECTED_'));
   assert(html.includes('\\u003c/script\\u003e'));assert(html.includes('$&'));assert.equal((html.match(/<script>/g)||[]).length,3);
-  assert.deepEqual(JSON.parse(files.get('/pathos-profile.json')),{format:'pathos-profile-v1',name:'My Πathos',photo:''});
+  assert.deepEqual(JSON.parse(files.get('/pathos-profile.json')),{format:'pathos-profile-v1',name:'My Pathos',photo:''});
   assert.match(files.get('/_headers'),/\n\/pathos-profile\.json\n  Access-Control-Allow-Origin: \*/);
   assert.match(html,/connect-src 'none'/);assert.match(files.get('/_headers'),/frame-ancestors 'none'/);assert.match(files.get('/robots.txt'),/Disallow: \//);
   assert.match(files.get('/_headers'),/\n\/\n  Access-Control-Allow-Origin: \*\n  Access-Control-Expose-Headers: X-Pathos-Publication\n  X-Pathos-Publication: v1/);
@@ -47,6 +47,9 @@ test('self-contained reader safely embeds literal text and hashes the executable
 test('friend addresses use stable Πathos website links and profile photos are bounded JPEGs',async()=>{
   const {friendAddress,profilePhoto,publicProfile}=await import('../public/pathos-personal/public-profile.mjs');
   assert.equal(friendAddress('https://PATHOS-ABC.netlify.app/index.html?source=chat#recent'),'https://pathos-abc.netlify.app/');
+  assert.equal(friendAddress('https://enricomattiasalonia.com/pathos/app.html?ref=friend'),'https://enricomattiasalonia.com/pathos');
+  assert.equal(friendAddress('https://enricomattiasalonia.com/pathos/'),'https://enricomattiasalonia.com/pathos');
+  assert.equal(friendAddress('https://enricomattiasalonia.com/pathos/anything'),'');
   const legacy='https://enricomattiasalonia.com/pathos-share/'+'a'.repeat(32);
   assert.equal(friendAddress(legacy+'/'),legacy);
   for(const url of ['http://pathos-abc.netlify.app','https://pathos-abc.netlify.app.evil.test','https://user@pathos-abc.netlify.app','https://deploy-preview-2--pathos-abc.netlify.app','https://pathos-abc.netlify.app/profile','https://127.0.0.1'])assert.equal(friendAddress(url),'');

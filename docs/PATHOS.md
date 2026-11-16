@@ -8,7 +8,7 @@ _Last checked against the implementation: 8 November 2026._
 
 Its author had previously tracked books in **The StoryGraph** and films in **Letterboxd**; Πathos was created to unify these records and cover media those services handle poorly. It started as a single local HTML app, then evolved into an online owner archive and a separate, installable, offline-first app other people can use.
 
-The branding is **Πathos**, with an uppercase Greek Pi. Keep the UI understated, personal, quick to use, and visually consistent with the existing site. The user has repeatedly preferred **removing unnecessary interface copy and decoration** over adding more.
+Use **Pathos** for the app name, install and browser titles. Keep the Greek Π in the wordmark, artwork and on-screen branding. Keep the UI understated, personal, quick to use, and visually consistent with the existing site. The user has repeatedly preferred **removing unnecessary interface copy and decoration** over adding more.
 
 ## 2. Two distinct applications — already published
 
@@ -103,7 +103,7 @@ The v0.6 redesign (15 October 2026, requested by the owner from a design canvas 
 - **Insights:** a period switch (current year / All time) defaults to the current year once it has a dated experience. A small 24px serif line shows only the experience count ("73 experiences"), followed by one row of stats (average rating, ratings, written reviews, words of review, rated five). In year mode, **The year in covers** shows each month's covers (selectable). The rating chart has fixed half-step columns; quarter ratings are counted in the nearest half column, and the note says how many were grouped (records keep exact values; the drill-down uses the same grouping). Experiences by year and Average rating by year appear only in All time. All drill-downs respect the selected period.
 - **Phones (600px and narrower):** the page list becomes a fixed bottom bar with icons and labels and, for editors, a round **Log** button in the middle (it replaces the header's Add button). Touch targets are at least 44px, and the page and dialogs fit the width. The work page is full-screen. Current scrolls sideways within its own row, and Library chips scroll within theirs. Inputs keep 16px text. Personal still hides ready-status and Install controls in standalone mode while showing save errors.
 
-Work details show each experience's review once, with no duplicate Latest review summary or experience/review count chips. A single experience is the standard display; repeat experiences retain their separate dates, editions and reviews. A discreet Log again action still opens the repeat-experience form. Library cards show an experience count only when there is more than one.
+Work details show each experience's review once, with no duplicate Latest review summary or experience/review count chips. A single experience is the standard display; repeat experiences retain their separate dates, editions and reviews. Log again opens a new repeat draft. Discard draft closes it without saving. Edit offers Delete for the selected saved experience. Library cards show an experience count only when there is more than one.
 
 Book entry forms use one editable **Language** field and one **Publisher** field for edition filtering and recording. Choosing an edition fills it; looking up an ISBN does not erase a manually recorded language before selection. **I own this book** appears in the main form only for books and records optional boolean `work.owned` under schema version 6. Existing StoryGraph ownership in `work.sourceMetadata.owned` or experience `details.owned` is recognised for display; explicit `work.owned` takes precedence, including false. There is no automatic rewrite or storage migration. Ownership and favourites survive repeat logging, unrelated edits and JSON backups; Cancel does not change them. Public hosted responses include the explicitly requested favourite flag for published works and continue to omit ownership.
 
@@ -146,6 +146,12 @@ Friends are stored under their own key in the existing IndexedDB store. Add, edi
 The hosted **/pathos** archive also shows **Friends** to the signed-in owner. Both views use the same link lookup, photo rendering and editing controls. The hosted list is saved in its own device-local IndexedDB database. Sign-out closes the Friends view and clears its rendered content. The list is private to the owner's interface, while cloud archive reads and writes keep their existing scope.
 
 **Profile photo** in **Publish online** is optional. The app decodes a chosen image and re-encodes a small JPEG before saving it to device-local publishing preferences. The published copy and its profile file contain only the chosen display name and photo as profile fields. The public reader can still render an older snapshot without the photo. To change or remove the photo from the current website, update the published version. v40 precaches the Friends interface and stages the update through **Update / Later**, including a guard for an open friend form.
+
+### Hosted public profile and app names (shell v42)
+
+Friends accepts the owner’s main /pathos URL and reads the public name and optional photo from /api/pathos/profile. The signed-in owner can set or remove that photo under **Settings → Profile photo → Save public photo**. The API verifies writes with the same Supabase owner check as the catalogue API and stores the standalone photo in Netlify Blobs. Deploy previews use their own deploy store. Public reads contain only the profile name and photo.
+
+The install manifest and page titles use **Pathos**. Shell v42 stages the label and friend link changes through **Update / Later**. The existing manifest ID, start URL, scope and archive storage continue to identify the same installed app. Safari lets users rename an existing web app in its Application Name settings. Newly published Personal websites use the updated browser title.
 
 ### Personal book covers and Insights (shell v32)
 

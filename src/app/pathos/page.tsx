@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Πathos — Enrico Mattia Salonia',
+  title: 'Pathos — Enrico Mattia Salonia',
   description: 'Books, films, theatre, games, reviews and saved passages.',
   robots: { index: false, follow: false },
 };

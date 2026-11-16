@@ -27,7 +27,7 @@ const copy=x=>JSON.parse(JSON.stringify(x));
 const pixel='data:image/png;base64,'+fs.readFileSync(path.join(publicRoot,'pathos-personal/icon-192.png')).toString('base64');
 const fixture={schemaVersion:6,works:[{id:'book-1',title:'Synthetic book',type:'Book',creator:'Test author',cover:pixel,aliases:[],liked:true,owned:true,genres:['Classics'],external:{isbn:'9780140328721'},sourceMetadata:{}}],experiences:[{id:'reading-1',workId:'book-1',startDate:'2026-10-01',endDate:'2026-10-01',status:'completed',rating:4.5,review:'A review\nwith paragraphs.',moods:['reflective'],pace:'slow',quotes:[{id:'quote-1',text:'A saved passage',note:'p. 12',featured:true}],tags:['test'],isPublic:true,edition:{isbn:'9780140328721',ean:'9780140328721',identifierType:'catalogue',identifierValue:'custom-1',sourceId:'storygraph-test-uid',publisher:'Manual publisher',publishYear:'2020',language:'Italian',format:'Paperback',pages:'123',printing:'2ª',contributors:'Test translator',cover:pixel,source:'manual'}}]};
 const versionedAssets=new Set([
-  'index.html','sw.js','cover-accent.mjs','book-catalogue.mjs','review-format.js','review-format.css','markdown-it.min.js','review-editor.js',
+  'index.html','sw.js','manifest.webmanifest','cover-accent.mjs','book-catalogue.mjs','review-format.js','review-format.css','markdown-it.min.js','review-editor.js',
   'publish.js','publish.css','publish-core.mjs','publish-netlify.mjs','publish-hosted.mjs','publish-config.js',
   'friends.js','friends.css','public-profile.mjs','published-reader.txt','published-reader.css','published-reader.js'
 ]);
@@ -350,7 +350,7 @@ async function checkArchiveViews(page){
     await app.waitForFunction(()=>document.querySelector('meta[name="pathos-test-release"]').content==='current');
     await app.waitForFunction(()=>window.pathosPersonalReady);
     assert.deepEqual((await archive(app)).experiences,updateFixture.experiences);
-    for(const asset of ['markdown-it.min.js','review-format.js','review-format.css','review-editor.js','catalogue-setup.js','catalogue-setup.css','publish.js','publish-core.mjs','publish-netlify.mjs','publish-hosted.mjs','publish.css','publish-config.js','published-reader.txt','published-reader.js','published-reader.css','friends.js','friends.css','public-profile.mjs']){
+    for(const asset of ['markdown-it.min.js','review-format.js','review-format.css','review-editor.js','catalogue-setup.js','catalogue-setup.css','publish.js','publish-core.mjs','publish-netlify.mjs','publish-hosted.mjs','publish.css','publish-config.js','published-reader.txt','published-reader.js','published-reader.css','friends.js','friends.css','public-profile.mjs','manifest.webmanifest']){
       assert.equal(await app.evaluate(async name=>{
         const key=(await caches.keys()).find(key=>key.startsWith('pathos-personal-shell-'));
         return(await(await caches.open(key)).match('/pathos-personal/'+name)).text();
@@ -411,6 +411,9 @@ async function checkArchiveViews(page){
     assert.deepEqual((await archive(app)).works[0].genres,['Fiction, general']);
     assert.equal(await app.evaluate(()=>window.PATHOS_STARTER_TERMS.genres.length),161,'Starter choices load after a full offline browser restart');
     assert.equal(await app.locator('link[rel="manifest"]').getAttribute('href'),'/pathos-personal/manifest.webmanifest');
+    const manifest=await app.evaluate(()=>fetch('/pathos-personal/manifest.webmanifest').then(response=>response.json()));
+    assert.equal(manifest.name,'Pathos');assert.equal(manifest.short_name,'Pathos');assert.equal(manifest.id,'/pathos-personal/');
+    assert.equal(await app.title(),'Pathos');
     await app.screenshot({path:path.join(temporary,'personal.png'),fullPage:true});
     await installed.close();
   });

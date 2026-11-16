@@ -42,6 +42,20 @@ else {
     if(!isOwner)throw new Error('Sign in as the archive owner.');
     return result;
   };
+  window.pathosSaveProfilePhoto=async photo=>{
+    if(!isOwner)throw new Error('Sign in as the archive owner.');
+    const {data,error}=await supabase.auth.getSession();
+    if(error||!data?.session?.access_token)throw new Error('Your session expired. Sign in again.');
+    const response=await fetch('/api/pathos/profile',{
+      method:'PUT',credentials:'omit',redirect:'error',cache:'no-store',signal:AbortSignal.timeout(15000),
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+data.session.access_token},
+      body:JSON.stringify({photo})
+    });
+    if(response.status===401||response.status===403)ownerMode(false);
+    const result=await response.json().catch(()=>null);
+    if(!response.ok||typeof result?.photo!=='string')throw new Error(result?.error||'Could not save the public photo. Try again.');
+    return result;
+  };
   async function loadArchive(){
     show('Loading…');ownerMode(false);
     const {data:userData,error:userError}=await supabase.auth.getUser();
