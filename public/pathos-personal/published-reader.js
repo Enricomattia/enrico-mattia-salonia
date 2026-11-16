@@ -26,7 +26,7 @@
     const query=$('search').value.trim().toLocaleLowerCase();
     $('books').innerHTML=data.works.filter(work=>(work.title+' '+work.creator).toLocaleLowerCase().includes(query)).sort((a,b)=>a.title.localeCompare(b.title)).map(work=>`<button class="book" data-work="${esc(work.id)}">${cover(forWork(work.id)[0])}<div><h3>${esc(work.title)}</h3><div class="meta">${esc(work.creator)}</div></div></button>`).join('')||'<p class="empty">No matching works.</p>';bind($('books'));
   }
-  document.title=data.title+' · Πathos';$('profileTitle').textContent=data.title;
+  document.title=data.title+' · Pathos';$('profileTitle').textContent=data.title;
   const username=typeof data.username==='string'?data.username.trim():'';
   $('profileUsername').textContent=username;$('profileUsername').hidden=!username;
   const photo=$('profilePhoto');

@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#f8f8f5">
-<title>Πathos · v0.6.0</title>
+<title>Pathos — Enrico Mattia Salonia</title>
 <style>
 :root{--bg:#f4f0e8;--paper:#fffdf8;--ink:#1e1d1a;--muted:#716d65;--line:#d8d0c3;--accent:#222;--soft:#ebe4d8;--danger:#9f2c2c;--shadow:0 14px 40px rgba(40,32,18,.09)}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -758,6 +758,14 @@ body:not(.pathos-owner) .experience-edit{display:none}
 @media(max-width:600px) and (forced-colors:active){nav.tabs{border-top:1px solid CanvasText}}
 .edition-cover-preview{width:100px;max-width:100%;height:140px;overflow:hidden;background:var(--soft)}.edition-cover-preview img{width:100%;height:100%;object-fit:contain}.vocabulary-suggestions{display:flex;flex-wrap:wrap;gap:6px}.vocabulary-suggestions[hidden],[hidden]#experienceCoverField,[hidden]#experienceCoverPreview{display:none!important}.vocabulary-suggestions button{font:inherit;min-height:36px;border:1px solid var(--line);background:var(--paper);border-radius:20px;padding:6px 10px;cursor:pointer}.experience-cover{float:right;width:64px;height:90px;position:relative;overflow:hidden;margin:12px 0 12px 16px}.experience-cover img{width:100%;height:100%;object-fit:cover}.experience:after{content:'';display:block;clear:both}
 </style>
+<style>
+.archive-heading{display:flex;align-items:center;gap:10px}
+#hostedProfileAvatar,#profilePhotoPreview{width:44px;height:44px;object-fit:cover;border-radius:50%;flex:none}
+#profilePhotoPreview{width:64px;height:64px;margin-block:8px}
+#profilePhotoDialog{max-width:480px}
+#profilePhotoFile{width:100%;max-width:100%}
+#profilePhotoDialog [hidden]{display:none}
+</style>
 <link rel="stylesheet" href="/pathos/discover.css">
 <link rel="stylesheet" href="/pathos-personal/friends.css">
 <link rel="stylesheet" href="/pathos/review-format.css">
@@ -765,8 +773,8 @@ body:not(.pathos-owner) .experience-edit{display:none}
 <body>
 
 <header class="topbar">
-  <div class="archive-heading"><h1 class="pathos-wordmark" aria-label="Πathos"><span class="pathos-pi" aria-hidden="true">Π</span><span>athos</span></h1></div>
-  <div class="top-actions"><button type="button" class="btn" id="discoverBtn" aria-label="Find a book or film" hidden>Find<span class="desktop-action-text"> a work</span></button><button type="button" class="btn" id="openFriendsBtn" aria-controls="friends" data-hosted hidden>Friends</button><details class="settings-menu" id="settingsMenu"><summary class="btn subtle" aria-label="Metadata, import and backup" title="Metadata, import and backup"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></summary><div class="more-menu-panel"><button type="button" class="menu-view" data-view="metadata">Metadata & covers</button><button type="button" class="menu-view" data-view="import">Import & backup</button></div></details><button class="btn primary" id="addBtn" aria-label="Add experience">+ Add<span class="desktop-action-text"> experience</span></button></div>
+  <div class="archive-heading"><h1 class="pathos-wordmark" aria-label="Πathos"><span class="pathos-pi" aria-hidden="true">Π</span><span>athos</span></h1><img id="hostedProfileAvatar" alt="" hidden></div>
+  <div class="top-actions"><button type="button" class="btn" id="discoverBtn" aria-label="Find a book or film" hidden>Find<span class="desktop-action-text"> a work</span></button><button type="button" class="btn" id="openFriendsBtn" aria-controls="friends" data-hosted hidden>Friends</button><details class="settings-menu" id="settingsMenu"><summary class="btn subtle" aria-label="Settings" title="Settings"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></summary><div class="more-menu-panel"><button type="button" class="menu-view" id="openProfilePhoto">Profile photo</button><button type="button" class="menu-view" data-view="metadata">Metadata & covers</button><button type="button" class="menu-view" data-view="import">Import & backup</button></div></details><button class="btn primary" id="addBtn" aria-label="Add experience">+ Add<span class="desktop-action-text"> experience</span></button></div>
 </header>
 <nav class="tabs" aria-label="Πathos pages">
   <button data-view="home" class="tab active"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z"/></svg><span class="tab-label">Home</span></button>
@@ -928,6 +936,18 @@ body:not(.pathos-owner) .experience-edit{display:none}
   </div>
 </section>
 </main>
+
+<dialog id="profilePhotoDialog" aria-labelledby="profilePhotoHeading">
+  <form id="profilePhotoForm">
+    <div class="dialog-head"><h2 id="profilePhotoHeading">Profile photo</h2><button class="icon-btn" id="closeProfilePhoto" type="button" aria-label="Close profile photo">×</button></div>
+    <p class="muted">Your photo appears on your public diary and when friends add your link.</p>
+    <img id="profilePhotoPreview" alt="Selected profile photo" hidden>
+    <label class="field" for="profilePhotoFile">Choose a photo</label>
+    <input class="input" id="profilePhotoFile" type="file" accept="image/jpeg,image/png,image/webp">
+    <p class="muted" id="profilePhotoStatus" role="status"></p>
+    <div class="dialog-actions"><button class="btn subtle" id="profilePhotoRemove" type="button" hidden>Remove photo</button><button class="btn primary" id="profilePhotoSave" type="submit" disabled>Save public photo</button></div>
+  </form>
+</dialog>
 
 <dialog id="friendDialog" aria-labelledby="friendDialogTitle">
   <form id="friendForm">
@@ -1861,7 +1881,7 @@ async function selectExperienceCover(load){
 $('experienceCoverFile').addEventListener('change',async event=>{const file=event.target.files?.[0];event.target.value='';if(file)await selectExperienceCover(()=>compressCover(file));});
 $('experienceCoverInput').addEventListener('input',event=>{resetCoverTask();$('entryForm').elements.cover.value=event.target.value;const box=$('experienceCoverPreview');box.hidden=true;box.innerHTML='';});
 $('entryDialog').addEventListener('close',()=>{resetCoverTask();closeVocabularySuggestions();});
-async function compressCover(file){if(!file)return'';const bmp=await createImageBitmap(file);const scale=Math.min(1,600/bmp.width,900/bmp.height);const c=document.createElement('canvas');c.width=Math.max(1,Math.round(bmp.width*scale));c.height=Math.max(1,Math.round(bmp.height*scale));c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);bmp.close();return c.toDataURL('image/jpeg',.78)}
+async function compressCover(file,maxWidth=600,maxHeight=900){if(!file)return'';const bmp=await createImageBitmap(file);const scale=Math.min(1,maxWidth/bmp.width,maxHeight/bmp.height);const c=document.createElement('canvas');c.width=Math.max(1,Math.round(bmp.width*scale));c.height=Math.max(1,Math.round(bmp.height*scale));c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);bmp.close();return c.toDataURL('image/jpeg',.78)}
 function titleScore(a,b){a=norm(a).replace(/[^a-z0-9à-ž ]/g,'');b=norm(b).replace(/[^a-z0-9à-ž ]/g,'');if(a===b)return 4;if(a.includes(b)||b.includes(a))return 2;const aw=new Set(a.split(' ')),bw=b.split(' ');return bw.filter(x=>aw.has(x)).length/Math.max(1,bw.length)}
 function bestBookDoc(w,docs){return [...docs].sort((a,b)=>{const aa=(a.author_name||[]).some(x=>w.creator&&(norm(w.creator).includes(norm(x))||norm(x).includes(norm(w.creator))));const ba=(b.author_name||[]).some(x=>w.creator&&(norm(w.creator).includes(norm(x))||norm(x).includes(norm(w.creator))));const sa=titleScore(a.title,w.title)+(aa?2:0);const sb=titleScore(b.title,w.title)+(ba?2:0);return sb-sa})[0]}
 async function enrichBook(w){
@@ -2003,7 +2023,7 @@ function showView(name){
   if(name==='friends')window.PathosFriends?.refresh();
   window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
 }
-document.querySelectorAll('.tab[data-view],.menu-view').forEach(t=>t.onclick=()=>showView(t.dataset.view));
+document.querySelectorAll('.tab[data-view],.menu-view[data-view]').forEach(t=>t.onclick=()=>showView(t.dataset.view));
 $('navLogBtn').onclick=()=>openEntryDialog();
 // Menus close on an outside click or Escape.
 document.addEventListener('click',event=>{
@@ -2147,6 +2167,7 @@ renderAll();
 <script src="/pathos/config.js"></script>
 <script type="module" src="/pathos/sync.js"></script>
 <script type="module" src="/pathos/discover.js"></script>
+<script type="module" src="/pathos/hosted-profile.js"></script>
 <script type="module" src="/pathos-personal/friends.js"></script>
 <script type="module" src="/pathos/cover-accent.mjs"></script>
 </body>

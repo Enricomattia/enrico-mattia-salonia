@@ -14,11 +14,24 @@ let browser,origin;
   const context=await browser.newContext({viewport:{width:1280,height:900},acceptDownloads:true}),calls=[],errors=[];
   let site,metadata={},deployNumber=0,uploaded={},failUpload=false,mismatch=false,authConfigured=true,pendingUpload,deployState='ready',authOutcome='approved',publicAccess=false;
   const token='synthetic-publishing-access-token';
-  const hostedModule="export function createClient(){return {auth:{getUser:async()=>({data:{user:window.mockFriendsOwner?{id:window.PATHOS_CONFIG.ownerUserId}:null}}),signOut:async()=>{window.mockFriendsOwner=false;return{}}},rpc:async name=>{(window.hostedFriendCalls ||= []).push(name);return{data:{schemaVersion:6,works:[],experiences:[]}}}}}";
+  const hostedProfileUrl='https://enricomattiasalonia.com/pathos';
+  let hostedPhoto='',profileWrites=0;
+  const hostedModule="export function createClient(){return {auth:{getUser:async()=>({data:{user:window.mockFriendsOwner?{id:window.PATHOS_CONFIG.ownerUserId}:null}}),getSession:async()=>({data:{session:{access_token:'mock-hosted-session-not-real'}}}),signOut:async()=>{window.mockFriendsOwner=false;return{}}},rpc:async name=>{(window.hostedFriendCalls ||= []).push(name);return{data:{schemaVersion:6,works:[],experiences:[]}}}}}";
   const oldKey=randomBytes(32).toString('hex'),oldId=createHash('sha256').update('pathos-publication-v1:'+oldKey).digest('hex').slice(0,32);
   let oldRevision=randomUUID(),oldPublished=true;
   await context.route('**/*',async route=>{
     const request=route.request(),url=new URL(request.url());
+    if(url.pathname==='/api/pathos/profile'&&(url.origin===origin||url.origin===new URL(hostedProfileUrl).origin)){
+      if(request.method()==='PUT'){
+        assert.equal(url.origin,origin);
+        assert.equal(request.headers().authorization,'Bearer mock-hosted-session-not-real');
+        assert.deepEqual(Object.keys(request.postDataJSON()),['photo']);
+        hostedPhoto=request.postDataJSON().photo;profileWrites++;
+      }else{
+        assert.equal(request.method(),'GET');assert.equal(request.headers().authorization,undefined);
+      }
+      return route.fulfill({json:{format:'pathos-profile-v1',name:'Enrico Mattia Salonia',photo:hostedPhoto},headers:{'Access-Control-Allow-Origin':'*'}});
+    }
     if(url.origin===origin){
       if(url.pathname.endsWith('/publish-config.js'))return route.fulfill({contentType:'text/javascript',body:'window.PATHOS_PUBLISH_CONFIG={netlifyClientId:'+(authConfigured?'"synthetic-client-id"':'""')+'};'});
       if(url.pathname==='/api/pathos-personal/publication/'+oldId){
@@ -72,6 +85,7 @@ let browser,origin;
   const page=await context.newPage();page.on('pageerror',error=>{errors.push(error.message);console.error('Browser error: '+error.message);});page.on('dialog',dialog=>dialog.accept());
   await page.goto(appUrl.href);await page.waitForFunction(()=>window.pathosPersonalReady&&window.PathosPublishing);
   await page.evaluate(()=>navigator.serviceWorker.ready);await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
+  assert.equal(await page.title(),'Pathos');
   const fixture={schemaVersion:6,works:[{id:'book-1',type:'Book',title:'A selected book',creator:'Test author',owned:true,cover:'https://example.com/PRIVATE_COVER.jpg',sourceMetadata:{secret:'PRIVATE_METADATA'}}],experiences:[{id:'reading-1',workId:'book-1',status:'completed',endDate:'2026-11-07',rating:4.25,review:'Selected **formatted** review $& <script>window.attack=1</script>',tags:['PRIVATE_TAG'],details:{secret:'RECORD_SECRET'},quotes:[{id:'q-1',text:'A selected passage',note:'p. 2'}],edition:{publisher:'Selected publisher',sourceId:'PRIVATE_UID',isbn:'9780140328721'}},{id:'reading-2',workId:'book-1',status:'completed',endDate:'2026-11-06',rating:2,review:'UNSELECTED_REVIEW',quotes:[{id:'q-2',text:'UNSELECTED_PASSAGE'}]}]};
   await page.locator('#restoreInput').setInputFiles({name:'fixture.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(fixture))});await page.waitForFunction(()=>!document.getElementById('restoreInput').value&&pendingWrites===0&&!archiveBusy);
   const before=await page.evaluate(()=>JSON.stringify(db)),disk=await page.evaluate(()=>readLocalArchive());
@@ -275,6 +289,8 @@ let browser,origin;
   await guest.goto(hostedUrl.href);
   await guest.getByText('Public archive',{exact:true}).waitFor();
   assert(!await guest.getByRole('button',{name:'Friends',exact:true}).isVisible());
+  assert(!await guest.getByRole('button',{name:'Profile photo',exact:true}).isVisible());
+  assert.equal(await guest.title(),'Pathos — Enrico Mattia Salonia');
   await guest.evaluate(()=>showView('friends'));
   assert(!await guest.locator('#friends').isVisible());
   assert.deepEqual(await guest.evaluate(()=>window.hostedFriendCalls),['pathos_get_public_archive']);
@@ -300,6 +316,36 @@ let browser,origin;
   assert.deepEqual(await hosted.evaluate(()=>window.hostedFriendCalls),['pathos_get_my_archive'],'Saving a hosted friend never writes to Supabase');
   assert(await hosted.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await hosted.screenshot({path:path.join(output,'hosted-friends-320.png')});
+  const openHostedPhoto=async()=>{
+    await hosted.locator('#settingsMenu>summary').click();
+    await hosted.getByRole('button',{name:'Profile photo',exact:true}).click();
+  };
+  await openHostedPhoto();
+  await hosted.getByLabel('Choose a photo',{exact:true}).setInputFiles({name:'profile.png',mimeType:'image/png',buffer:photoFile});
+  await hosted.locator('#profilePhotoPreview').waitFor();
+  assert.equal(profileWrites,0,'Selecting a photo keeps it private until Save');
+  await hosted.screenshot({path:path.join(output,'hosted-profile-photo-320.png')});
+  await hosted.getByRole('button',{name:'Save public photo',exact:true}).click();
+  await hosted.locator('#hostedProfileAvatar').waitFor();
+  assert.equal(await hosted.locator('#hostedProfileAvatar').getAttribute('src'),photo);
+  assert.equal(profileWrites,1);
+  await addFriend.click();await address.fill(hostedProfileUrl);await lookup.click();
+  await friendPage.locator('#friendPreview').getByText('Enrico Mattia Salonia',{exact:true}).waitFor();
+  assert.equal(await friendPage.locator('#friendPreview img').getAttribute('src'),photo);
+  await saveFriend.click();
+  const ownerLink=friendPage.getByRole('link',{name:'Enrico Mattia Salonia',exact:true});
+  await ownerLink.waitFor();
+  assert.equal(await ownerLink.getAttribute('href'),hostedProfileUrl);
+  await openHostedPhoto();
+  await hosted.getByRole('button',{name:'Remove photo',exact:true}).click();
+  await hosted.getByRole('button',{name:'Save public photo',exact:true}).click();
+  await hosted.locator('#hostedProfileAvatar').waitFor({state:'hidden'});
+  assert.equal(hostedPhoto,'');assert.equal(profileWrites,2);
+  await friendPage.getByRole('button',{name:'Edit Enrico Mattia Salonia',exact:true}).click();
+  await friendPage.getByRole('button',{name:'Refresh profile',exact:true}).click();
+  await friendPage.locator('#friendPreview img').waitFor({state:'detached'});
+  await saveFriend.click();
+  await ownerLink.locator('img').waitFor({state:'detached'});
   await hosted.getByRole('button',{name:'Add friend',exact:true}).click();
   await hosted.evaluate(()=>document.querySelector('.pathos-auth-control').click());
   await hosted.getByText('Public archive',{exact:true}).waitFor();
@@ -311,7 +357,8 @@ let browser,origin;
   await hosted.close();
   await friendPage.reload();await openFriends.click();
   await friendPage.getByRole('link',{name:'Maria',exact:true}).waitFor();
-  assert.equal(await friendPage.locator('#friendsList li').count(),1);
+  assert.equal(await friendPage.locator('#friendsList li').count(),2);
+  await ownerLink.waitFor();
   await friendPage.close();
   assert.deepEqual(await page.evaluate(()=>readLocalArchive()),disk,'Friends never modify the diary');
   for(const width of [1280,390,320]){await page.setViewportSize({width,height:850});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:path.join(output,'publishing-'+width+'.png'),fullPage:true});}
@@ -387,5 +434,5 @@ let browser,origin;
   assert(!await page.locator('[data-publish-entry="reading-2"]').isChecked(),'Older private choices stay excluded on upgrade');
   await page.getByRole('button',{name:'Include all entries'}).click();
   assert.equal(await page.locator('#publishEntries input:checked').count(),2);
-  assert.deepEqual(errors,[]);console.log('PASS publishing, public photos, hosted owner and guest Friends, offline persistence, updates and unchanged backups');
+  assert.deepEqual(errors,[]);console.log('PASS publishing, hosted profile photos, hosted and Personal Friends, offline persistence, updates and backups');
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(async()=>{await browser?.close();server.close();});

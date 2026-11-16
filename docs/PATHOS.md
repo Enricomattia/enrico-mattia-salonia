@@ -8,7 +8,7 @@ _Last checked against the implementation: 8 November 2026._
 
 Its author had previously tracked books in **The StoryGraph** and films in **Letterboxd**; Πathos was created to unify these records and cover media those services handle poorly. It started as a single local HTML app, then evolved into an online owner archive and a separate, installable, offline-first app other people can use.
 
-The branding is **Πathos**, with an uppercase Greek Pi. Keep the UI understated, personal, quick to use, and visually consistent with the existing site. The user has repeatedly preferred **removing unnecessary interface copy and decoration** over adding more.
+Use **Pathos** for the app name, install and browser titles. Keep the Greek Π in the wordmark, artwork and on-screen branding. Keep the UI understated, personal, quick to use, and visually consistent with the existing site. The user has repeatedly preferred **removing unnecessary interface copy and decoration** over adding more.
 
 ## 2. Two distinct applications — already published
 
@@ -146,6 +146,12 @@ Friends are stored under their own key in the existing IndexedDB store. Add, edi
 The hosted **/pathos** archive also shows **Friends** to the signed-in owner. Both views use the same link lookup, photo rendering and editing controls. The hosted list is saved in its own device-local IndexedDB database. Sign-out closes the Friends view and clears its rendered content. The list is private to the owner's interface, while cloud archive reads and writes keep their existing scope.
 
 **Profile photo** in **Publish online** is optional. The app decodes a chosen image and re-encodes a small JPEG before saving it to device-local publishing preferences. The published copy and its profile file contain only the chosen display name and photo as profile fields. The public reader can still render an older snapshot without the photo. To change or remove the photo from the current website, update the published version. v40 precaches the Friends interface and stages the update through **Update / Later**, including a guard for an open friend form.
+
+### Hosted public profile and app names (shell v41)
+
+Friends accepts the owner’s main /pathos URL and reads the public name and optional photo from /api/pathos/profile. The signed-in owner can set or remove that photo under **Settings → Profile photo → Save public photo**. The API verifies writes with the same Supabase owner check as the catalogue API and stores the standalone photo in Netlify Blobs. Deploy previews use their own deploy store. Public reads contain only the profile name and photo.
+
+The install manifest and page titles use **Pathos**. Shell v41 stages the label and friend link changes through **Update / Later**. The existing manifest ID, start URL, scope and archive storage continue to identify the same installed app. Safari lets users rename an existing web app in its Application Name settings. Newly published Personal websites use the updated browser title.
 
 ### Personal book covers and Insights (shell v32)
 
