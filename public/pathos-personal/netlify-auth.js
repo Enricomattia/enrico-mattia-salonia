@@ -5,7 +5,7 @@
   const token=values.get('access_token'),state=values.get('state');
   const feedback=document.getElementById('connectionStatus');
   if(!/^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(state||'')){
-    feedback.textContent='Start again from Connect Netlify in Πathos and keep that window open.';
+    feedback.textContent='Return to Publish online in Πathos to start again. Keep that window open while signing in.';
     return;
   }
   const valid=typeof token==='string'&&/^[A-Za-z0-9._~+\/=-]{10,8192}$/.test(token);
