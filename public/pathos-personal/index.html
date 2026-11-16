@@ -337,7 +337,7 @@ dialog::backdrop {background:rgba(25,38,36,.42)}
 
 /* Local application: keep controls hidden until IndexedDB finishes loading. */
 body:not(.pathos-owner) #addBtn, body:not(.pathos-owner) #backupBtn,
-body:not(.pathos-owner) #navLogBtn, body:not(.pathos-owner) #settingsMenu,
+body:not(.pathos-owner) #navLogBtn, body:not(.pathos-owner) #settingsMenu, body:not(.pathos-owner) #openPublishingBtn,
 body:not(.pathos-owner) #restoreInput, body:not(.pathos-owner) label:has(#restoreInput), body:not(.pathos-owner) #resetSnapshotBtn,
 body:not(.pathos-owner) #enrichBooksBtn, body:not(.pathos-owner) #enrichFilmsBtn,
 body:not(.pathos-owner) #enrichAllBtn, body:not(.pathos-owner) #saveTmdbBtn,
@@ -794,7 +794,7 @@ body:not(.pathos-owner) .experience-edit{display:none}
 
 <header class="topbar">
   <div class="archive-heading"><h1 class="pathos-wordmark" aria-label="Πathos"><span class="pathos-pi" aria-hidden="true">Π</span><span>athos</span></h1></div>
-  <div class="top-actions"><span class="personal-status" id="personalStatus" data-status="loading" role="status" aria-live="polite">Loading local archive…</span><button type="button" class="btn personal-install" id="installPersonalBtn">Install app</button><details class="settings-menu" id="settingsMenu"><summary class="btn subtle" aria-label="Catalogues, import and backup" title="Catalogues, import and backup"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></summary><div class="more-menu-panel"><button type="button" class="menu-view" data-view="metadata">Catalogues & covers</button><button type="button" class="menu-view" data-view="import">Import & backup</button></div></details><button class="btn primary" id="addBtn">+ Add experience</button></div>
+  <div class="top-actions"><span class="personal-status" id="personalStatus" data-status="loading" role="status" aria-live="polite">Loading local archive…</span><button type="button" class="btn personal-install" id="installPersonalBtn">Install app</button><button type="button" class="btn" id="openPublishingBtn" aria-controls="publishing" hidden>Publish online</button><details class="settings-menu" id="settingsMenu"><summary class="btn subtle" aria-label="Catalogues, import and backup" title="Catalogues, import and backup"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></summary><div class="more-menu-panel"><button type="button" class="menu-view" data-view="metadata">Catalogues & covers</button><button type="button" class="menu-view" data-view="import">Import & backup</button></div></details><button class="btn primary" id="addBtn">+ Add experience</button></div>
 </header>
 <nav class="tabs" aria-label="Πathos pages">
   <button data-view="home" class="tab active"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z"/></svg><span class="tab-label">Home</span></button>
@@ -924,34 +924,20 @@ body:not(.pathos-owner) .experience-edit{display:none}
 </section>
 
 <section id="publishing" class="view">
-  <div class="section-head"><h2>Publish online</h2></div>
-  <p class="muted">Share a read-only copy on your own Netlify account. Your personal diary stays on this device. Once the site is public, anyone with its address can view it.</p>
+  <div class="section-head"><h2 id="publishHeading" tabindex="-1">Publish online</h2></div>
+  <p class="muted">Share selected entries as a read-only website. Your diary stays on this device. Anyone with the link can view the public copy.</p>
   <div class="publish-layout">
-    <div>
-      <h3>Choose what to share</h3>
-      <label class="field" for="publishUsername">Username (optional)</label><input class="input" id="publishUsername" maxlength="40" autocomplete="nickname" placeholder="e.g. enrico" aria-describedby="publishUsernameHint"><p class="metadata-note" id="publishUsernameHint">Appears beside Πathos on your public website.</p>
-      <label class="field" for="publishTitle">Website title</label><input class="input" id="publishTitle" maxlength="120" placeholder="My Πathos">
-      <div class="publish-options"><label><input type="checkbox" id="publishReviews" checked> Reviews</label><label><input type="checkbox" id="publishPassages" checked> Passages</label><label><input type="checkbox" id="publishCovers" checked> Covers</label></div>
-      <p class="metadata-note" id="publishSelectionHint">All experiences are included by default. Uncheck anything you want to keep private.</p>
-      <p class="metadata-note">To remove an entry from your live site, exclude it and publish an update. Older Netlify deploys or copies may still contain it.</p>
-      <label class="field" for="publishSearch">Find entries</label><input class="input" id="publishSearch" type="search" placeholder="Title or creator">
-      <div class="publish-selection-actions"><span id="publishSelectedCount" role="status">0 included</span><button type="button" class="btn subtle" id="publishIncludeAll">Include all entries</button><button type="button" class="btn subtle" id="publishExcludeShown">Exclude shown</button></div>
-      <div id="publishEntries" class="publish-entries"></div>
-    </div>
     <div class="publish-controls">
       <div class="panel">
-        <h3>Preview your website (optional)</h3>
-        <button type="button" class="btn" id="publishPreviewBtn" disabled>Preview website</button>
-        <div id="publishPreviewWrap" hidden><iframe id="publishPreview" title="Preview of your public Πathos" sandbox="allow-scripts allow-popups" referrerpolicy="no-referrer"></iframe></div>
-      </div>
-      <div class="panel">
-        <h3>Publish to Netlify</h3>
-        <p class="metadata-note">Connect Netlify to publish the entries and options you selected.</p>
-        <div class="publish-actions"><button type="button" class="btn primary" id="publishConnectBtn">Connect Netlify</button><button type="button" class="btn subtle" id="publishDisconnectBtn" hidden>Disconnect</button></div>
+        <p class="publish-setup" id="publishSetup">Netlify hosts your website. Sign in or create an account there, then return here to publish.</p>
         <p class="publish-status" id="publishConnectionStatus" role="status" aria-live="polite"></p>
         <p class="metadata-note" id="publishSignInHelp" hidden><a id="publishSignInLink" target="_blank" rel="noopener noreferrer">Open Netlify sign-in in a new tab ↗</a></p>
         <div id="publishAccountField" hidden><label class="field" for="publishAccount">Netlify team</label><select class="input" id="publishAccount"></select></div>
-        <button type="button" class="btn primary" id="publishNowBtn" aria-describedby="publishNextStep" disabled hidden>Publish website</button>
+        <div class="publish-actions">
+          <button type="button" class="btn primary" id="publishConnectBtn" aria-describedby="publishSetup">Start publishing</button>
+          <button type="button" class="btn primary" id="publishNowBtn" aria-describedby="publishNextStep" disabled hidden>Publish website</button>
+          <button type="button" class="btn subtle" id="publishDisconnectBtn" hidden>Disconnect</button>
+        </div>
         <p id="publishNextStep" class="metadata-note"></p>
         <p id="publishProgress" class="publish-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
         <div id="publishWaiting" hidden><progress aria-label="Publishing in progress"></progress><p class="metadata-note">This may take a few minutes. Keep Πathos open while Netlify finishes.</p></div>
@@ -974,6 +960,22 @@ body:not(.pathos-owner) .experience-edit{display:none}
           <div class="publish-actions"><button type="button" class="btn subtle" id="publishOldCheck" hidden>Check old copy</button><button type="button" class="btn subtle" id="publishOldRemove" hidden>Take old copy offline</button></div>
         </details>
       </div>
+      <div class="panel">
+        <h3>Preview your website (optional)</h3>
+        <button type="button" class="btn" id="publishPreviewBtn" disabled>Preview website</button>
+        <div id="publishPreviewWrap" hidden><iframe id="publishPreview" title="Preview of your public Πathos" sandbox="allow-scripts allow-popups" referrerpolicy="no-referrer"></iframe></div>
+      </div>
+    </div>
+    <div>
+      <h3>Choose what to share</h3>
+      <label class="field" for="publishUsername">Username (optional)</label><input class="input" id="publishUsername" maxlength="40" autocomplete="nickname" placeholder="e.g. enrico" aria-describedby="publishUsernameHint"><p class="metadata-note" id="publishUsernameHint">Appears beside Πathos on your public website.</p>
+      <label class="field" for="publishTitle">Website title</label><input class="input" id="publishTitle" maxlength="120" placeholder="My Πathos">
+      <div class="publish-options"><label><input type="checkbox" id="publishReviews" checked> Reviews</label><label><input type="checkbox" id="publishPassages" checked> Passages</label><label><input type="checkbox" id="publishCovers" checked> Covers</label></div>
+      <p class="metadata-note" id="publishSelectionHint">All experiences are included by default. Uncheck anything you want to keep private.</p>
+      <p class="metadata-note">To remove an entry from your live site, exclude it and publish an update. Older versions or saved copies may still contain it.</p>
+      <label class="field" for="publishSearch">Find entries</label><input class="input" id="publishSearch" type="search" placeholder="Title or creator">
+      <div class="publish-selection-actions"><span id="publishSelectedCount" role="status">0 included</span><button type="button" class="btn subtle" id="publishIncludeAll">Include all entries</button><button type="button" class="btn subtle" id="publishExcludeShown">Exclude shown</button></div>
+      <div id="publishEntries" class="publish-entries"></div>
     </div>
   </div>
 </section>

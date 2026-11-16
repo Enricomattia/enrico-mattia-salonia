@@ -20,7 +20,12 @@ const selected=new Set(prefs.selected),excluded=new Set(prefs.excluded);
 const visibilityChecks=new Map();
 let includedCount=0,previewSignature=null,assetsPromise=null,client=null,user=null,accounts=[],pendingAuth=null,busy=false,publishing=false,checkingConnection=false;
 const menu=document.createElement('button');menu.type='button';menu.className='menu-view';menu.dataset.view='publishing';menu.textContent='Publish online';
-menu.addEventListener('click',()=>showView('publishing'));$('settingsMenu').querySelector('.more-menu-panel').append(menu);
+function openPublishing(){
+  showView('publishing');
+  $('publishHeading').focus({preventScroll:true});
+}
+menu.addEventListener('click',openPublishing);$('settingsMenu').querySelector('.more-menu-panel').append(menu);
+$('openPublishingBtn').addEventListener('click',openPublishing);$('openPublishingBtn').hidden=false;
 $('publishTitle').value=prefs.title;$('publishUsername').value=prefs.username;for(const option of ['reviews','passages','covers'])$('publish'+option[0].toUpperCase()+option.slice(1)).checked=prefs[option];
 function status(message,state=''){
   const progress=$('publishProgress');progress.hidden=!message;progress.textContent=message;progress.dataset.state=state;
@@ -100,14 +105,22 @@ function refreshButtons(){
   $('publishPreviewBtn').disabled=unavailable||Boolean(pendingAuth);
   $('publishConnectBtn').disabled=busy||Boolean(pendingAuth);
   $('publishConnectBtn').hidden=Boolean(client);
-  $('publishConnectBtn').textContent=checkingConnection?'Checking Netlify…':pendingAuth?'Waiting for Netlify…':'Connect Netlify';
+  $('publishConnectBtn').textContent=checkingConnection?'Checking your account…':pendingAuth?'Waiting for sign-in…':published?'Reconnect to update':'Start publishing';
+  $('publishSetup').hidden=Boolean(client);
+  $('publishSetup').textContent=published?'Netlify hosts your website. Sign in with the account you used to publish it, then return here to update it.':'Netlify hosts your website. Sign in or create an account there, then return here to publish.';
   $('publishConnectBtn').setAttribute('aria-busy',String(checkingConnection||Boolean(pendingAuth)));
   $('publishNowBtn').hidden=!client;
   $('publishNowBtn').setAttribute('aria-busy',String(publishing));
   $('publishNowBtn').disabled=unavailable||!client||!$('publishAccount').value;
   $('publishNowBtn').textContent=publishing?'Publishing…':published?'Update published version':'Publish website';
   $('publishWaiting').hidden=!publishing;
-  $('publishNextStep').textContent=client&&!canBuild?'Include at least one experience to create a website.':'';
+  let nextStep='';
+  if(client){
+    if(!canBuild)nextStep='Include at least one experience to create a website.';
+    else if(!includedCount)nextStep='This update removes all experiences from the live website.';
+    else nextStep='Your website will include '+includedCount+(includedCount===1?' experience.':' experiences.');
+  }
+  $('publishNextStep').textContent=nextStep;
   $('publishNextStep').hidden=!$('publishNextStep').textContent;
   $('publishDisconnectBtn').hidden=!client&&!pendingAuth;
   $('publishDisconnectBtn').disabled=busy;
@@ -235,7 +248,7 @@ function connect(){
   pendingAuth=attempt;
   if(channel)channel.onmessage=event=>{if(pendingAuth===attempt)void finishAuth(event.data);};
   $('publishSignInLink').href=url;
-  const signIn='Finish signing in and approve access in the Netlify window.';
+  const signIn='Sign in or create an account in the Netlify window, then approve access.';
   connectionStatus(popup?(channel?signIn+' If it didn’t open, use the link below.':signIn):'The sign-in window didn’t open. Use the link below to continue.','working');
   refreshButtons();
 }
