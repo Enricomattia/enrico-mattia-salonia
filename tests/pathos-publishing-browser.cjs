@@ -3,7 +3,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs/promises'),path=r
 const {createHash,randomBytes,randomUUID}=require('node:crypto');
 const{chromium}=require('playwright');
 const root=path.resolve(__dirname,'../public'),output=process.env.PATHOS_UI_SCREENSHOTS||path.resolve(__dirname,'../output/pathos-publishing');
-const server=http.createServer(async(req,res)=>{try{const p=new URL(req.url,'http://localhost').pathname;if(!/^\/pathos-personal\/(fonts\/)?[a-z0-9.-]+$/i.test(p)){res.writeHead(404).end();return;}const body=await fs.readFile(path.join(root,p));res.writeHead(200,{'Cache-Control':'no-store','Content-Type':p.endsWith('.html')?'text/html':/\.m?js$/.test(p)?'text/javascript':p.endsWith('.css')?'text/css':p.endsWith('.woff2')?'font/woff2':p.endsWith('.png')?'image/png':'application/manifest+json'}).end(body);}catch{res.writeHead(404).end();}});
+const server=http.createServer(async(req,res)=>{try{const p=new URL(req.url,'http://localhost').pathname;if(!/^\/(pathos|pathos-personal)\/(fonts\/)?[a-z0-9.-]+$/i.test(p)){res.writeHead(404).end();return;}const body=await fs.readFile(path.join(root,p));res.writeHead(200,{'Cache-Control':'no-store','Content-Type':p.endsWith('.html')?'text/html':/\.m?js$/.test(p)?'text/javascript':p.endsWith('.css')?'text/css':p.endsWith('.woff2')?'font/woff2':p.endsWith('.png')?'image/png':'application/manifest+json'}).end(body);}catch{res.writeHead(404).end();}});
 let browser,origin;
 (async()=>{
   if(process.env.PATHOS_PUBLISH_PREVIEW){const target=new URL(process.env.PATHOS_PUBLISH_PREVIEW);if(target.origin!=='https://enricomattiasalonia.com')assert.match(target.hostname,/^deploy-preview-\d+--[a-z0-9-]+\.netlify\.app$/);origin=target.origin;}else{await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));origin='http://127.0.0.1:'+server.address().port;}
@@ -14,6 +14,7 @@ let browser,origin;
   const context=await browser.newContext({viewport:{width:1280,height:900},acceptDownloads:true}),calls=[],errors=[];
   let site,metadata={},deployNumber=0,uploaded={},failUpload=false,mismatch=false,authConfigured=true,pendingUpload,deployState='ready',authOutcome='approved',publicAccess=false;
   const token='synthetic-publishing-access-token';
+  const hostedModule="export function createClient(){return {auth:{getUser:async()=>({data:{user:window.mockFriendsOwner?{id:window.PATHOS_CONFIG.ownerUserId}:null}}),signOut:async()=>{window.mockFriendsOwner=false;return{}}},rpc:async name=>{(window.hostedFriendCalls ||= []).push(name);return{data:{schemaVersion:6,works:[],experiences:[]}}}}}";
   const oldKey=randomBytes(32).toString('hex'),oldId=createHash('sha256').update('pathos-publication-v1:'+oldKey).digest('hex').slice(0,32);
   let oldRevision=randomUUID(),oldPublished=true;
   await context.route('**/*',async route=>{
@@ -30,6 +31,7 @@ let browser,origin;
       }
       return route.continue();
     }
+    if(url.hostname==='cdn.jsdelivr.net'&&url.pathname.startsWith('/npm/@supabase/'))return route.fulfill({contentType:'text/javascript',body:hostedModule});
     if(url.hostname==='app.netlify.com'&&url.pathname==='/authorize'){
       assert.equal(url.searchParams.get('response_type'),'token');
       const callback=new URL(url.searchParams.get('redirect_uri'));assert.equal(callback.origin,origin);
@@ -267,7 +269,50 @@ let browser,origin;
   await friendPage.getByRole('button',{name:'Remove friend',exact:true}).click();
   await friendPage.getByRole('link',{name:'Luigi',exact:true}).waitFor({state:'detached'});
   await friendPage.screenshot({path:path.join(output,'friends-320.png')});
-  await context.setOffline(false);await friendPage.close();
+  await context.setOffline(false);
+  const hostedUrl=new URL('/pathos/app.html',appUrl);hostedUrl.search=appUrl.search;
+  const guest=await context.newPage();guest.on('pageerror',error=>errors.push(error.message));
+  await guest.goto(hostedUrl.href);
+  await guest.getByText('Public archive',{exact:true}).waitFor();
+  assert(!await guest.getByRole('button',{name:'Friends',exact:true}).isVisible());
+  await guest.evaluate(()=>showView('friends'));
+  assert(!await guest.locator('#friends').isVisible());
+  assert.deepEqual(await guest.evaluate(()=>window.hostedFriendCalls),['pathos_get_public_archive']);
+  await guest.close();
+  const hosted=await context.newPage();
+  hosted.on('pageerror',error=>errors.push(error.message));
+  hosted.on('dialog',dialog=>dialog.accept());
+  await hosted.addInitScript(()=>{window.mockFriendsOwner=true;});
+  await hosted.setViewportSize({width:320,height:800});
+  await hosted.goto(hostedUrl.href);
+  const hostedFriends=hosted.getByRole('button',{name:'Friends',exact:true});
+  await hostedFriends.click();
+  await hosted.getByRole('button',{name:'Add friend',exact:true}).click();
+  await hosted.getByLabel('Public Πathos link',{exact:true}).fill(publicUrl);
+  await hosted.getByRole('button',{name:'Find profile',exact:true}).click();
+  await hosted.locator('#friendPreview').getByText('maria',{exact:true}).waitFor();
+  await hosted.getByLabel('Nickname (optional)',{exact:true}).fill('Hosted Maria');
+  await hosted.getByRole('button',{name:'Save friend',exact:true}).click();
+  const hostedLink=hosted.getByRole('link',{name:'Hosted Maria',exact:true});
+  await hostedLink.waitFor();
+  assert.equal(await hosted.locator('#friendsList li').count(),1,'Hosted and Personal keep different Friends lists');
+  assert.equal(await hostedLink.getAttribute('href'),publicUrl+'/');
+  assert.deepEqual(await hosted.evaluate(()=>window.hostedFriendCalls),['pathos_get_my_archive'],'Saving a hosted friend never writes to Supabase');
+  assert(await hosted.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  await hosted.screenshot({path:path.join(output,'hosted-friends-320.png')});
+  await hosted.getByRole('button',{name:'Add friend',exact:true}).click();
+  await hosted.evaluate(()=>document.querySelector('.pathos-auth-control').click());
+  await hosted.getByText('Public archive',{exact:true}).waitFor();
+  assert(!await hostedFriends.isVisible());
+  assert(!await hosted.locator('#friendDialog').isVisible());
+  assert.equal(await hosted.locator('#friendsList li').count(),0,'Sign-out clears the rendered friends');
+  assert(await hosted.locator('#home').isVisible());
+  await hosted.reload();await hostedFriends.click();await hostedLink.waitFor();
+  await hosted.close();
+  await friendPage.reload();await openFriends.click();
+  await friendPage.getByRole('link',{name:'Maria',exact:true}).waitFor();
+  assert.equal(await friendPage.locator('#friendsList li').count(),1);
+  await friendPage.close();
   assert.deepEqual(await page.evaluate(()=>readLocalArchive()),disk,'Friends never modify the diary');
   for(const width of [1280,390,320]){await page.setViewportSize({width,height:850});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:path.join(output,'publishing-'+width+'.png'),fullPage:true});}
   await page.setViewportSize({width:1280,height:900});
@@ -342,5 +387,5 @@ let browser,origin;
   assert(!await page.locator('[data-publish-entry="reading-2"]').isChecked(),'Older private choices stay excluded on upgrade');
   await page.getByRole('button',{name:'Include all entries'}).click();
   assert.equal(await page.locator('#publishEntries input:checked').count(),2);
-  assert.deepEqual(errors,[]);console.log('PASS publishing, public photos, copying a link, Friends, offline persistence, updates and unchanged backups');
+  assert.deepEqual(errors,[]);console.log('PASS publishing, public photos, hosted owner and guest Friends, offline persistence, updates and unchanged backups');
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(async()=>{await browser?.close();server.close();});

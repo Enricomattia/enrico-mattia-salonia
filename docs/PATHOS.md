@@ -137,13 +137,15 @@ Shell **v36** restores each publisher's Netlify flow through **Update / Later**.
 
 The OAuth callback requires a connection. Once the shell is cached, preview generation works offline. Preview, sign-in and upload count as background operations, and upload blocks archive edits and restores until it finishes. This release uses the existing IndexedDB schema and does not migrate the archive. `npm run test:pathos-publishing` checks the public projection, optional preview, direct publishing with mocked OAuth and Netlify, the public link check, older-copy access and takedown, offline previews and local archive persistence. `PATHOS_PUBLISH_PREVIEW` runs the same browser tests on a Netlify preview or the production domain with isolated synthetic archives and mocked service calls.
 
-### Friends and public profile photos (shell v39)
+### Friends and public profile photos (shell v40)
 
 The **Friends** view saves links to published Personal diaries. Use **Copy public link** from the publishing result, then **Add friend** and **Find profile** in the receiving app. A profile lookup reads only the public site’s small, versioned pathos-profile.json over HTTPS without credentials or redirects. It accepts the stable Πathos Netlify addresses and the earlier Πathos-hosted share links. An older or unavailable profile can be saved with a nickname. The friend’s row opens the external diary, and **Edit** can change the local nickname, refresh the public profile or remove the saved link.
 
 Friends are stored under their own key in the existing IndexedDB store. Add, edit and remove use a transaction so independent changes from multiple windows are preserved. Saved names and photos are available offline. Links open online. Existing archive exports and restores still operate on the diary. Profile lookups and saved friends never enter the public archive projection.
 
-**Profile photo** in **Publish online** is optional. The app decodes a chosen image and re-encodes a small JPEG before saving it to device-local publishing preferences. The published copy and its profile file contain only the chosen display name and photo as profile fields. The public reader can still render an older snapshot without the photo. To change or remove the photo from the current website, update the published version. v39 precaches the Friends interface and stages the update through **Update / Later**, including a guard for an open friend form.
+The hosted **/pathos** archive also shows **Friends** to the signed-in owner. Both views use the same link lookup, photo rendering and editing controls. The hosted list is saved in its own device-local IndexedDB database. Sign-out closes the Friends view and clears its rendered content. The list is private to the owner's interface, while cloud archive reads and writes keep their existing scope.
+
+**Profile photo** in **Publish online** is optional. The app decodes a chosen image and re-encodes a small JPEG before saving it to device-local publishing preferences. The published copy and its profile file contain only the chosen display name and photo as profile fields. The public reader can still render an older snapshot without the photo. To change or remove the photo from the current website, update the published version. v40 precaches the Friends interface and stages the update through **Update / Later**, including a guard for an open friend form.
 
 ### Personal book covers and Insights (shell v32)
 

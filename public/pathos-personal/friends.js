@@ -1,6 +1,21 @@
 import{friendAddress,fetchFriendProfile,profilePhoto}from'./public-profile.mjs';
 
 const $=id=>document.getElementById(id);
+const opener=$('openFriendsBtn'),view=$('friends');
+const hosted=opener.hasAttribute('data-hosted');
+const storeName=hosted?'friends':'archives';
+const canUseFriends=()=>window.pathosCanEdit===true;
+let hostedDatabase;
+function friendsDatabase(){
+  if(!hosted)return localDatabase;
+  if(!hostedDatabase)hostedDatabase=new Promise((resolve,reject)=>{
+    const request=indexedDB.open('pathos-hosted-friends',1);
+    request.onupgradeneeded=()=>request.result.createObjectStore(storeName);
+    request.onsuccess=()=>resolve(request.result);
+    request.onerror=()=>reject(request.error);
+  }).catch(error=>{hostedDatabase=null;throw error;});
+  return hostedDatabase;
+}
 const dialog=$('friendDialog'),form=$('friendForm'),address=$('friendAddress'),nickname=$('friendNickname');
 const save=$('friendSave'),details=$('friendDetails'),feedback=$('friendFeedback');
 let saved=[],editing=null,draft=null,lookup=null,writing=false;
@@ -25,12 +40,18 @@ function identity(friend){
 }
 
 async function refresh(){
-  if(!window.pathosPersonalReady)return;
+  if(!canUseFriends())return;
   const revision=++renderRevision;
   const list=$('friendsList');
   try{
-    const records=await readLocalArchive('friends');
-    if(revision!==renderRevision)return;
+    const database=await friendsDatabase();
+    if(!canUseFriends()||revision!==renderRevision)return;
+    const records=await new Promise((resolve,reject)=>{
+      const request=database.transaction(storeName).objectStore(storeName).get('friends');
+      request.onsuccess=()=>resolve(request.result);
+      request.onerror=()=>reject(request.error);
+    });
+    if(!canUseFriends()||revision!==renderRevision)return;
     saved=Array.isArray(records)?records:[];
     const rows=saved.map(friend=>{
       const row=document.createElement('li'),link=document.createElement('a'),edit=document.createElement('button');
@@ -52,19 +73,22 @@ async function refresh(){
 }
 
 // Changes to different friends can be saved from multiple windows without replacing the whole list from stale UI state.
-function writeFriend(friend){
+async function writeFriend(friend,previousVersion){
+  const database=await friendsDatabase();
+  if(!canUseFriends())throw new Error('Sign in to manage friends.');
   return new Promise((resolve,reject)=>{
-    const tx=localDatabase.transaction('archives','readwrite');
-    const store=tx.objectStore('archives'),request=store.get('friends');
+    const tx=database.transaction(storeName,'readwrite');
+    const store=tx.objectStore(storeName),request=store.get('friends');
     let failure;
     request.onsuccess=()=>{
       const records=request.result||[];
-      const url=editing?.url||friend.url;
+      const url=previousVersion?.url||friend.url;
       const previous=records.find(item=>item.url===url);
-      if(editing&&JSON.stringify(previous)!==JSON.stringify(editing))failure='This friend changed in another window. Reopen the list and try again.';
-      else if(!editing&&previous)failure='This friend is already on your list.';
+      if(!canUseFriends())failure='Sign in to manage friends.';
+      else if(previousVersion&&JSON.stringify(previous)!==JSON.stringify(previousVersion))failure='This friend changed in another window. Reopen the list and try again.';
+      else if(!previousVersion&&previous)failure='This friend is already on your list.';
       if(failure){tx.abort();return;}
-      const next=editing?records.flatMap(item=>item.url===url?(friend?[friend]:[]):[item]):[...records,friend];
+      const next=previousVersion?records.flatMap(item=>item.url===url?(friend?[friend]:[]):[item]):[...records,friend];
       store.put(next,'friends');
     };
     tx.oncomplete=resolve;
@@ -86,7 +110,7 @@ function showDraft(){
 }
 
 function openDialog(friend=null){
-  if(!window.pathosPersonalReady||dialog.open||writing)return;
+  if(!canUseFriends()||dialog.open||writing)return;
   editing=friend;
   draft=friend?{...friend,nickname:''}:null;
   $('friendDialogTitle').textContent=friend?'Edit friend':'Add friend';
@@ -102,6 +126,7 @@ function openDialog(friend=null){
 }
 
 async function findProfile(){
+  if(!canUseFriends())return;
   const url=friendAddress(address.value);
   if(!url){feedback.textContent='Paste the public Πathos website link your friend shared.';return;}
   if(!editing&&saved.some(friend=>friend.url===url)){feedback.textContent='This friend is already on your list.';return;}
@@ -113,7 +138,7 @@ async function findProfile(){
   let profile=null;
   try{profile=await fetchFriendProfile(url,attempt.signal);}catch{/* An older, private or offline site can still be saved with a nickname. */}
   finally{clearTimeout(timer);}
-  if(lookup!==attempt||!dialog.open)return;
+  if(lookup!==attempt||!dialog.open||!canUseFriends())return;
   lookup=null;save.disabled=$('friendRefresh').disabled=false;
   if(!profile&&editing){
     feedback.textContent='The published profile is unavailable. Your saved profile is still here.';
@@ -127,28 +152,46 @@ async function findProfile(){
 }
 
 async function saveFriend(remove=false){
-  if(writing||lookup)return;
+  if(writing||lookup||!canUseFriends())return;
   const label=nickname.value.trim().slice(0,60);
   if(!remove&&!draft.name&&!label){feedback.textContent='Enter a nickname for this friend.';return;}
   writing=true;backgroundTasks++;
   save.disabled=$('friendRemove').disabled=$('friendRefresh').disabled=$('closeFriendDialog').disabled=true;
   try{
-    await writeFriend(remove?null:{...draft,nickname:label});
+    await writeFriend(remove?null:{...draft,nickname:label},editing);
     dialog.close();
     await refresh();
-    $('friendAdd').focus();
-  }catch(error){feedback.textContent=error.message;}
+    if(canUseFriends())$('friendAdd').focus();
+  }catch(error){if(canUseFriends())feedback.textContent=error.message;}
   finally{
     writing=false;backgroundTasks--;
     save.disabled=$('friendRemove').disabled=$('friendRefresh').disabled=$('closeFriendDialog').disabled=false;
   }
 }
 
-$('openFriendsBtn').addEventListener('click',()=>{
+opener.addEventListener('click',()=>{
+  if(!canUseFriends())return;
   showView('friends');
   $('friendsHeading').focus({preventScroll:true});
 });
-$('openFriendsBtn').hidden=false;
+function updateOwnerAccess(){
+  opener.hidden=!canUseFriends();
+  if(!opener.hidden)return;
+  renderRevision++;
+  lookup?.abort();lookup=null;
+  editing=draft=null;saved=[];
+  form.reset();
+  $('friendPreview').replaceChildren();
+  $('friendsList').replaceChildren();
+  $('friendsStatus').textContent=feedback.textContent='';
+  $('friendsEmpty').hidden=false;
+  if(dialog.open)dialog.close();
+  if(view.classList.contains('active'))showView('home');
+}
+if(hosted){
+  window.addEventListener('pathos-owner-change',updateOwnerAccess);
+  updateOwnerAccess();
+}else opener.hidden=false;
 $('friendAdd').addEventListener('click',()=>openDialog());
 $('closeFriendDialog').addEventListener('click',()=>dialog.close());
 $('friendRefresh').addEventListener('click',()=>void findProfile());
@@ -169,5 +212,5 @@ dialog.addEventListener('close',()=>{
   lookup?.abort();lookup=null;
   save.disabled=$('friendRefresh').disabled=false;
 });
-window.addEventListener('focus',()=>{if($('friends').classList.contains('active'))void refresh();});
+window.addEventListener('focus',()=>{if(view.classList.contains('active'))void refresh();});
 window.PathosFriends={refresh};
