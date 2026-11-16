@@ -968,8 +968,8 @@ body:not(.pathos-owner) .experience-edit{display:none}
   </form>
 </dialog>
 
-<dialog id="entryDialog">
-  <div class="dialog-head"><div><h2>Add or edit</h2></div><button class="icon-btn" id="closeDialog">×</button></div>
+<dialog id="entryDialog" aria-labelledby="entryDialogTitle">
+  <div class="dialog-head"><div><h2 id="entryDialogTitle">Add experience</h2></div><button class="icon-btn" id="closeDialog">×</button></div>
   <form id="entryForm">
     <div class="form-grid">
       <label class="field">Medium<select class="input" name="type"><option>Book</option><option>Film</option><option>TV</option><option>Theatre</option><option>Videogame</option><option>Album</option><option>Concert</option><option>Exhibition</option><option>Podcast</option><option>Opera</option><option>Other</option></select></label>
@@ -1940,13 +1940,15 @@ function resetFormSections(existing=false){
 function openEntryDialog(opts={}){
   if(!window.pathosCanEdit||archiveBusy){toast('Sign in to edit');return;}
   editingExperienceId=null;selectedCatalogItem=null;$('deleteBtn').classList.add('hidden');$('entryForm').reset();clearEditionForm();renderQuoteEditor([]);const w=opts.work;
+  $('entryDialogTitle').textContent=w?'Log again':'Add experience';
+  $('cancelBtn').textContent=w?'Discard draft':'Cancel';
   if(w){['title','type','creator','year','cover'].forEach(k=>{if($('entryForm').elements[k])$('entryForm').elements[k].value=w[k]||''});$('entryForm').elements.repeat.checked=true;selectedCatalogItem=localItemFromWork(w);const lastEd=experiencesFor(w.id).find(e=>e.edition)?.edition;if(lastEd)fillEditionForm(lastEd)}
   fillWorkFlags(w);fillBookProfile(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(false);$('entryDialog').showModal();
 }
 function openExperience(id){
   if(archiveBusy)return;
   if(!window.pathosCanEdit){const item=db.experiences.find(x=>x.id===id);if(item)openWork(item.workId);return;}
-  const e=db.experiences.find(x=>x.id===id);if(!e)return;const w=workFor(e.workId);if(!w)return;editingExperienceId=id;const f=$('entryForm');f.reset();clearEditionForm();Object.entries({title:w.title,type:w.type,creator:w.creator,year:w.year,cover:e.cover||w.cover,status:e.status||'completed',startDate:e.startDate,endDate:e.endDate,rating:e.rating,venue:e.venue,viewingLanguage:e.viewingLanguage,sourceUrl:e.sourceUrl||'',tags:(e.tags||[]).join(', '),review:e.review}).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??''});fillWorkFlags(w);fillBookProfile(w,e);f.elements.repeat.checked=e.repeat;f.elements.isPrivate.checked=!e.isPublic;renderQuoteEditor(e.quotes||[]);if(e.edition)fillEditionForm(e.edition);selectedCatalogItem=localItemFromWork(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(true);$('deleteBtn').classList.remove('hidden');$('entryDialog').showModal();void findPageImages(true);
+  const e=db.experiences.find(x=>x.id===id);if(!e)return;const w=workFor(e.workId);if(!w)return;editingExperienceId=id;const f=$('entryForm');f.reset();clearEditionForm();Object.entries({title:w.title,type:w.type,creator:w.creator,year:w.year,cover:e.cover||w.cover,status:e.status||'completed',startDate:e.startDate,endDate:e.endDate,rating:e.rating,venue:e.venue,viewingLanguage:e.viewingLanguage,sourceUrl:e.sourceUrl||'',tags:(e.tags||[]).join(', '),review:e.review}).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??''});fillWorkFlags(w);fillBookProfile(w,e);f.elements.repeat.checked=e.repeat;f.elements.isPrivate.checked=!e.isPublic;renderQuoteEditor(e.quotes||[]);if(e.edition)fillEditionForm(e.edition);selectedCatalogItem=localItemFromWork(w);attachCatalogueSearch();setCatalogHint();updateEditionPanel();updateDateFields();resetFormSections(true);$('entryDialogTitle').textContent='Edit experience';$('cancelBtn').textContent='Cancel';$('deleteBtn').classList.remove('hidden');$('entryDialog').showModal();void findPageImages(true);
 }
 const reviewEditor=PathosReview.attach($('reviewEditor'));
 $('entryForm').addEventListener('submit',async ev=>{if(!window.pathosCanEdit||archiveBusy){ev.preventDefault();return;}
