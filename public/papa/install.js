@@ -1,9 +1,22 @@
+function waitForInstallPrompt() {
+  return new Promise((resolve) => {
+    const finish = () => {
+      window.clearTimeout(timeout);
+      window.removeEventListener("beforeinstallprompt", finish);
+      resolve();
+    };
+    const timeout = window.setTimeout(finish, 1500);
+    window.addEventListener("beforeinstallprompt", finish, { once: true });
+  });
+}
+
 export function setupInstall() {
   const button = document.getElementById("install-app");
   if (window.matchMedia("(display-mode: standalone)").matches || navigator.standalone) return;
 
   const dialog = document.getElementById("install-dialog");
-  let installPrompt;
+  const ready = document.getElementById("install-ready");
+  const label = document.getElementById("install-label");
   button.hidden = false;
 
   const android = /Android/i.test(navigator.userAgent);
@@ -12,32 +25,50 @@ export function setupInstall() {
   document.getElementById("install-android").hidden = apple;
   document.getElementById("install-apple").hidden = android;
 
-  window.addEventListener("beforeinstallprompt", (event) => {
-    event.preventDefault();
-    installPrompt = event;
-  });
-  window.addEventListener("appinstalled", () => {
-    installPrompt = undefined;
+  function installed() {
+    window.saggezzaInstallPrompt = undefined;
     button.hidden = true;
     if (dialog.open) dialog.close();
-  });
+  }
 
-  button.addEventListener("click", async () => {
-    if (installPrompt) {
-      const prompt = installPrompt;
-      installPrompt = undefined;
-      button.disabled = true;
-      try {
+  window.addEventListener("beforeinstallprompt", () => { ready.hidden = false; });
+  window.addEventListener("appinstalled", installed);
+
+  async function requestInstall() {
+    if (button.disabled) return;
+    button.disabled = true;
+    ready.disabled = true;
+    try {
+      if (typeof navigator.install === "function") {
+        await navigator.install();
+        installed();
+        return;
+      }
+      if (!window.saggezzaInstallPrompt && "onbeforeinstallprompt" in window &&
+        navigator.userActivation?.isActive && !dialog.open) {
+        label.textContent = "Preparazione…";
+        await waitForInstallPrompt();
+      }
+      const prompt = window.saggezzaInstallPrompt;
+      if (prompt && navigator.userActivation?.isActive !== false) {
+        window.saggezzaInstallPrompt = undefined;
+        if (dialog.open) dialog.close();
         await prompt.prompt();
         const { outcome } = await prompt.userChoice;
-        if (outcome === "accepted") button.hidden = true;
+        if (outcome === "accepted") installed();
         return;
-      } catch {
-        // Some browsers decline to open the native prompt. Show their menu steps.
-      } finally {
-        button.disabled = false;
       }
+    } catch (error) {
+      if (error?.name === "AbortError") return;
+    } finally {
+      button.disabled = false;
+      ready.disabled = false;
+      label.textContent = "Scarica app";
     }
-    dialog.showModal();
-  });
+    ready.hidden = !window.saggezzaInstallPrompt;
+    if (!dialog.open && !button.hidden) dialog.showModal();
+  }
+
+  button.addEventListener("click", requestInstall);
+  ready.addEventListener("click", requestInstall);
 }
