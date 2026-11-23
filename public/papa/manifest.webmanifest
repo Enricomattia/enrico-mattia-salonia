@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Buongiorno Papà",
-  "short_name": "Buongiorno Papà",
+  "name": "Saggezza",
+  "short_name": "Saggezza",
   "description": "Il calendario delle pillole, con un verso di poesia al giorno.",
   "lang": "it",
   "start_url": "./index.html",

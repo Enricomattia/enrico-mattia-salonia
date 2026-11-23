@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "Buongiorno Papà",
+  title: "Saggezza",
   robots: { index: false, follow: false },
 };
 

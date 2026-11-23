@@ -231,6 +231,7 @@ function announce(message) {
 
 function render() {
   const date = fromKey(selected);
+  const future = selected > today;
   byId("hero-date").textContent = fullDate.format(date);
   byId("hero-title").textContent = showMonth ? "Calendario" : "Pillole di saggezza";
   byId("return-today").hidden = !showMonth && selected === today;
@@ -245,12 +246,15 @@ function render() {
   const doses = planFor(selected);
   const count = markCount(selected, doses);
   byId("dose-count").textContent = `${count} di ${doses.length} segnate`;
-  byId("dose-count").hidden = !doses.length || selected > today;
+  byId("dose-count").hidden = !doses.length || future;
   byId("progress").hidden = byId("dose-count").hidden;
   byId("progress-fill").style.width = doses.length ? `${100 * count / doses.length}%` : "0%";
   const list = byId("dose-list");
   if (doses.length) list.replaceChildren(...doses.map((dose) => makeDose(dose, selected)));
   else showEmpty(list);
+
+  byId("poetry-card").hidden = future;
+  if (future) return;
 
   const verse = verseForDate(date);
   byId("daily-verse").textContent = `«${verse.line}»`;

@@ -170,7 +170,6 @@ button.dose:hover { border-color: #7b9980; background: #f0f4ec; }
 .poetry figcaption { display: grid; gap: 3px; margin-top: 16px; }
 #verse-author { font-weight: 650; }
 #verse-source { color: var(--green); width: fit-content; line-height: 1.45; text-underline-offset: 3px; }
-footer { color: var(--muted); font-size: .875rem; margin-top: 24px; }
 .demo-bar, .error { padding: 11px 14px; border-radius: 10px; margin-bottom: 16px; font-weight: 650; }
 .demo-bar { background: #f6eed8; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .error { color: #802e27; background: #f9ebe6; }
