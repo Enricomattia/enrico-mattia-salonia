@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f6ed">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Un calendario personale per segnare le assunzioni, con un verso di poesia al giorno.">
+  <title>Buongiorno Papà</title>
+  <link rel="manifest" href="./manifest.webmanifest" crossorigin="use-credentials">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="icon" href="./sole.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" type="module"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Vai al contenuto</a>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <button class="brand" id="brand" type="button" aria-label="Buongiorno Papà, torna a oggi">
+        <img src="./sole.svg" alt="" width="42" height="42">
+        <span>Buongiorno Papà</span>
+      </button>
+      <nav aria-label="Navigazione principale">
+        <button id="nav-today" type="button" aria-current="page">Oggi</button>
+        <button id="nav-calendar" type="button">Calendario</button>
+      </nav>
+      <button class="button outline plan-button" id="edit-plan" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h8M4 16l-1 5 5-1L20 8a2.8 2.8 0 0 0-4-4ZM14 6l4 4"/></svg>
+        <span>Modifica piano</span>
+      </button>
+    </div>
+  </header>
+  <main class="shell" id="main">
+    <section class="card update-banner" id="update-banner" aria-label="Aggiornamento dell’app" hidden>
+      <p id="update-message" role="status"></p>
+      <div class="update-actions">
+        <button class="button outline" id="update-later" type="button">Più tardi</button>
+        <button class="button primary" id="update-now" type="button">Aggiorna</button>
+      </div>
+    </section>
+    <div class="demo-bar" id="demo-bar" hidden>
+      <span>Modalità demo · dati di esempio</span>
+      <button class="button outline" id="exit-demo" type="button">Esci dalla demo</button>
+    </div>
+    <p class="error" id="storage-error" role="alert" hidden></p>
+    <div class="sr-only" id="status" role="status" aria-atomic="true"></div>
+    <div class="hero">
+      <div>
+        <p class="kicker" id="hero-date"></p>
+        <h1 id="hero-title">Pillole di saggezza</h1>
+      </div>
+      <button class="button outline" id="return-today" type="button" hidden>Torna a oggi</button>
+    </div>
+    <div class="layout">
+      <div class="agenda">
+        <section class="card week-card" id="week-card" aria-label="Giorni della settimana">
+          <div class="section-row">
+            <h2 id="week-title"></h2>
+            <button class="text-button" id="open-calendar" type="button">Apri calendario</button>
+          </div>
+          <div class="week-grid" id="week-grid"></div>
+        </section>
+        <section class="card month-card" id="month-card" aria-label="Calendario mensile" hidden>
+          <div class="section-row">
+            <h2 id="month-title" aria-live="polite"></h2>
+            <div class="month-controls">
+              <button class="icon-button" id="prev-month" type="button" aria-label="Mese precedente">‹</button>
+              <button class="icon-button" id="next-month" type="button" aria-label="Mese successivo">›</button>
+            </div>
+          </div>
+          <div class="month-grid" id="month-grid"></div>
+        </section>
+        <section class="card doses-card" id="doses-card" aria-labelledby="doses-title">
+          <div class="section-row doses-heading">
+            <h2 id="doses-title">Assunzioni di oggi</h2>
+            <span class="count" id="dose-count" hidden></span>
+          </div>
+          <div class="progress" id="progress" hidden aria-hidden="true"><div id="progress-fill"></div></div>
+          <div class="dose-list" id="dose-list"></div>
+        </section>
+      </div>
+      <aside class="card poetry" aria-labelledby="poetry-title">
+        <h2 class="kicker" id="poetry-title">Il verso del giorno</h2>
+        <figure>
+          <blockquote><p id="daily-verse"></p></blockquote>
+          <figcaption>
+            <span id="verse-author"></span>
+            <a id="verse-source" target="_blank" rel="noopener noreferrer"><cite id="verse-title"></cite></a>
+          </figcaption>
+        </figure>
+      </aside>
+    </div>
+    <footer>Il piano e le spunte sono salvati in questo browser.</footer>
+  </main>
+
+  <dialog id="plan-dialog" aria-labelledby="plan-title">
+    <form id="plan-form">
+      <div class="section-row">
+        <h2 id="plan-title">Piano giornaliero</h2>
+        <button class="icon-button" id="close-plan" type="button" aria-label="Chiudi" formnovalidate>×</button>
+      </div>
+      <p class="subtle">Inserisci un orario per ogni assunzione. Se la stessa pillola va presa più volte, aggiungi una riga per ciascun orario.</p>
+      <p class="plan-notice" id="plan-notice"></p>
+      <div id="plan-rows"></div>
+      <button class="button outline" id="add-dose" type="button">+ Aggiungi un orario</button>
+      <p class="error" id="plan-error" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button class="button outline" id="cancel-plan" type="button">Annulla</button>
+        <button class="button primary" type="submit">Salva piano</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="undo-dialog" aria-labelledby="undo-title">
+    <form method="dialog">
+      <h2 id="undo-title">Togliere la spunta?</h2>
+      <p class="subtle" id="undo-description"></p>
+      <div class="dialog-actions">
+        <button class="button outline" value="cancel" autofocus>Annulla</button>
+        <button class="button primary" value="undo">Togli la spunta</button>
+      </div>
+    </form>
+  </dialog>
+  <template id="plan-row">
+    <fieldset class="plan-row">
+      <legend></legend>
+      <label class="plan-name">Nome <input name="name" maxlength="80" required autocomplete="off"></label>
+      <label>Orario <input name="time" type="time" required></label>
+      <label class="plan-note">Nota (facoltativa) <input name="note" maxlength="100" autocomplete="off"></label>
+      <button class="text-button remove" type="button">Rimuovi</button>
+    </fieldset>
+  </template>
+</body>
+</html>
