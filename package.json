@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/papa-release.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/papa-release.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
