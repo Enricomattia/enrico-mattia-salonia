@@ -1,5 +1,6 @@
 import { verseForDate } from "./verses.mjs";
 import { setupUpdates } from "./updates.js";
+import { setupInstall } from "./install.js";
 
 const byId = (id) => document.getElementById(id);
 const storageKey = "giorno-per-giorno.v1";
@@ -477,4 +478,5 @@ document.addEventListener("visibilitychange", updateToday);
 window.setInterval(updateToday, 15000);
 loadRealState();
 render();
-setupUpdates(() => !planDialog.open && !undoDialog.open && pendingWrites === 0);
+setupInstall();
+setupUpdates(() => !document.querySelector("dialog[open]") && pendingWrites === 0);

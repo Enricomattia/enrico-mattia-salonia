@@ -56,6 +56,7 @@ h1, h2, p { margin: 0; }
   font: bold 1.28rem/1.15 var(--serif);
   text-align: left;
 }
+.brand img { border-radius: 12px; flex-shrink: 0; }
 nav { display: flex; gap: 5px; }
 nav button, .button, .icon-button, .text-button {
   min-height: 44px;
@@ -75,6 +76,9 @@ nav button:hover, nav button[aria-current], .outline:hover { color: var(--green)
 .plan-button { justify-self: end; }
 .shell { padding-block: 43px 24px; }
 .hero { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 26px; }
+.hero-actions { display: flex; justify-content: end; gap: 8px; flex-wrap: wrap; }
+.hero-actions .button { white-space: nowrap; }
+button#install-app:disabled { opacity: .7; }
 .kicker { color: var(--green); font-size: .88rem; letter-spacing: .095em; text-transform: uppercase; font-weight: 700; }
 h1 { margin-top: 7px; font: 500 clamp(2.6rem, 5vw, 4.4rem)/1.04 var(--serif); letter-spacing: -.055em; }
 h2 { font: 500 1.64rem/1.2 var(--serif); letter-spacing: -.025em; }
@@ -194,6 +198,10 @@ dialog {
 }
 dialog::backdrop { background: #182a20a8; }
 #undo-dialog { max-width: 440px; }
+#install-dialog { max-width: 480px; }
+.install-instructions { margin-top: 16px; line-height: 1.5; }
+.install-instructions h3 { margin: 0 0 4px; font-size: 1rem; }
+.install-instructions p { color: var(--muted); }
 .subtle { margin-block: 12px; color: var(--muted); line-height: 1.45; }
 .plan-notice { margin-block: 12px; font-weight: 650; }
 .plan-row {
@@ -227,7 +235,8 @@ dialog::backdrop { background: #182a20a8; }
   .topbar-inner nav { grid-row: 2; grid-column: 1 / -1; }
   .layout { grid-template-columns: minmax(0, 1fr); gap: 16px; }
   .shell { padding-top: 27px; }
-  .hero { margin-bottom: 18px; }
+  .hero { align-items: start; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+  .hero-actions { justify-content: start; }
   .poetry { padding: 20px; }
 }
 @media (max-width: 420px) {
@@ -235,7 +244,6 @@ dialog::backdrop { background: #182a20a8; }
   .brand { font-size: 1.06rem; gap: 6px; }
   .brand img { width: 35px; height: 35px; }
   .plan-button { padding-inline: 9px; font-size: .875rem; }
-  .hero { flex-wrap: wrap; }
   .week-card, .month-card, .doses-card { padding: 13px; }
   .week-grid, .month-grid { gap: 4px; }
   .section-row h2 { font-size: 1.36rem; }

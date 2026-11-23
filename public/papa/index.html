@@ -8,8 +8,8 @@
   <meta name="description" content="Un calendario personale per segnare le assunzioni, con un verso di poesia al giorno.">
   <title>Buongiorno Papà</title>
   <link rel="manifest" href="./manifest.webmanifest" crossorigin="use-credentials">
-  <link rel="apple-touch-icon" href="./icon-192.png">
-  <link rel="icon" href="./sole.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./jackie-192.png">
+  <link rel="icon" href="./jackie-192.png" type="image/png">
   <link rel="stylesheet" href="./styles.css">
   <script src="./app.js" type="module"></script>
 </head>
@@ -18,7 +18,7 @@
   <header class="topbar">
     <div class="topbar-inner">
       <button class="brand" id="brand" type="button" aria-label="Buongiorno Papà, torna a oggi">
-        <img src="./sole.svg" alt="" width="42" height="42">
+        <img src="./jackie-192.png" alt="" width="42" height="42">
         <span>Buongiorno Papà</span>
       </button>
       <nav aria-label="Navigazione principale">
@@ -50,7 +50,13 @@
         <p class="kicker" id="hero-date"></p>
         <h1 id="hero-title">Pillole di saggezza</h1>
       </div>
-      <button class="button outline" id="return-today" type="button" hidden>Torna a oggi</button>
+      <div class="hero-actions">
+        <button class="button outline" id="return-today" type="button" hidden>Torna a oggi</button>
+        <button class="button primary" id="install-app" type="button" aria-haspopup="dialog" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18h3"/></svg>
+          Scarica app
+        </button>
+      </div>
     </div>
     <div class="layout">
       <div class="agenda">
@@ -94,6 +100,22 @@
     <footer>Il piano e le spunte sono salvati in questo browser.</footer>
   </main>
 
+  <dialog id="install-dialog" aria-labelledby="install-title">
+    <form method="dialog">
+      <h2 id="install-title">Scarica Buongiorno Papà</h2>
+      <div class="install-instructions" id="install-android">
+        <h3>Android</h3>
+        <p>Apri questa pagina in <strong>Chrome</strong>. Nel menu ⋮ tocca <strong>Installa app</strong> oppure <strong>Installa e crea scorciatoia</strong>, poi scegli <strong>Installa</strong>. Troverai Buongiorno Papà nell’elenco delle app.</p>
+      </div>
+      <div class="install-instructions" id="install-apple">
+        <h3>iPhone e iPad</h3>
+        <p>Apri questa pagina in <strong>Safari</strong> e tocca <strong>Condividi</strong>, poi <strong>Aggiungi alla schermata Home</strong>. Attiva <strong>Apri come app web</strong>, se compare, e tocca <strong>Aggiungi</strong>.</p>
+      </div>
+      <div class="dialog-actions">
+        <button class="button outline" autofocus>Chiudi</button>
+      </div>
+    </form>
+  </dialog>
   <dialog id="plan-dialog" aria-labelledby="plan-title">
     <form id="plan-form">
       <div class="section-row">
