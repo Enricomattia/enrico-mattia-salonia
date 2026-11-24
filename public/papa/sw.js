@@ -76,3 +76,33 @@ self.addEventListener("message", (event) => {
     reply.postMessage({ latest: version, selected: await selectedRelease() });
   })());
 });
+
+self.addEventListener("push", (event) => {
+  const id = event.data?.text() ?? "";
+  event.waitUntil(self.registration.showNotification("Saggezza", {
+    body: "È ora di prendere le pillole.",
+    icon: new URL("jackie-192.png", scope).href,
+    tag: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(id) ? `saggezza-${id}` : "saggezza",
+    data: { type: "SAGGEZZA_REMINDER" }
+  }));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  if (event.notification.data?.type !== "SAGGEZZA_REMINDER") return;
+  event.notification.close();
+  event.waitUntil((async () => {
+    const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    const app = clients.find((client) => {
+      const url = new URL(client.url);
+      return url.origin === scope.origin && [scope.pathname, indexPath].includes(url.pathname);
+    });
+    if (app) {
+      const focused = await app.focus().catch(() => null);
+      if (focused) {
+        focused.postMessage({ type: "SAGGEZZA_REMINDER" });
+        return;
+      }
+    }
+    await self.clients.openWindow(scope.href);
+  })());
+});
