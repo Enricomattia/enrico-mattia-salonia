@@ -7,6 +7,7 @@ const messages = {
   empty: "Promemoria attivi. Aggiungi una pillola per ricevere il primo avviso.",
   blocked: "Consenti le notifiche di Saggezza nelle impostazioni del browser.",
   unsupported: "Per attivare i promemoria, apri Saggezza in Chrome su Android.",
+  starting: "Attivazione dei promemoria…",
   syncing: "Aggiornamento dei promemoria…",
   pending: "Orari dei promemoria da aggiornare. Riprova con una connessione a Internet.",
   stopping: "Disattivazione in attesa. Riprova con una connessione a Internet."
@@ -27,13 +28,13 @@ function getSchedule({ today, plans }) {
   };
 }
 
-async function getRegistration() {
+async function withTimeout(promise, delay) {
   let timeout;
   try {
     return await Promise.race([
-      navigator.serviceWorker.ready,
+      promise,
       new Promise((_, reject) => {
-        timeout = setTimeout(() => reject(new Error("Service worker unavailable")), 5_000);
+        timeout = setTimeout(() => reject(new Error("Reminder setup timed out")), delay);
       })
     ]);
   } finally {
@@ -59,7 +60,7 @@ async function subscribe(registration) {
   const { publicKey } = await response.json();
   const applicationServerKey = Uint8Array.from(atob(publicKey.replace(/-/g, "+").replace(/_/g, "/")),
     (character) => character.charCodeAt(0));
-  return registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey });
+  return withTimeout(registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey }), 45_000);
 }
 
 async function fingerprint(value) {
@@ -89,7 +90,7 @@ export function setupReminders(readPlan) {
     panel.hidden = !hasTimes && !settings;
     const message = messages[phase];
     if (status.textContent !== message) status.textContent = message;
-    enable.hidden = ["on", "empty", "syncing", "unsupported"].includes(phase);
+    enable.hidden = ["on", "empty", "starting", "syncing", "unsupported"].includes(phase);
     enable.textContent = settings ? "Riprova" : "Attiva promemoria";
     disable.hidden = !settings || phase === "stopping";
     enable.disabled = disable.disabled = busy;
@@ -144,7 +145,11 @@ export function setupReminders(readPlan) {
     }
 
     try {
-      const registration = await getRegistration();
+      if (!settings.signature) {
+        phase = "starting";
+        draw(settings, hasTimes);
+      }
+      const registration = await withTimeout(navigator.serviceWorker.ready, 5_000);
       let subscription = await registration.pushManager.getSubscription() ?? await subscribe(registration);
       let data = { schedule, subscription: subscription.toJSON() };
       let signature = await fingerprint(data);
