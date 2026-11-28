@@ -1,6 +1,7 @@
 import { verseForDate } from "./verses.mjs";
 import { setupUpdates } from "./updates.js";
 import { setupInstall } from "./install.js";
+import { setupReminders } from "./reminders.js";
 
 const byId = (id) => document.getElementById(id);
 const storageKey = "giorno-per-giorno.v1";
@@ -58,6 +59,7 @@ let planBaseline = "";
 let planTrigger;
 let undoTarget;
 let pendingWrites = 0;
+let refreshReminders = () => {};
 
 function setError(message) {
   const error = byId("storage-error");
@@ -411,6 +413,7 @@ async function savePlan(event) {
     setError("");
     planDialog.close();
     selectDate(start);
+    refreshReminders();
     if (!planTrigger?.isConnected) byId("edit-plan").focus();
     announce(start > current ? `Piano salvato dal ${shortDate.format(fromKey(start))}` : "Piano salvato");
   } catch {
@@ -432,6 +435,7 @@ function startDemo() {
   state = { plans: [{ start, doses }], marks: { [today]: { mattino: "demo" } } };
   setError("");
   goToToday();
+  byId("reminders").hidden = true;
   byId("exit-demo").focus();
 }
 
@@ -440,6 +444,7 @@ function exitDemo() {
   state = emptyState();
   loadRealState();
   goToToday();
+  refreshReminders();
   byId("edit-plan").focus();
 }
 
@@ -476,6 +481,7 @@ window.addEventListener("storage", (event) => {
   if (!demo && (event.key === storageKey || event.key === null)) {
     loadRealState();
     render();
+    refreshReminders();
   }
 });
 document.addEventListener("visibilitychange", updateToday);
@@ -484,3 +490,9 @@ loadRealState();
 render();
 setupInstall();
 setupUpdates(() => !document.querySelector("dialog[open]") && pendingWrites === 0);
+refreshReminders = setupReminders(() => demo ? null : { plans: readState().plans, today: dateKey(new Date()) });
+navigator.serviceWorker?.addEventListener("message", ({ data }) => {
+  if (data?.type !== "SAGGEZZA_REMINDER") return;
+  if (demo) exitDemo();
+  else goToToday();
+});
